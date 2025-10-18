@@ -1,0 +1,31 @@
+.employees-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.employees-table th,
+.employees-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e6eef8;
+  text-align: left;
+}
+
+.employees-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn:disabled { opacity: .6; cursor: default; }
+
+.small { font-size: 13px; color: #475569; }

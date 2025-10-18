@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
@@ -7,22 +7,22 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     <div className={`sidebar ${isOpen ? 'open' : ''}`}>           
       <ul>
         <li>
-          <Link to="/dashboard">Home</Link>
+          <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>Home</NavLink>
         </li>
         <li>
-          <Link to="/upload" >Employee</Link>
+          <NavLink to="/employees" className={({ isActive }) => isActive ? 'active' : ''}>Employees</NavLink>
         </li>
         <li>
-          <Link to="/reports">Reports</Link>
+          <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>Reports</NavLink>
         </li>
         <li>
-          <Link to="/download">Downloads</Link>
-        </li>      
-        <li>
-          <Link to="/about">About SimplERP</Link>
+          <NavLink to="/download" className={({ isActive }) => isActive ? 'active' : ''}>Downloads</NavLink>
         </li>
         <li>
-          <Link to="/logout">Logout</Link>
+          <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''}>About SimplERP</NavLink>
+        </li>
+        <li>
+          <NavLink to="/logout" className={({ isActive }) => isActive ? 'active' : ''}>Logout</NavLink>
         </li>
       </ul>
     </div>

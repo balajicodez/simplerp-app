@@ -10,6 +10,10 @@ import JobDetail from './jobdetail/JobDetail';
 import ReportHTML from './generated/ReportHTML';
 import SchemaEditor from './editors/SchemaEditor';
 import PythonEditor from './editors/PythonEditor';
+import Employees from './employees/Employees';
+import CreateEmployee from './employees/CreateEmployee';
+import EmployeeView from './employees/EmployeeView';
+import EditEmployee from './employees/EditEmployee';
 
 function App() {
   return (
@@ -25,6 +29,10 @@ function App() {
         <Route path="/reportgen" element={<ReportHTML />} />
         <Route path="/schemaeditor" element={<SchemaEditor />} />
         <Route path="/pythoneditor" element={<PythonEditor />} />
+  <Route path="/employees" element={<Employees />} />
+  <Route path="/employees/create" element={<CreateEmployee />} />
+  <Route path="/employees/:id" element={<EmployeeView />} />
+  <Route path="/employees/:id/edit" element={<EditEmployee />} />
         <Route path="/logout" element={<Login />} />
       </Routes>
     </Router>
