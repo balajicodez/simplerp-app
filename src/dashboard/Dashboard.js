@@ -21,8 +21,12 @@ function Dashboard() {
                         <p align="center"> 12</p>
                     </div>
                     <div>
-                        <h2 align="center">Insights</h2>
-                        <p align="center">7</p>
+                        <h2 align="center">Cash In</h2>
+                        <p align="center">72000</p>
+                    </div>
+                    <div>
+                        <h2 align="center">Cash Out</h2>
+                        <p align="center">170300</p>
                     </div>
                 </div>
             </PageCard>
