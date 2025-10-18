@@ -8,6 +8,7 @@ import './../App.css';
 import { APP_SERVER_URL_PREFIX } from "./../constants.js";
 import LoadSpinner from './../LoadSpinner';
 import axios from "axios";
+import PageCard from '../components/PageCard';
 
 var jobId;
 
@@ -105,9 +106,7 @@ const Upload = () => {
         <Sidebar isOpen={true} />
       </div>
       {loading ? <LoadSpinner /> :
-        <div className={`content ${true ? 'shifted' : ''}`} >
-          <h1> MR Upload - Create a new Job </h1>
-          <hr />
+        <PageCard title={"MR Upload - Create a new Job"}>
           <form onSubmit={handleFormSubmit}>
             <table align="left">
               <tr>
@@ -161,7 +160,7 @@ const Upload = () => {
               <tr><button class="button" type="submit">Create Job</button></tr>
             </table>
           </form>
-        </div>}
+        </PageCard>}
     </div>
   );
 };

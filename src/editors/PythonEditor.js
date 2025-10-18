@@ -4,6 +4,7 @@ import LoadSpinner from '../LoadSpinner.js';
 import Sidebar from '../Sidebar.js';
 import { CodeiumEditor } from "@codeium/react-code-editor";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import PageCard from '../components/PageCard';
 
 
 function PythonEditor() {
@@ -27,11 +28,9 @@ function PythonEditor() {
     return (
         <div>
             <Sidebar isOpen={true} />
-            {loading ? <LoadSpinner /> : <div className={`content ${true ? 'shifted' : ''}`}>
-                <div>
-                    <CodeiumEditor language="python" theme="vs-dark"  codeContent ={codeContent}/>
-                </div>
-            </div>}
+            {loading ? <LoadSpinner /> : <PageCard title={"Python Editor"}>
+                <CodeiumEditor language="python" theme="vs-dark"  codeContent ={codeContent}/>
+            </PageCard>}
         </div>
     );
 }

@@ -4,6 +4,7 @@ import Sidebar from './../Sidebar';
 import { APP_SERVER_URL_PREFIX } from "./../constants.js";
 import LoadSpinner from './../LoadSpinner';
 import './../App.css';
+import PageCard from '../components/PageCard';
 
 function Report() {
 
@@ -91,9 +92,7 @@ function Report() {
         <div>
             <Sidebar isOpen={true} />
             {loading ? <LoadSpinner /> :
-                <div className={`content ${true ? 'shifted' : ''}`}>
-                    <h1>Job History</h1>
-                    <hr />
+                <PageCard title="Job History">
                     <table >
                         <tr>
                             <th>Job Name</th>
@@ -127,7 +126,7 @@ function Report() {
                             );
                         })}
                     </table>
-                </div>}
+                </PageCard>}
         </div>
     );
 }

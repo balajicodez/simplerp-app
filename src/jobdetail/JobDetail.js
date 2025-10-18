@@ -6,6 +6,7 @@ import axios from 'axios';
 import LoadSpinner from './../LoadSpinner';
 import './../App.css';
 import { APP_SERVER_URL_PREFIX } from "./../constants.js";
+import PageCard from '../components/PageCard';
 
 function JobDetail() {
 
@@ -62,30 +63,6 @@ function JobDetail() {
 
     const viewReport = async (jobId) => {
         history('/reportgen', { state: { jobId: jobId } })
-        /*  setLoading(true);
-         try {
-             const response = await fetch(APP_SERVER_URL_PREFIX + "/jobs/report/" + jobId, {
-                 method: "GET",
-                 body: JSON.stringify(tableData)
-             });
- 
-             if (!response.ok) {
-                 throw new Error(`HTTP error! Status: ${response.status}`);
-             }
- 
-             const responseData = await response.json();
-             console.log("POST request successful:", responseData.id);
-             jobId = responseData.jobName + '_' + responseData.id;
-             setLoading(false);
-             // Add any further actions after successful submission
-         } catch (error) {
-             setLoading(false);
-             console.error("Error making PUT request:", error.message);
-         }
-         const response = await fetch(APP_SERVER_URL_PREFIX + "/jobs").then(
-             (response) => response.json()
-         );
-         setTableData(response);    */
     }
 
     const generateSchema = async (jobId) => {
@@ -166,9 +143,7 @@ function JobDetail() {
         <div>
             <Sidebar isOpen={true} />
             {loading ? <LoadSpinner /> :
-                <div className={`content ${true ? 'shifted' : ''}`}>
-                    <h1>Job Detail</h1>
-                    <hr />
+                <PageCard title="Job Detail">
                     <div>
                         {
                             tableData ? (
@@ -261,7 +236,7 @@ function JobDetail() {
                             </th>
                         </tr>
                     </table>
-                </div >}
+                </PageCard>}
         </div >
     );
 }

@@ -1,0 +1,26 @@
+.page-card {
+	background: #ffffff;
+	border-radius: 10px;
+	padding: 18px;
+	box-shadow: 0 8px 28px rgba(29,40,63,0.08);
+	border: 1px solid rgba(29,40,63,0.04);
+}
+
+.page-card-header h1 {
+	margin: 0 0 6px 0;
+	font-size: 20px;
+	color: #0f1724; /* dark slate */
+}
+
+.page-card-body {
+	margin-top: 10px;
+}
+
+.content.shifted {
+	margin-left: 220px; /* preserve existing sidebar shift */
+	padding: 24px;
+}
+
+@media (max-width: 800px) {
+	.content.shifted { margin-left: 0; padding: 12px; }
+}

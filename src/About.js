@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
+import PageCard from './components/PageCard';
 
 
 function About() {
@@ -9,11 +10,9 @@ function About() {
     return (
         <div>         
          <Sidebar isOpen={true}  />
-         <div className={`content ${true ? 'shifted' : ''}`}>
-            <h1>About DataSynops</h1>
-            <hr/>
-            <p>A next generation application that provides intelligent insights into the world of survey data</p>           
-         </div>
+         <PageCard title="About SimplERP">
+            <p>A next generation highly customisable and light weight ERP solution</p>
+         </PageCard>
         </div>
     );
 }

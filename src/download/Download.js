@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from './../Sidebar';
+import PageCard from '../components/PageCard';
 
 
 function Download() {
@@ -9,10 +10,8 @@ function Download() {
     return (
         <div>         
          <Sidebar isOpen={true}  />
-         <div className={`content ${true ? 'shifted' : ''}`}>
-            <h1>Download</h1>
-            <hr/>
-         </div>
+         <PageCard title="Download">
+         </PageCard>
         </div>
     );
 }

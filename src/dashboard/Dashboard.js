@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './../Sidebar';
 import './Dashboard.css';
+import PageCard from '../components/PageCard';
 
 function Dashboard() {
 
@@ -9,14 +10,12 @@ function Dashboard() {
     return (
         <div>
             <Sidebar isOpen={true} />
-            <div className={`content ${true ? 'shifted' : ''}`}>
-                <h1>Welcome user to DataSynOps - your data our insights!</h1>
-                <hr />
-                <div class="mycontainer">
+            <PageCard title={"Welcome to Sri Divya Sarees - SimplERP solution"}>
+                <div className="mycontainer">
                     <div>
                         <h2 align="center">Reports</h2>
                         <p align="center">10</p>
-                    </div>  
+                    </div>
                     <div>
                         <h2 align="center">Runs</h2>
                         <p align="center"> 12</p>
@@ -26,7 +25,7 @@ function Dashboard() {
                         <p align="center">7</p>
                     </div>
                 </div>
-            </div>
+            </PageCard>
         </div>
     );
 }

@@ -10,16 +10,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <Link to="/dashboard">Home</Link>
         </li>
         <li>
-          <Link to="/upload" >New Job</Link>
+          <Link to="/upload" >Employee</Link>
         </li>
         <li>
-          <Link to="/reports">Job History</Link>
+          <Link to="/reports">Reports</Link>
         </li>
         <li>
           <Link to="/download">Downloads</Link>
         </li>      
         <li>
-          <Link to="/about">About DataSynOps</Link>
+          <Link to="/about">About SimplERP</Link>
         </li>
         <li>
           <Link to="/logout">Logout</Link>

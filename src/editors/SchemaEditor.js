@@ -5,6 +5,7 @@ import Sidebar from '../Sidebar.js';
 import { JsonEditor as Editor } from 'jsoneditor-react';
 import 'jsoneditor-react/es/editor.min.css';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import PageCard from '../components/PageCard';
 
 
 function SchemaEditor() {
@@ -28,13 +29,11 @@ function SchemaEditor() {
     return (
         <div>
             <Sidebar isOpen={true} />
-            {loading ? <LoadSpinner /> : <div className={`content ${true ? 'shifted' : ''}`}>
-                <div>
-                    <Editor
-                        value={jsonContent}
-                    />
-                </div>
-            </div>}
+            {loading ? <LoadSpinner /> : <PageCard title={"Schema Editor"}>
+                <Editor
+                    value={jsonContent}
+                />
+            </PageCard>}
         </div>
     );
 }
