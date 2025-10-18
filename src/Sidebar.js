@@ -12,6 +12,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <li>
           <NavLink to="/employees" className={({ isActive }) => isActive ? 'active' : ''}>Employees</NavLink>
         </li>
+          <li>
+          <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>Payroll</NavLink>
+        </li>
+          <li>
+          <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>Petty Cash</NavLink>
+        </li>
         <li>
           <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>Reports</NavLink>
         </li>

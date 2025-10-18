@@ -32,7 +32,7 @@ function Employees() {
 
   useEffect(() => {
     // Prefer query-based pagination: /employees?page=X&size=Y
-    const url = `${APP_SERVER_URL_PREFIX}/employees?page=${pageParam}&size=${sizeParam}`;
+    const url = `${APP_SERVER_URL_PREFIX}/employees/search/findBySupervisorId?supervisorId=1&page=${pageParam}&size=${sizeParam}`;
     fetchUrl(url);
   }, []);
 
