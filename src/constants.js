@@ -1,0 +1,1 @@
+export const APP_SERVER_URL_PREFIX="http://localhost:8080";

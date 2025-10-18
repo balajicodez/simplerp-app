@@ -1,0 +1,17 @@
+div.mycontainer {
+  width:100%;
+  overflow:auto;
+  border: 5px;  
+}
+div.mycontainer div {
+  width:33%;  
+  float:left;
+  border: 1px;
+  border-color: 'black';
+  border-style: solid;
+  margin: 1%;
+}
+ div.mycontainer p{
+  font-size:  200%;
+  font-weight: 300;  
+ }
