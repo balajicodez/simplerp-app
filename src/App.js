@@ -18,6 +18,8 @@ import Expenses from './pettycash/Expenses';
 import CreateExpense from './pettycash/CreateExpense';
 import ExpenseMasters from './pettycash/ExpenseMasters';
 import ExpenseView from './pettycash/ExpenseView';
+import EditExpense from './pettycash/EditExpense';
+import HolidayCalendar from './holidays/HolidayCalendar';
 
 function App() {
   return (
@@ -40,7 +42,9 @@ function App() {
   <Route path="/pettycash/expenses" element={<Expenses />} />
   <Route path="/pettycash/expenses/create" element={<CreateExpense />} />
   <Route path="/pettycash/expenses/:id" element={<ExpenseView />} />
+  <Route path="/pettycash/expenses/:id/edit" element={<EditExpense />} />
   <Route path="/pettycash/masters" element={<ExpenseMasters />} />
+  <Route path="/holidays" element={<HolidayCalendar />} />
         <Route path="/logout" element={<Login />} />
       </Routes>
     </Router>

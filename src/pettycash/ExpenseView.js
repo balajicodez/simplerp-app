@@ -65,8 +65,9 @@ function ExpenseView() {
               </tbody>
             </table>
 
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
               <button className="btn" onClick={() => navigate('/pettycash/expenses')}>Back</button>
+              <button className="btn" onClick={() => navigate(`/pettycash/expenses/${id}/edit`)}>Edit</button>
             </div>
           </div>
         )}

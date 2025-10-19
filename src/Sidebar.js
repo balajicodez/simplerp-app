@@ -1,12 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
+import logo from './assets/images/logo.jpg';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const onResize = () => setCollapsed(window.innerWidth < 900);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   return (
-    <div className={`sidebar ${isOpen ? 'open' : ''}`}>          
+    <div className={`sidebar ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>          
       <div className="sidebar-logo">
-        <img src={require('./assets/images/logo.jpg').default || require('./assets/images/logo.jpg')} alt="Logo" />
+  <img src={logo} alt="Logo" />
+        <button className="sidebar-toggle" onClick={() => setCollapsed(c => !c)} aria-label="Toggle sidebar">{collapsed ? '▸' : '◂'}</button>
       </div>
       <ul>
         <li>
@@ -29,6 +40,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </li>
         <li>
           <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>Reports</NavLink>
+        </li>
+        <li>
+          <NavLink to="/holidays" className={({ isActive }) => isActive ? 'active' : ''}>Holiday Calendar</NavLink>
         </li>
         <li>
           <NavLink to="/download" className={({ isActive }) => isActive ? 'active' : ''}>Downloads</NavLink>

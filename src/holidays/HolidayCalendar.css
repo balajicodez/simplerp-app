@@ -1,0 +1,33 @@
+.hc-controls { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.hc-month { font-weight:600; }
+.hc-calendar { width:100%; border-collapse:collapse; table-layout:fixed; }
+.hc-calendar th { padding:8px; text-align:center; font-size:13px; color:#475569; }
+.hc-calendar td { width:14%; vertical-align:top; border:1px solid #eef2ff; padding:6px; }
+
+/* make each cell height fit the viewport so the calendar table doesn't force page scroll */
+.hc-calendar tbody tr { height: calc((100vh - 220px) / 6); }
+.hc-calendar td { height: 100%; overflow:hidden; }
+.hc-outside { background:#f8fafc; color:#94a3b8; }
+.hc-day-number { font-weight:600; margin-bottom:6px; }
+.hc-holiday { background: linear-gradient(90deg, rgba(37,99,235,0.08), rgba(37,99,235,0.02)); border-left:4px solid #2563eb; }
+.hc-hol-name { font-size:12px; margin-top:6px; color:#075985; }
+.hc-day-desc { font-size:12px; color:#0f172a; opacity:0.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.hc-calendar td[role="button"] { cursor: pointer; }
+
+.hc-modal-overlay { position:fixed; left:0; right:0; top:0; bottom:0; background:rgba(2,6,23,0.5); display:flex; align-items:center; justify-content:center; z-index:50; }
+.hc-modal { background:#fff; padding:18px; border-radius:8px; max-width:420px; width:90%; box-shadow:0 8px 24px rgba(2,6,23,0.12); }
+
+/* Responsive: compact calendar cells on small screens */
+@media (max-width: 1000px) {
+	.hc-calendar tbody tr { height: calc((100vh - 200px) / 6); }
+	.hc-calendar td { padding:4px; }
+	.hc-calendar th { font-size:12px; }
+	.hc-day-number { font-size:13px; }
+}
+
+@media (max-width: 480px) {
+	.hc-calendar tbody tr { height: calc((100vh - 160px) / 6); }
+	.hc-calendar td { padding:3px; }
+	.hc-hol-name { font-size:11px; }
+}

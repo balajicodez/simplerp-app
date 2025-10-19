@@ -28,6 +28,11 @@
   left: 0;
 }
 
+.sidebar.collapsed { width: 72px; }
+.sidebar.collapsed ul li { text-indent: -9999px; }
+.sidebar.collapsed .sidebar-logo img { max-width: 40px; }
+.sidebar-toggle { position:absolute; right:10px; top:12px; background:transparent; border:none; color:#f8fafc; cursor:pointer; font-size:16px; }
+
 .sidebar .toggle-button {
   background-color: rgba(255,255,255,0.04);
   color: #f8fafc;
