@@ -4,7 +4,10 @@ import './Sidebar.css';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   return (
-    <div className={`sidebar ${isOpen ? 'open' : ''}`}>           
+    <div className={`sidebar ${isOpen ? 'open' : ''}`}>          
+      <div className="sidebar-logo">
+        <img src={require('./assets/images/logo.jpg').default || require('./assets/images/logo.jpg')} alt="Logo" />
+      </div>
       <ul>
         <li>
           <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>Home</NavLink>
