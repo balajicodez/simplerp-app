@@ -35,10 +35,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <ul className="sublist">
             <li className="subitem">
               <NavLink to="/pettycash/expenses" className={({ isActive }) => isActive ? 'active' : ''}>Expenses</NavLink>
-            </li>
-            <li className="subitem">
-              <NavLink to="/pettycash/expenses/create" className={({ isActive }) => isActive ? 'active' : ''}>Create Expense</NavLink>
-            </li>
+            </li>           
             <li className="subitem">
               <NavLink to="/pettycash/masters" className={({ isActive }) => isActive ? 'active' : ''}>Masters</NavLink>
             </li>
