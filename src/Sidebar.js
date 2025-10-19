@@ -12,11 +12,17 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <li>
           <NavLink to="/employees" className={({ isActive }) => isActive ? 'active' : ''}>Employees</NavLink>
         </li>
-          <li>
-          <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>Payroll</NavLink>
+        <li className="sidebar-section">Payroll</li>
+        {/* Payroll section kept for other payroll items */}
+        <li className="sidebar-section">Petty Cash</li>
+        <li style={{ paddingLeft: 12 }}>
+          <NavLink to="/pettycash/expenses" className={({ isActive }) => isActive ? 'active' : ''}>Expenses</NavLink>
         </li>
-          <li>
-          <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>Petty Cash</NavLink>
+        <li style={{ paddingLeft: 12 }}>
+          <NavLink to="/pettycash/expenses/create" className={({ isActive }) => isActive ? 'active' : ''}>Create Expense</NavLink>
+        </li>
+        <li style={{ paddingLeft: 12 }}>
+          <NavLink to="/pettycash/masters" className={({ isActive }) => isActive ? 'active' : ''}>Masters</NavLink>
         </li>
         <li>
           <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>Reports</NavLink>
@@ -25,7 +31,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <NavLink to="/download" className={({ isActive }) => isActive ? 'active' : ''}>Downloads</NavLink>
         </li>
         <li>
-          <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''}>About SimplERP</NavLink>
+          <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''}>About</NavLink>
         </li>
         <li>
           <NavLink to="/logout" className={({ isActive }) => isActive ? 'active' : ''}>Logout</NavLink>

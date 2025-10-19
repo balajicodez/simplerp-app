@@ -14,6 +14,10 @@ import Employees from './employees/Employees';
 import CreateEmployee from './employees/CreateEmployee';
 import EmployeeView from './employees/EmployeeView';
 import EditEmployee from './employees/EditEmployee';
+import Expenses from './pettycash/Expenses';
+import CreateExpense from './pettycash/CreateExpense';
+import ExpenseMasters from './pettycash/ExpenseMasters';
+import ExpenseView from './pettycash/ExpenseView';
 
 function App() {
   return (
@@ -33,6 +37,10 @@ function App() {
   <Route path="/employees/create" element={<CreateEmployee />} />
   <Route path="/employees/:id" element={<EmployeeView />} />
   <Route path="/employees/:id/edit" element={<EditEmployee />} />
+  <Route path="/pettycash/expenses" element={<Expenses />} />
+  <Route path="/pettycash/expenses/create" element={<CreateExpense />} />
+  <Route path="/pettycash/expenses/:id" element={<ExpenseView />} />
+  <Route path="/pettycash/masters" element={<ExpenseMasters />} />
         <Route path="/logout" element={<Login />} />
       </Routes>
     </Router>
