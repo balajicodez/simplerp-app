@@ -26,17 +26,23 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <li>
           <NavLink to="/employees" className={({ isActive }) => isActive ? 'active' : ''}>Employees</NavLink>
         </li>
-        <li className="sidebar-section">Payroll</li>
+        <li>
+          <NavLink to="/employee" className={({ isActive }) => isActive ? 'active' : ''}>Payroll</NavLink>
+        </li>
         {/* Payroll section kept for other payroll items */}
-        <li className="sidebar-section">Petty Cash</li>
-        <li style={{ paddingLeft: 12 }}>
-          <NavLink to="/pettycash/expenses" className={({ isActive }) => isActive ? 'active' : ''}>Expenses</NavLink>
-        </li>
-        <li style={{ paddingLeft: 12 }}>
-          <NavLink to="/pettycash/expenses/create" className={({ isActive }) => isActive ? 'active' : ''}>Create Expense</NavLink>
-        </li>
-        <li style={{ paddingLeft: 12 }}>
-          <NavLink to="/pettycash/masters" className={({ isActive }) => isActive ? 'active' : ''}>Masters</NavLink>
+        <li className="group pettycash">
+          <div className="group-header">Petty Cash</div>
+          <ul className="sublist">
+            <li className="subitem">
+              <NavLink to="/pettycash/expenses" className={({ isActive }) => isActive ? 'active' : ''}>Expenses</NavLink>
+            </li>
+            <li className="subitem">
+              <NavLink to="/pettycash/expenses/create" className={({ isActive }) => isActive ? 'active' : ''}>Create Expense</NavLink>
+            </li>
+            <li className="subitem">
+              <NavLink to="/pettycash/masters" className={({ isActive }) => isActive ? 'active' : ''}>Masters</NavLink>
+            </li>
+          </ul>
         </li>
         <li>
           <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>Reports</NavLink>

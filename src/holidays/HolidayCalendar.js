@@ -116,6 +116,8 @@ function HolidayCalendar() {
                     const key = d.toISOString().slice(0,10);
                     const isCurrentMonth = d.getMonth() === month;
                     const holiday = holidayMap.get(key);
+                    const todayKey = new Date().toISOString().slice(0,10);
+                    const isToday = key === todayKey;
                     return (
                       <td
                         key={di}
@@ -124,7 +126,8 @@ function HolidayCalendar() {
                         tabIndex={0}
                         role="button"
                         aria-label={holiday ? `Holiday: ${holiday.name} on ${key}` : `Create holiday on ${key}`}
-                        className={`${isCurrentMonth ? '' : 'hc-outside'} ${holiday ? 'hc-holiday' : ''}`}
+                        aria-current={isToday ? 'date' : undefined}
+                        className={`${isCurrentMonth ? '' : 'hc-outside'} ${holiday ? 'hc-holiday' : ''} ${isToday ? 'hc-today' : ''}`}
                       >
                         <div className="hc-day-number">{d.getDate()}</div>
                         {holiday && (

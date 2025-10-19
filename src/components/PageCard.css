@@ -2,8 +2,8 @@
 	background: #ffffff;
 	border-radius: 10px;
 	padding: 18px;
-	box-shadow: 0 8px 28px rgba(29,40,63,0.08);
-	border: 1px solid rgba(29,40,63,0.04);
+	box-shadow: 0 8px 28px rgba(29,40,63,0.06);
+	border: 1px solid rgba(29,40,63,0.06);
 }
 
 .page-card-header h1 {

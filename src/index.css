@@ -7,6 +7,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* App background: soft blue-gray to match the sidebar and accents */
+html, body, #root {
+  height: 100%;
+  background: linear-gradient(180deg, #f1f7ff 0%, #e9f1ff 100%);
+  color: #0f1724;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
