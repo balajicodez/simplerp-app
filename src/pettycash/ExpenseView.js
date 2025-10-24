@@ -54,14 +54,19 @@ function ExpenseView() {
                     <td>{expense.date}</td>
                   </tr>
                 )}
-                {expense._links && (
+                { (expense.createdByUser || expense.createdBy) && (
                   <tr>
-                    <th>Links</th>
-                    <td>
-                      {expense._links.self && <a href={expense._links.self.href}>Self</a>}{' '}
-                    </td>
+                    <th>Created By</th>
+                    <td>{expense.createdByUser || expense.createdBy}</td>
                   </tr>
-                )}
+                ) }
+                { expense.createdDate && (
+                  <tr>
+                    <th>Created Date</th>
+                    <td>{expense.createdDate}</td>
+                  </tr>
+                ) }
+                
               </tbody>
             </table>
 

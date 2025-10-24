@@ -34,8 +34,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <div className="group-header">Petty Cash</div>
           <ul className="sublist">
             <li className="subitem">
-              <NavLink to="/pettycash/expenses" className={({ isActive }) => isActive ? 'active' : ''}>Expenses</NavLink>
-            </li>           
+              <NavLink to="/pettycash/expenses-inward" className={({ isActive }) => isActive ? 'active' : ''}>Expenses - Inward</NavLink>
+            </li>
+            <li className="subitem">
+              <NavLink to="/pettycash/expenses-outward" className={({ isActive }) => isActive ? 'active' : ''}>Expenses - Outward</NavLink>
+            </li>
             <li className="subitem">
               <NavLink to="/pettycash/masters" className={({ isActive }) => isActive ? 'active' : ''}>Masters</NavLink>
             </li>

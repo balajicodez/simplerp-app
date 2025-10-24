@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
-import './Payroll.css';
-import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import './PettyCash.css';
+import { APP_SERVER_URL_PREFIX } from '../constants.js';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-const API_PREFIX = '/simplerp/api';
-
-function Expenses() {
+function ExpensesOutward() {
   const [items, setItems] = useState([]);
   const [links, setLinks] = useState({});
   const [loading, setLoading] = useState(false);
@@ -22,7 +20,7 @@ function Expenses() {
       const res = await fetch(url);
       const json = await res.json();
       const list = (json._embedded && json._embedded.expenses) || json._embedded || [];
-      setItems(list);
+      setItems(list.filter(e => e.subtype === 'CASH-OUT'));
       setLinks(json._links || {});
     } catch (e) { console.error(e); }
     setLoading(false);
@@ -35,14 +33,13 @@ function Expenses() {
   return (
     <div>
       <Sidebar isOpen={true} />
-      <PageCard title="Expenses">
+      <PageCard title="Expenses - Outward">
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div className="small">Payroll expenses (paginated)</div>
+          <div className="small">Outward expenses (CASH-OUT)</div>
           <div>
-            <button className="btn" onClick={() => navigate('/pettycash/expenses/create')}>Create Expense</button>
+            <button className="btn" onClick={() => navigate('/pettycash/expenses/create?type=CASH-OUT')}>Create Expense</button>
           </div>
         </div>
-
         {loading ? <div className="small">Loading...</div> : (
           <>
             <table className="payroll-table">
@@ -51,6 +48,7 @@ function Expenses() {
                   <th>Description</th>
                   <th>Amount</th>
                   <th>Employee ID</th>
+                  <th>Type</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -60,12 +58,12 @@ function Expenses() {
                     <td>{it.description}</td>
                     <td>{it.amount}</td>
                     <td>{it.employeeId}</td>
-                    <td>{it._links && it._links.self ? <button className="btn" onClick={() => navigate(`/expenses/${it.id || it._links.self.href.split('/').pop()}`)}>View</button> : null}</td>
+                    <td>{it.subtype}</td>
+                    <td>{it._links && it._links.self ? <button className="btn" onClick={() => navigate(`/pettycash/expenses/${it.id || it._links.self.href.split('/').pop()}`)}>View</button> : null}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-
             <div className="payroll-controls">
               <div>
                 <button className="btn" disabled={!(links.prev || pageParam>0)} onClick={() => {
@@ -81,7 +79,7 @@ function Expenses() {
                   fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${next}&size=${sizeParam}`);
                 }}>Next</button>
               </div>
-              <div className="small">Page {pageParam+1} · Showing {items.length} results</div>
+              <div className="small">Page {pageParam+1}  Showing {items.length} results</div>
             </div>
           </>
         )}
@@ -90,4 +88,4 @@ function Expenses() {
   );
 }
 
-export default Expenses;
+export default ExpensesOutward;

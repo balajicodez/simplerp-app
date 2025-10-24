@@ -15,6 +15,8 @@ import CreateEmployee from './employees/CreateEmployee';
 import EmployeeView from './employees/EmployeeView';
 import EditEmployee from './employees/EditEmployee';
 import Expenses from './pettycash/Expenses';
+import ExpensesInward from './pettycash/ExpensesInward';
+import ExpensesOutward from './pettycash/ExpensesOutward';
 import CreateExpense from './pettycash/CreateExpense';
 import ExpenseMasters from './pettycash/ExpenseMasters';
 import ExpenseView from './pettycash/ExpenseView';
@@ -41,6 +43,8 @@ function App() {
   <Route path="/employees/:id" element={<EmployeeView />} />
   <Route path="/employees/:id/edit" element={<EditEmployee />} />
   <Route path="/pettycash/expenses" element={<Expenses />} />
+  <Route path="/pettycash/expenses-inward" element={<ExpensesInward />} />
+  <Route path="/pettycash/expenses-outward" element={<ExpensesOutward />} />
   <Route path="/pettycash/expenses/create" element={<CreateExpense />} />
   <Route path="/pettycash/expenses/:id" element={<ExpenseView />} />
   <Route path="/pettycash/expenses/:id/edit" element={<EditExpense />} />

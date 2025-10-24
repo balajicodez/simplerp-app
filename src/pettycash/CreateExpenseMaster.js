@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
 import './PettyCash.css';
@@ -9,7 +9,12 @@ function CreateExpenseMaster() {
   const [form, setForm] = useState({ description: '', type: '', subtype: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [types, setTypes] = useState([]);
   const navigate = useNavigate();
+  useEffect(() => {
+    // Only allow CASH-IN and CASH-OUT as type options
+    setTypes(['CASH-IN', 'CASH-OUT']);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,7 +50,11 @@ function CreateExpenseMaster() {
             </div>
             <div>
               <label>Type</label>
-              <input name="type" value={form.type} onChange={handleChange} required />
+              <select name="type" value={form.type} onChange={handleChange} required>
+                <option value="">Select type</option>
+                <option value="CASH-IN">CASH-IN</option>
+                <option value="CASH-OUT">CASH-OUT</option>
+              </select>
             </div>
             <div>
               <label>Subtype</label>
