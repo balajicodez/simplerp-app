@@ -62,7 +62,7 @@ function EditEmployee() {
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="form-grid">
             <div>
               <label>Name</label>
               <input name="name" value={form.name} onChange={handleChange} required />
@@ -82,8 +82,8 @@ function EditEmployee() {
               <input name="age" type="number" value={form.age} onChange={handleChange} />
                 {touched.age && form.age && (Number(form.age) < 18 || Number(form.age) > 100) && <div style={{ color: '#c53030', fontSize: 13 }}>Age must be between 18 and 100</div>}
             </div>
-            <div style={{ gridColumn: '1 / -1' }}>
-              <label><input type="checkbox" name="migrantWorker" checked={form.migrantWorker} onChange={handleChange} /> Migrant Worker</label>
+            <div className="full-row">
+              <label className="checkbox-label"><input type="checkbox" name="migrantWorker" checked={form.migrantWorker} onChange={handleChange} /> Migrant Worker</label>
             </div>
           </div>
 

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
-import '../payroll/Payroll.css';
+import './PettyCash.css';
+import { useNavigate } from 'react-router-dom';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 const API_PREFIX = '/simplerp/api';
 
 function ExpenseMasters() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -24,6 +26,12 @@ function ExpenseMasters() {
     <div>
       <Sidebar isOpen={true} />
       <PageCard title="Expense Type Masters">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:12 }}>
+          <div className="small">Masters of expense types</div>
+          <div>
+            <button className="btn" onClick={() => navigate('/pettycash/masters/create')}>Create</button>
+          </div>
+        </div>
         {loading ? <div className="small">Loading...</div> : (
           <table className="payroll-table">
             <thead>

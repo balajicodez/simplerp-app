@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
-import '../payroll/Payroll.css';
+import './PettyCash.css';
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
 
 function EditExpense() {
@@ -43,7 +43,7 @@ function EditExpense() {
         {error && <div style={{ color:'#c53030' }}>{error}</div>}
         {loading ? <div className="small">Loading...</div> : (
           <form onSubmit={handleSubmit}>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+            <div className="form-grid">
               <div>
                 <label>Description</label>
                 <input name="description" value={form.description} onChange={handleChange} required />

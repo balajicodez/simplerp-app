@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
-import './Payroll.css';
+import '../pettycash/PettyCash.css';
 import { useNavigate } from 'react-router-dom';
 
 const API_PREFIX = '/simplerp/api';
@@ -38,7 +38,7 @@ function CreateExpense() {
       <PageCard title="Create Expense">
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
         <form onSubmit={handleSubmit}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+          <div className="form-grid">
             <div>
               <label>Description</label>
               <input name="description" value={form.description} onChange={handleChange} required />

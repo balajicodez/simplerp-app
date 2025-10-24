@@ -19,6 +19,27 @@
 .hc-modal-overlay { position:fixed; left:0; right:0; top:0; bottom:0; background:rgba(2,6,23,0.5); display:flex; align-items:center; justify-content:center; z-index:50; }
 .hc-modal { background:#fff; padding:18px; border-radius:8px; max-width:420px; width:90%; box-shadow:0 8px 24px rgba(2,6,23,0.12); }
 
+/* Make modal form controls align consistently with PageCard forms */
+.hc-modal label {
+	display: block;
+	margin-bottom: 6px;
+	font-size: 14px;
+	color: #0f1724;
+}
+
+.hc-modal input,
+.hc-modal select,
+.hc-modal textarea {
+	width: 100%;
+	padding: 8px 10px;
+	border: 1px solid #e6eef8;
+	border-radius: 6px;
+	font-size: 14px;
+	box-sizing: border-box;
+}
+
+.hc-modal .full-row { grid-column: 1 / -1; }
+
 /* Responsive: compact calendar cells on small screens */
 @media (max-width: 1000px) {
 	.hc-calendar tbody tr { height: calc((100vh - 200px) / 6); }

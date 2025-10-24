@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
-import '../payroll/Payroll.css';
+import './PettyCash.css';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 

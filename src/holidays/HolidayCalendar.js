@@ -149,7 +149,7 @@ function HolidayCalendar() {
         <div className="hc-modal-overlay" onClick={closeModal}>
           <div className="hc-modal" onClick={(e) => e.stopPropagation()}>
             <h3>{modalHoliday.name ? 'Edit Holiday' : 'Create Holiday'}</h3>
-            <div style={{ display: 'grid', gap: 8 }}>
+            <div className="form-grid">
               <label>
                 Date
                 <input type="date" value={modalHoliday.date} onChange={(e) => setModalHoliday(m => ({ ...m, date: e.target.value }))} />
@@ -158,7 +158,7 @@ function HolidayCalendar() {
                 Name
                 <input type="text" value={modalHoliday.name} onChange={(e) => setModalHoliday(m => ({ ...m, name: e.target.value }))} />
               </label>
-              <label>
+              <label className="full-row">
                 Description
                 <textarea value={modalHoliday.description} onChange={(e) => setModalHoliday(m => ({ ...m, description: e.target.value }))} rows={3} />
               </label>

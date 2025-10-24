@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
-import '../payroll/Payroll.css';
+import './PettyCash.css';
 
 function ExpenseView() {
   const { id } = useParams();
