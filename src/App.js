@@ -17,6 +17,9 @@ import EditEmployee from './employees/EditEmployee';
 import Expenses from './pettycash/Expenses';
 import ExpensesInward from './pettycash/ExpensesInward';
 import ExpensesOutward from './pettycash/ExpensesOutward';
+import DayClosing from './pettycash/DayClosing';
+import CreateDayClosing from './pettycash/CreateDayClosing';
+import DayClosingReport from './reports/DayClosingReport';
 import CreateExpense from './pettycash/CreateExpense';
 import ExpenseMasters from './pettycash/ExpenseMasters';
 import ExpenseView from './pettycash/ExpenseView';
@@ -45,6 +48,9 @@ function App() {
   <Route path="/pettycash/expenses" element={<Expenses />} />
   <Route path="/pettycash/expenses-inward" element={<ExpensesInward />} />
   <Route path="/pettycash/expenses-outward" element={<ExpensesOutward />} />
+  <Route path="/pettycash/day-closing" element={<DayClosing />} />
+  <Route path="/pettycash/day-closing/create" element={<CreateDayClosing />} />
+  <Route path="/reports/day-closing" element={<DayClosingReport />} />
   <Route path="/pettycash/expenses/create" element={<CreateExpense />} />
   <Route path="/pettycash/expenses/:id" element={<ExpenseView />} />
   <Route path="/pettycash/expenses/:id/edit" element={<EditExpense />} />

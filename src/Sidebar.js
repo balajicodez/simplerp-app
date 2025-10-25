@@ -42,10 +42,18 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <li className="subitem">
               <NavLink to="/pettycash/masters" className={({ isActive }) => isActive ? 'active' : ''}>Masters</NavLink>
             </li>
+            <li className="subitem">
+              <NavLink to="/pettycash/day-closing" className={({ isActive }) => isActive ? 'active' : ''}>Day Closing</NavLink>
+            </li>
           </ul>
         </li>
-        <li>
-          <NavLink to="/reports" className={({ isActive }) => isActive ? 'active' : ''}>Reports</NavLink>
+                <li className="group reports">
+          <div className="group-header">Reports</div>
+          <ul className="sublist">
+            <li className="subitem">
+              <NavLink to="/reports/day-closing" className={({ isActive }) => isActive ? 'active' : ''}>Day Closing Report</NavLink>
+            </li>          
+          </ul>
         </li>
         <li>
           <NavLink to="/holidays" className={({ isActive }) => isActive ? 'active' : ''}>Holiday Calendar</NavLink>

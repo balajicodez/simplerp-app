@@ -20,7 +20,7 @@ function ExpensesOutward() {
       const res = await fetch(url);
       const json = await res.json();
       const list = (json._embedded && json._embedded.expenses) || json._embedded || [];
-      setItems(list.filter(e => e.subtype === 'CASH-OUT'));
+      setItems(list.filter(e => e.expenseType === 'CASH-OUT'));
       setLinks(json._links || {});
     } catch (e) { console.error(e); }
     setLoading(false);
@@ -58,7 +58,7 @@ function ExpensesOutward() {
                     <td>{it.description}</td>
                     <td>{it.amount}</td>
                     <td>{it.employeeId}</td>
-                    <td>{it.subtype}</td>
+                    <td>{it.expenseSubType}</td>
                     <td>{it._links && it._links.self ? <button className="btn" onClick={() => navigate(`/pettycash/expenses/${it.id || it._links.self.href.split('/').pop()}`)}>View</button> : null}</td>
                   </tr>
                 ))}

@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 
 function CreateExpense() {
-  const [form, setForm] = useState({ description: '', amount: '', employeeId: '', subtype: '' });
+  const [form, setForm] = useState({ description: '', amount: '', employeeId: '', subtype: '', type: '' });
   const [subtypes, setSubtypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -34,6 +34,8 @@ function CreateExpense() {
           if (location.pathname.includes('expenses-inward')) filterType = 'CASH-IN';
           if (location.pathname.includes('expenses-outward')) filterType = 'CASH-OUT';
         }
+        // Set form.type based on filterType
+        setForm(f => ({ ...f, type: filterType || '' }));
         const vals = list
           .filter(m => !filterType || m.type === filterType)
           .map(m => (m.subtype || m.subType)).filter(Boolean);
@@ -59,7 +61,7 @@ function CreateExpense() {
       const createdByUser = storedUser && (storedUser.name || storedUser.username || storedUser.email) ? (storedUser.name || storedUser.username || storedUser.email) : (localStorage.getItem('rememberedEmail') || '');
       const createdDate = new Date().toISOString().slice(0,10); // java.sql.Date format (YYYY-MM-DD)
 
-      const payload = { description: form.description, amount: Number(form.amount), employeeId: Number(form.employeeId), subtype: form.subtype, createdByUserId, createdByUser, createdDate };
+  const payload = { description: form.description, amount: Number(form.amount), employeeId: Number(form.employeeId), expenseSubType: form.subtype, expenseType: form.type, createdByUserId, createdByUser, createdDate };
 
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses`, {
         method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
@@ -73,7 +75,7 @@ function CreateExpense() {
   return (
     <div>
       <Sidebar isOpen={true} />
-      <PageCard title="Create Expense">
+  <PageCard title={location.pathname.includes('expenses-inward') || location.search.includes('type=CASH-IN') ? 'Create Expense - Inward' : location.pathname.includes('expenses-outward') || location.search.includes('type=CASH-OUT') ? 'Create Expense - Outward' : 'Create Expense'}>
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
