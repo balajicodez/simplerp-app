@@ -96,7 +96,7 @@ function Expenses() {
             {modalFile && (
               <div className="modal" style={{ position: 'fixed', top:0, left:0, width:'100vw', height:'100vh', background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }} onClick={() => setModalFile(null)}>
                 <div style={{ background:'#fff', padding:24, borderRadius:8, maxWidth:'80vw', maxHeight:'80vh', overflow:'auto' }} onClick={e => e.stopPropagation()}>
-                  <h3>File Preview</h3>
+                  <h3>Receipt</h3>
                   <iframe src={modalFile} style={{ width:'60vw', height:'60vh', border:'none' }} title="File Preview" />
                   <div style={{ marginTop:12 }}>
                     <button className="btn" onClick={() => setModalFile(null)}>Close</button>

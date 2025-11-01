@@ -29,7 +29,9 @@ function EditExpense() {
   const handleSubmit = async (e) => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
-      const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ description: form.description, amount: Number(form.amount), employeeId: Number(form.employeeId) }) });
+      const payload = { description: form.description, amount: Number(form.amount) };
+      if (form.employeeId) payload.employeeId = Number(form.employeeId);
+      const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error('failed');
       navigate(`/pettycash/expenses/${id}`);
     } catch (err) { setError('Failed to save'); }
@@ -53,8 +55,8 @@ function EditExpense() {
                 <input name="amount" type="number" value={form.amount} onChange={handleChange} required />
               </div>
               <div>
-                <label>Employee ID</label>
-                <input name="employeeId" type="number" value={form.employeeId} onChange={handleChange} required />
+                <label>Employee ID (optional)</label>
+                <input name="employeeId" type="number" value={form.employeeId} onChange={handleChange} />
               </div>
             </div>
             <div style={{ marginTop:12 }}>

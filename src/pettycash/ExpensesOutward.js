@@ -50,7 +50,8 @@ function ExpensesOutward() {
                   <th>Amount</th>
                   <th>Employee ID</th>
                   <th>Type</th>
-                  <th>Receipt</th>                
+                  <th>Receipt</th>
+                  <th>Edit</th>
                 </tr>
               </thead>
               <tbody>
@@ -65,9 +66,11 @@ function ExpensesOutward() {
                         <button className="btn" onClick={() => setModalFile(it.imageData)}>View</button>
                       ) : (it.fileUrl || it.file ? (
                         <button className="btn" onClick={() => setModalFile(it.fileUrl || it.file)}>View</button>
-                      ) : '—')}
+                      ) : '')}
                     </td>
-                    <td>{it._links && it._links.self ? <button className="btn" onClick={() => navigate(`/pettycash/expenses/${it.id || it._links.self.href.split('/').pop()}`)}>View</button> : null}</td>
+                    <td>
+                      <button className="btn" onClick={() => navigate(`/pettycash/expenses/${it.id || (it._links && it._links.self && it._links.self.href.split('/').pop())}/edit`)}>Edit</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -75,7 +78,7 @@ function ExpensesOutward() {
             {modalFile && (
               <div className="modal" style={{ position: 'fixed', top:0, left:0, width:'100vw', height:'100vh', background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }} onClick={() => setModalFile(null)}>
                 <div style={{ background:'#fff', padding:24, borderRadius:8, maxWidth:'80vw', maxHeight:'80vh', overflow:'auto' }} onClick={e => e.stopPropagation()}>
-                  <h3>File Preview</h3>
+                  <h3>Receipt</h3>
                   {modalFile.startsWith('data:image') ? (
                     <img src={modalFile} alt="Expense File" style={{ maxWidth:'60vw', maxHeight:'60vh', border:'none' }} />
                   ) : (

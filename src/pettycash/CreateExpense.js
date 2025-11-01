@@ -125,7 +125,7 @@ function CreateExpense() {
               <input name="referenceNumber" type="text" value={form.referenceNumber} onChange={handleChange} placeholder="Optional" />
             </div>
             <div>
-              <label>File Upload</label>
+              <label>Upload Receipt (Optional)</label>
               <input name="file" type="file" onChange={handleChange} />
             </div>
           </div>
