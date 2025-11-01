@@ -41,52 +41,80 @@ function DayClosingReport() {
       doc.setFontSize(14);
       doc.text('Day Closing Report', 105, 40, { align: 'center' });
 
-      const tableColumn = [
+      // Main report table columns
+      const mainTableColumn = [
         'Closing Date',
         'Description',
         'Created By',
         'Created Time',
         'Total Cash-In',
-        'Total Cash-Out',
-        'Coins Summary',
-        'Notes Summary',
-        'Soiled Notes Summary'
+        'Total Cash-Out'
       ];
-      const tableRows = records.map(rec => [
+      const mainTableRows = records.map(rec => [
         rec.closingDate || '',
         rec.description || '',
         rec.createdBy || '',
         rec.createdTime || '',
         rec.cashIn ? rec.cashIn : '-',
-        rec.cashOut ? rec.cashOut : '-',
-        // Coins Summary
-        ['1','5','10','20'].map(coin => {
-          const key = `_${coin}CoinCount`;
-          return rec[key] !== undefined && rec[key] !== null ? `${coin}₹: ${rec[key]}` : null;
-        }).filter(Boolean).join(', '),
-        // Notes Summary
-        ['10','20','50','100','200','500'].map(note => {
-          const key = `_${note}NoteCount`;
-          return rec[key] !== undefined && rec[key] !== null ? `${note}₹: ${rec[key]}` : null;
-        }).filter(Boolean).join(' | '),
-        // Soiled Notes Summary
-        ['10','20','50','100','200','500'].map(note => {
-          const soiledKey = `_${note}SoiledNoteCount`;
-          return rec[soiledKey] !== undefined && rec[soiledKey] !== null ? `${note}₹ Soiled: ${rec[soiledKey]}` : null;
-        }).filter(Boolean).join(' | ')
+        rec.cashOut ? rec.cashOut : '-'
       ]);
       autoTable(doc, {
         startY: 48,
-        head: [tableColumn],
-        body: tableRows,
+        head: [mainTableColumn],
+        body: mainTableRows,
         theme: 'grid',
         headStyles: { fillColor: [11, 59, 114] },
         styles: { fontSize: 10 }
       });
 
+      // Notes/Coin Summary table
+      const coinColumns = ['1 Coin', '5 Coin', '10 Coin', '20 Coin'];
+      const noteColumns = ['10 Note', '20 Note', '50 Note', '100 Note', '200 Note', '500 Note'];
+      const soiledNoteColumns = ['10 Soiled', '20 Soiled', '50 Soiled', '100 Soiled', '200 Soiled', '500 Soiled'];
+      doc.setFontSize(13);
+      let nextY = doc.lastAutoTable.finalY + 12;
+      records.forEach((rec, idx) => {
+        // Coins Table
+        doc.text(`Coins Summary`, 105, nextY, { align: 'center' });
+        autoTable(doc, {
+          startY: nextY + 4,
+          head: [['1 Coin', '5 Coin', '10 Coin', '20 Coin']],
+          body: [[
+            ...['1','5','10','20'].map(coin => {
+              const key = `_${coin}CoinCount`;
+              return rec[key] !== undefined && rec[key] !== null ? rec[key] : '';
+            })
+          ]],
+          theme: 'grid',
+          headStyles: { fillColor: [11, 59, 114] },
+          styles: { fontSize: 10 }
+        });
+        nextY = doc.lastAutoTable.finalY + 8;
+        // Notes Table
+        doc.text(`Notes Summary`, 105, nextY, { align: 'center' });
+        autoTable(doc, {
+          startY: nextY + 4,
+          head: [['10 Note', '20 Note', '50 Note', '100 Note', '200 Note', '500 Note', '10 Soiled', '20 Soiled', '50 Soiled', '100 Soiled', '200 Soiled', '500 Soiled']],
+          body: [[
+            ...['10','20','50','100','200','500'].map(note => {
+              const key = `_${note}NoteCount`;
+              return rec[key] !== undefined && rec[key] !== null ? rec[key] : '';
+            }),
+            ...['10','20','50','100','200','500'].map(note => {
+              const soiledKey = `_${note}SoiledNoteCount`;
+              return rec[soiledKey] !== undefined && rec[soiledKey] !== null ? rec[soiledKey] : '';
+            })
+          ]],
+          theme: 'grid',
+          headStyles: { fillColor: [11, 59, 114] },
+          styles: { fontSize: 10 }
+        });
+        nextY = doc.lastAutoTable.finalY + 12;
+      });
+
       const url = doc.output('bloburl');
       setPdfUrl(url);
-      setReportMsg('PDF generated!');
+      
     } catch (e) {
       setReportMsg('Failed to generate PDF');
     }
@@ -122,50 +150,72 @@ function DayClosingReport() {
               <div style={{ fontWeight: 500, color: '#c53030' }}>Total Cash-Out: ₹{totals.cashOut.toLocaleString()}</div>
             </div>
             <table className="payroll-table">
-              <thead>
-                <tr>
-                  <th>Closing Date</th>
-                  <th>Description</th>
-                  <th>Created By</th>
-                  <th>Created Time</th>
-                  <th>Total Cash-In</th>
-                  <th>Total Cash-Out</th>
-                  <th>Coins Summary</th>
-                  <th>Notes Summary</th>
-                    <th>Soiled Notes Summary</th>
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((rec, idx) => (
-                  <tr key={idx}>
-                    <td>{rec.closingDate}</td>
-                    <td>{rec.description}</td>
-                    <td>{rec.createdBy}</td>
-                    <td>{rec.createdTime}</td>
-                    <td>{rec.cashIn ? `₹${Number(rec.cashIn).toLocaleString()}` : '-'}</td>
-                    <td>{rec.cashOut ? `₹${Number(rec.cashOut).toLocaleString()}` : '-'}</td>
-                    <td>
-                      {['1','5','10','20'].map(coin => {
-                        const key = `_${coin}CoinCount`;
-                        return rec[key] !== undefined && rec[key] !== null ? `${coin}₹: ${rec[key]}` : null;
-                      }).filter(Boolean).join(', ')}
-                    </td>
-                      <td>
+                <thead>
+                  <tr>
+                    <th>Closing Date</th>
+                    <th>Description</th>
+                    <th>Created By</th>
+                    <th>Created Time</th>
+                    <th>Total Cash-In</th>
+                    <th>Total Cash-Out</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {records.map((rec, idx) => (
+                    <tr key={idx}>
+                      <td>{rec.closingDate}</td>
+                      <td>{rec.description}</td>
+                      <td>{rec.createdBy}</td>
+                      <td>{rec.createdTime}</td>
+                      <td>{rec.cashIn ? `₹${Number(rec.cashIn).toLocaleString()}` : '-'}</td>
+                      <td>{rec.cashOut ? `₹${Number(rec.cashOut).toLocaleString()}` : '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ marginTop: 32 }}>
+                <h3 style={{ textAlign: 'center', color: '#2563eb', marginBottom: 8 }}>Notes/Coin Summary</h3>
+                <table className="payroll-table">
+                  <thead>
+                    <tr>
+                      <th>1₹ Coin</th>
+                      <th>5₹ Coin</th>
+                      <th>10₹ Coin</th>
+                      <th>20₹ Coin</th>
+                      <th>10₹ Note</th>
+                      <th>20₹ Note</th>
+                      <th>50₹ Note</th>
+                      <th>100₹ Note</th>
+                      <th>200₹ Note</th>
+                      <th>500₹ Note</th>
+                      <th>10₹ Soiled</th>
+                      <th>20₹ Soiled</th>
+                      <th>50₹ Soiled</th>
+                      <th>100₹ Soiled</th>
+                      <th>200₹ Soiled</th>
+                      <th>500₹ Soiled</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {records.map((rec, idx) => (
+                      <tr key={idx}>
+                        {['1','5','10','20'].map(coin => {
+                          const key = `_${coin}CoinCount`;
+                          return <td key={key}>{rec[key] !== undefined && rec[key] !== null ? rec[key] : ''}</td>;
+                        })}
                         {['10','20','50','100','200','500'].map(note => {
                           const key = `_${note}NoteCount`;
-                          return rec[key] !== undefined && rec[key] !== null ? `${note}₹: ${rec[key]}` : null;
-                        }).filter(Boolean).join(' | ')}
-                      </td>
-                      <td>
+                          return <td key={key}>{rec[key] !== undefined && rec[key] !== null ? rec[key] : ''}</td>;
+                        })}
                         {['10','20','50','100','200','500'].map(note => {
                           const soiledKey = `_${note}SoiledNoteCount`;
-                          return rec[soiledKey] !== undefined && rec[soiledKey] !== null ? `${note}₹ Soiled: ${rec[soiledKey]}` : null;
-                        }).filter(Boolean).join(' | ')}
-                      </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                          return <td key={soiledKey}>{rec[soiledKey] !== undefined && rec[soiledKey] !== null ? rec[soiledKey] : ''}</td>;
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
           </>
         )}
       </PageCard>
