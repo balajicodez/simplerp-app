@@ -11,6 +11,7 @@ function Expenses() {
   const [items, setItems] = useState([]);
   const [links, setLinks] = useState({});
   const [loading, setLoading] = useState(false);
+  const [modalFile, setModalFile] = useState(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = Number(searchParams.get('page') || 0);
@@ -21,7 +22,7 @@ function Expenses() {
     try {
       const res = await fetch(url);
       const json = await res.json();
-      const list = (json._embedded && json._embedded.expenses) || json._embedded || [];
+      const list = (json.content ) || json.content || [];
       setItems(list);
       setLinks(json._links || {});
     } catch (e) { console.error(e); }
@@ -51,7 +52,9 @@ function Expenses() {
                   <th>Description</th>
                   <th>Amount</th>
                   <th>Employee ID</th>
-                  <th>Actions</th>
+                  <th>Expense Date</th>
+                  <th>Reference Number</th>
+                  <th>Receipt</th>                  
                 </tr>
               </thead>
               <tbody>
@@ -60,6 +63,13 @@ function Expenses() {
                     <td>{it.description}</td>
                     <td>{it.amount}</td>
                     <td>{it.employeeId}</td>
+                    <td>{it.expenseDate || it.date || ''}</td>
+                    <td>{it.referenceNumber || ''}</td>
+                    <td>
+                      {it.fileUrl || it.file ? (
+                        <button className="btn" onClick={() => setModalFile(it.fileUrl || it.file)}>View</button>
+                      ) : '—'}
+                    </td>
                     <td>{it._links && it._links.self ? <button className="btn" onClick={() => navigate(`/pettycash/expenses/${it.id || it._links.self.href.split('/').pop()}`)}>View</button> : null}</td>
                   </tr>
                 ))}
@@ -83,6 +93,17 @@ function Expenses() {
               </div>
               <div className="small">Page {pageParam+1}  Showing {items.length} results</div>
             </div>
+            {modalFile && (
+              <div className="modal" style={{ position: 'fixed', top:0, left:0, width:'100vw', height:'100vh', background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }} onClick={() => setModalFile(null)}>
+                <div style={{ background:'#fff', padding:24, borderRadius:8, maxWidth:'80vw', maxHeight:'80vh', overflow:'auto' }} onClick={e => e.stopPropagation()}>
+                  <h3>File Preview</h3>
+                  <iframe src={modalFile} style={{ width:'60vw', height:'60vh', border:'none' }} title="File Preview" />
+                  <div style={{ marginTop:12 }}>
+                    <button className="btn" onClick={() => setModalFile(null)}>Close</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </PageCard>

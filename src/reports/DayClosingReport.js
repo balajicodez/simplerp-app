@@ -41,14 +41,39 @@ function DayClosingReport() {
       doc.setFontSize(14);
       doc.text('Day Closing Report', 105, 40, { align: 'center' });
 
-      const tableColumn = ['Closing Date', 'Description', 'Created By', 'Created Time', 'Total Cash-In', 'Total Cash-Out'];
+      const tableColumn = [
+        'Closing Date',
+        'Description',
+        'Created By',
+        'Created Time',
+        'Total Cash-In',
+        'Total Cash-Out',
+        'Coins Summary',
+        'Notes Summary',
+        'Soiled Notes Summary'
+      ];
       const tableRows = records.map(rec => [
         rec.closingDate || '',
         rec.description || '',
         rec.createdBy || '',
         rec.createdTime || '',
         rec.cashIn ? rec.cashIn : '-',
-        rec.cashOut ? rec.cashOut : '-'
+        rec.cashOut ? rec.cashOut : '-',
+        // Coins Summary
+        ['1','5','10','20'].map(coin => {
+          const key = `_${coin}CoinCount`;
+          return rec[key] !== undefined && rec[key] !== null ? `${coin}₹: ${rec[key]}` : null;
+        }).filter(Boolean).join(', '),
+        // Notes Summary
+        ['10','20','50','100','200','500'].map(note => {
+          const key = `_${note}NoteCount`;
+          return rec[key] !== undefined && rec[key] !== null ? `${note}₹: ${rec[key]}` : null;
+        }).filter(Boolean).join(' | '),
+        // Soiled Notes Summary
+        ['10','20','50','100','200','500'].map(note => {
+          const soiledKey = `_${note}SoiledNoteCount`;
+          return rec[soiledKey] !== undefined && rec[soiledKey] !== null ? `${note}₹ Soiled: ${rec[soiledKey]}` : null;
+        }).filter(Boolean).join(' | ')
       ]);
       autoTable(doc, {
         startY: 48,
@@ -105,6 +130,9 @@ function DayClosingReport() {
                   <th>Created Time</th>
                   <th>Total Cash-In</th>
                   <th>Total Cash-Out</th>
+                  <th>Coins Summary</th>
+                  <th>Notes Summary</th>
+                    <th>Soiled Notes Summary</th>
                 </tr>
               </thead>
               <tbody>
@@ -116,6 +144,24 @@ function DayClosingReport() {
                     <td>{rec.createdTime}</td>
                     <td>{rec.cashIn ? `₹${Number(rec.cashIn).toLocaleString()}` : '-'}</td>
                     <td>{rec.cashOut ? `₹${Number(rec.cashOut).toLocaleString()}` : '-'}</td>
+                    <td>
+                      {['1','5','10','20'].map(coin => {
+                        const key = `_${coin}CoinCount`;
+                        return rec[key] !== undefined && rec[key] !== null ? `${coin}₹: ${rec[key]}` : null;
+                      }).filter(Boolean).join(', ')}
+                    </td>
+                      <td>
+                        {['10','20','50','100','200','500'].map(note => {
+                          const key = `_${note}NoteCount`;
+                          return rec[key] !== undefined && rec[key] !== null ? `${note}₹: ${rec[key]}` : null;
+                        }).filter(Boolean).join(' | ')}
+                      </td>
+                      <td>
+                        {['10','20','50','100','200','500'].map(note => {
+                          const soiledKey = `_${note}SoiledNoteCount`;
+                          return rec[soiledKey] !== undefined && rec[soiledKey] !== null ? `${note}₹ Soiled: ${rec[soiledKey]}` : null;
+                        }).filter(Boolean).join(' | ')}
+                      </td>
                   </tr>
                 ))}
               </tbody>

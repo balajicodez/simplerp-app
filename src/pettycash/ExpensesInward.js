@@ -9,6 +9,7 @@ function ExpensesInward() {
   const [items, setItems] = useState([]);
   const [links, setLinks] = useState({});
   const [loading, setLoading] = useState(false);
+  const [modalFile, setModalFile] = useState(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = Number(searchParams.get('page') || 0);
@@ -19,7 +20,7 @@ function ExpensesInward() {
     try {
       const res = await fetch(url);
       const json = await res.json();
-      const list = (json._embedded && json._embedded.expenses) || json._embedded || [];
+      const list = (json.content ) || json.content || [];
       setItems(list.filter(e => e.expenseType === 'CASH-IN'));
       setLinks(json._links || {});
     } catch (e) { console.error(e); }
@@ -27,7 +28,7 @@ function ExpensesInward() {
   };
 
   useEffect(() => {
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`);
+  fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN`);
   }, [pageParam, sizeParam]);
 
   return (
@@ -49,7 +50,7 @@ function ExpensesInward() {
                   <th>Amount</th>
                   <th>Employee ID</th>
                   <th>Type</th>
-                  <th>Actions</th>
+                  <th>Receipt</th>                  
                 </tr>
               </thead>
               <tbody>
@@ -59,11 +60,33 @@ function ExpensesInward() {
                     <td>{it.amount}</td>
                     <td>{it.employeeId}</td>
                     <td>{it.expenseSubType}</td>
+                    <td>
+                      {it.imageData ? (
+                        <button className="btn" onClick={() => setModalFile(it.imageData)}>View</button>
+                      ) : (it.fileUrl || it.file ? (
+                        <button className="btn" onClick={() => setModalFile(it.fileUrl || it.file)}>View</button>
+                      ) : '—')}
+                    </td>
                     <td>{it._links && it._links.self ? <button className="btn" onClick={() => navigate(`/pettycash/expenses/${it.id || it._links.self.href.split('/').pop()}`)}>View</button> : null}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {modalFile && (
+              <div className="modal" style={{ position: 'fixed', top:0, left:0, width:'100vw', height:'100vh', background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }} onClick={() => setModalFile(null)}>
+                <div style={{ background:'#fff', padding:24, borderRadius:8, maxWidth:'80vw', maxHeight:'80vh', overflow:'auto' }} onClick={e => e.stopPropagation()}>
+                  <h3>File Preview</h3>
+                  {modalFile.startsWith('data:image') ? (
+                    <img src={modalFile} alt="Expense File" style={{ maxWidth:'60vw', maxHeight:'60vh', border:'none' }} />
+                  ) : (
+                    <img src={`data:image/png;base64,${modalFile}`} alt="Expense File" style={{ maxWidth:'60vw', maxHeight:'60vh', border:'none' }} />
+                  )}
+                  <div style={{ marginTop:12 }}>
+                    <button className="btn" onClick={() => setModalFile(null)}>Close</button>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="payroll-controls">
               <div>
                 <button className="btn" disabled={!(links.prev || pageParam>0)} onClick={() => {

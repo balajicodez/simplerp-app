@@ -24,7 +24,7 @@ function DayClosing() {
     try {
       const res = await fetch(url);
       const json = await res.json();
-      const list = (json._embedded && json._embedded.expenses) || json._embedded || [];
+      const list = (json.content ) || json.content || [];
       setItems(list.filter(e => e.createdDate === today));
       setLinks(json._links || {});
     } catch (e) { setError('Failed to fetch expenses'); }
@@ -72,8 +72,7 @@ function DayClosing() {
                   <th>Employee ID</th>
                   <th>Type</th>
                   <th>Created By</th>
-                  <th>Created Date</th>
-                  <th>Actions</th>
+                  <th>Created Date</th>                 
                 </tr>
               </thead>
               <tbody>

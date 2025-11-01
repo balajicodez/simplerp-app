@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 
 function CreateExpense() {
-  const [form, setForm] = useState({ description: '', amount: '', employeeId: '', subtype: '', type: '' });
+  const [form, setForm] = useState({ description: '', amount: '', employeeId: '', subtype: '', type: '', expenseDate: '', referenceNumber: '', file: null });
   const [subtypes, setSubtypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,8 +14,12 @@ function CreateExpense() {
   const location = useLocation();
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setForm((f) => ({ ...f, file: files[0] }));
+    } else {
+      setForm((f) => ({ ...f, [name]: value }));
+    }
   };
 
   useEffect(() => {
@@ -51,24 +55,38 @@ function CreateExpense() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!form.description || !form.amount || !form.employeeId || (subtypes.length>0 && !form.subtype)) { setError('Please fill required fields'); return; }
+    if (!form.description || !form.amount || (subtypes.length>0 && !form.subtype)) { setError('Please fill required fields'); return; }
     setLoading(true);
     try {
-      // derive createdBy info from localStorage if available
       let storedUser = null;
       try { storedUser = JSON.parse(localStorage.getItem('currentUser') || 'null'); } catch (e) { storedUser = null; }
       const createdByUserId = storedUser && (storedUser.id || storedUser.userId) ? (storedUser.id || storedUser.userId) : null;
       const createdByUser = storedUser && (storedUser.name || storedUser.username || storedUser.email) ? (storedUser.name || storedUser.username || storedUser.email) : (localStorage.getItem('rememberedEmail') || '');
-      const createdDate = new Date().toISOString().slice(0,10); // java.sql.Date format (YYYY-MM-DD)
+      const createdDate = new Date().toISOString().slice(0,10);
 
-  const payload = { description: form.description, amount: Number(form.amount), employeeId: Number(form.employeeId), expenseSubType: form.subtype, expenseType: form.type, createdByUserId, createdByUser, createdDate };
+      const expensePayload = {
+        description: form.description,
+        amount: Number(form.amount),
+        employeeId: form.employeeId ? Number(form.employeeId) : undefined,
+        expenseSubType: form.subtype,
+        expenseType: form.type,
+        createdByUserId,
+        createdByUser,
+        createdDate,
+        expenseDate: form.expenseDate || undefined,
+        referenceNumber: form.referenceNumber || undefined
+      };
 
+      const formData = new FormData();
+      formData.append('expense', new Blob([JSON.stringify(expensePayload)], { type: 'application/json' }));
+      if (form.file) formData.append('file', form.file);
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses`, {
-        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+        method: 'POST',
+        body: formData
       });
-  if (!res.ok) throw new Error('failed');
-  navigate('/pettycash/expenses');
-    } catch (err) { setError('Failed to create expense'); } 
+      if (!res.ok) throw new Error('failed');
+      navigate('/pettycash/expenses');
+    } catch (err) { setError('Failed to create expense'); }
     finally { setLoading(false); }
   };
 
@@ -77,7 +95,7 @@ function CreateExpense() {
       <Sidebar isOpen={true} />
   <PageCard title={location.pathname.includes('expenses-inward') || location.search.includes('type=CASH-IN') ? 'Create Expense - Inward' : location.pathname.includes('expenses-outward') || location.search.includes('type=CASH-OUT') ? 'Create Expense - Outward' : 'Create Expense'}>
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="form-grid">
             <div>
               <label>Description</label>
@@ -96,7 +114,19 @@ function CreateExpense() {
             </div>
             <div>
               <label>Employee ID</label>
-              <input name="employeeId" type="number" value={form.employeeId} onChange={handleChange} required />
+              <input name="employeeId" type="number" value={form.employeeId} onChange={handleChange} />
+            </div>
+            <div>
+              <label>Expense Date</label>
+              <input name="expenseDate" type="date" value={form.expenseDate} onChange={handleChange} />
+            </div>
+            <div>
+              <label>Reference Number</label>
+              <input name="referenceNumber" type="text" value={form.referenceNumber} onChange={handleChange} placeholder="Optional" />
+            </div>
+            <div>
+              <label>File Upload</label>
+              <input name="file" type="file" onChange={handleChange} />
             </div>
           </div>
           <div style={{ marginTop:12 }}>
