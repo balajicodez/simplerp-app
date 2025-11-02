@@ -80,7 +80,7 @@ function Login() {
                         </div>
                     )}
 
-                    <label htmlFor="email">Email</label>
+                    <label htmlFor="email">Email/Employee ID</label>
                     <input
                         id="email"
                         name="email"

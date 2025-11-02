@@ -1,3 +1,5 @@
+import ViewOrganization from './organization/ViewOrganization';
+import CreateOrganization from './organization/CreateOrganization';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './login/Login';
@@ -56,6 +58,8 @@ function App() {
   <Route path="/pettycash/expenses/:id/edit" element={<EditExpense />} />
   <Route path="/pettycash/masters" element={<ExpenseMasters />} />
   <Route path="/pettycash/masters/create" element={<CreateExpenseMaster />} />
+  <Route path="/organization" element={<ViewOrganization />} />
+  <Route path="/organization/create" element={<CreateOrganization />} />
   <Route path="/holidays" element={<HolidayCalendar />} />
         <Route path="/logout" element={<Login />} />
       </Routes>

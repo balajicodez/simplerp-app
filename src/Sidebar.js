@@ -40,7 +40,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               <NavLink to="/pettycash/expenses-outward" className={({ isActive }) => isActive ? 'active' : ''}>Expenses - Outward</NavLink>
             </li>
             <li className="subitem">
-              <NavLink to="/pettycash/masters" className={({ isActive }) => isActive ? 'active' : ''}>Masters</NavLink>
+              <NavLink to="/pettycash/masters" className={({ isActive }) => isActive ? 'active' : ''}>Expenses - Masters</NavLink>
             </li>
             <li className="subitem">
               <NavLink to="/pettycash/day-closing" className={({ isActive }) => isActive ? 'active' : ''}>Day Closing</NavLink>
@@ -54,6 +54,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               <NavLink to="/reports/day-closing" className={({ isActive }) => isActive ? 'active' : ''}>Day Closing Report</NavLink>
             </li>          
           </ul>
+        </li>
+        <li>
+          <NavLink to="/organization" className={({ isActive }) => isActive ? 'active' : ''}>Organization</NavLink>
         </li>
         <li>
           <NavLink to="/holidays" className={({ isActive }) => isActive ? 'active' : ''}>Holiday Calendar</NavLink>
