@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { fetchOrganizations } from '../organization/organizationApi';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
 import '../pettycash/PettyCash.css';
@@ -6,7 +7,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 
 function CreateExpense() {
-  const [form, setForm] = useState({ description: '', amount: '', employeeId: '', subtype: '', type: '', expenseDate: '', referenceNumber: '', file: null });
+  const [form, setForm] = useState({ description: '', amount: '', employeeId: '', subtype: '', type: '', expenseDate: '', referenceNumber: '', file: null, organizationId: '' });
+  const [organizations, setOrganizations] = useState([]);
   const [subtypes, setSubtypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -49,6 +51,10 @@ function CreateExpense() {
       .catch(() => {
         // ignore failures — dropdown will be empty
       });
+    // Fetch organizations for dropdown
+    fetchOrganizations().then(orgs => {
+      if (mounted) setOrganizations(orgs);
+    }).catch(() => {});
     return () => { mounted = false; };
   }, [location.pathname, location.search]);
 
@@ -70,6 +76,7 @@ function CreateExpense() {
         employeeId: form.employeeId ? Number(form.employeeId) : undefined,
         expenseSubType: form.subtype,
         expenseType: form.type,
+        organizationId: form.organizationId || undefined,
         createdByUserId,
         createdByUser,
         createdDate,
@@ -97,6 +104,15 @@ function CreateExpense() {
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
         <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="form-grid">
+            <div>
+              <label>Organization</label>
+              <select name="organizationId" value={form.organizationId} onChange={handleChange} required>
+                <option value="">Select organization</option>
+                {organizations.map(org => (
+                  <option key={org.id || org._links?.self?.href} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
+                ))}
+              </select>
+            </div>
             <div>
               <label>Description</label>
               <input name="description" value={form.description} onChange={handleChange} required />

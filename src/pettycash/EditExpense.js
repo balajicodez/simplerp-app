@@ -4,11 +4,13 @@ import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
 import './PettyCash.css';
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
+import { fetchOrganizations } from '../organization/organizationApi';
 
 function EditExpense() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ description:'', amount:'', employeeId:'' });
+  const [form, setForm] = useState({ description:'', amount:'', employeeId:'', organizationId:'' });
+  const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,9 +19,10 @@ function EditExpense() {
     setLoading(true);
     fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`)
       .then(res => { if (!res.ok) throw new Error('fail'); return res.json(); })
-      .then(json => setForm({ description: json.description || '', amount: json.amount || '', employeeId: json.employeeId || '' }))
+      .then(json => setForm({ description: json.description || '', amount: json.amount || '', employeeId: json.employeeId || '', organizationId: json.organizationId || '' }))
       .catch(() => setError('Unable to load expense'))
       .finally(() => setLoading(false));
+    fetchOrganizations().then(orgs => setOrganizations(orgs)).catch(() => {});
   }, [id]);
 
   const handleChange = (e) => {
@@ -31,6 +34,7 @@ function EditExpense() {
     try {
       const payload = { description: form.description, amount: Number(form.amount) };
       if (form.employeeId) payload.employeeId = Number(form.employeeId);
+      if (form.organizationId) payload.organizationId = form.organizationId;
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error('failed');
       navigate(`/pettycash/expenses/${id}`);
@@ -46,6 +50,15 @@ function EditExpense() {
         {loading ? <div className="small">Loading...</div> : (
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
+              <div>
+                <label>Organization</label>
+                <select name="organizationId" value={form.organizationId} onChange={handleChange} required>
+                  <option value="">Select organization</option>
+                  {organizations.map(org => (
+                    <option key={org.id || org._links?.self?.href} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
+                  ))}
+                </select>
+              </div>
               <div>
                 <label>Description</label>
                 <input name="description" value={form.description} onChange={handleChange} required />
