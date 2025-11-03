@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchOrganizations } from '../organization/organizationApi';
+// import { fetchOrganizations } from '../organization/organizationApi';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
 import '../pettycash/PettyCash.css';
@@ -52,9 +52,13 @@ function CreateExpense() {
         // ignore failures — dropdown will be empty
       });
     // Fetch organizations for dropdown
-    fetchOrganizations().then(orgs => {
-      if (mounted) setOrganizations(orgs);
-    }).catch(() => {});
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+      .then(res => res.json())
+      .then(data => {
+        const orgs = data._embedded ? data._embedded.organizations || [] : data;
+        if (mounted) setOrganizations(orgs);
+      })
+      .catch(() => {});
     return () => { mounted = false; };
   }, [location.pathname, location.search]);
 
@@ -106,7 +110,7 @@ function CreateExpense() {
           <div className="form-grid">
             <div>
               <label>Organization</label>
-              <select name="organizationId" value={form.organizationId} onChange={handleChange} required>
+              <select name="organizationId" value={form.organizationId} onChange={handleChange} required className="styled-select">
                 <option value="">Select organization</option>
                 {organizations.map(org => (
                   <option key={org.id || org._links?.self?.href} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
@@ -123,7 +127,7 @@ function CreateExpense() {
             </div>
             <div>
               <label>Expense Type</label>
-              <select name="subtype" value={form.subtype} onChange={handleChange} required={subtypes.length>0}>
+              <select name="subtype" value={form.subtype} onChange={handleChange} required={subtypes.length>0} className="styled-select">
                 <option value="">Select expense type</option>
                 {subtypes.map((s, i) => <option key={i} value={s}>{s}</option>)}
               </select>

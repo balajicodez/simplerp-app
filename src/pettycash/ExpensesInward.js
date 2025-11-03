@@ -66,7 +66,7 @@ function ExpensesInward() {
                         <button className="btn" onClick={() => setModalFile(it.imageData)}>View</button>
                       ) : (it.fileUrl || it.file ? (
                         <button className="btn" onClick={() => setModalFile(it.fileUrl || it.file)}>View</button>
-                      ) : '')}
+                      ) : '')}
                     </td>
                     <td>
                       <button className="btn" onClick={() => navigate(`/pettycash/expenses/${it.id || (it._links && it._links.self && it._links.self.href.split('/').pop())}/edit`)}>Edit</button>
