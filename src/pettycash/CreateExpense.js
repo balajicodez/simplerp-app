@@ -7,18 +7,23 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 
 function CreateExpense() {
-  const [form, setForm] = useState({ description: '', amount: '', employeeId: '', subtype: '', type: '', expenseDate: '', referenceNumber: '', file: null, organizationId: '' });
+  const [form, setForm] = useState({ description: '', amount: '', employeeId: '', subtype: '', type: '', expenseDate: '', referenceNumber: '', file: null, organizationId: '', organizationName: '' });
   const [organizations, setOrganizations] = useState([]);
   const [subtypes, setSubtypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-
+ 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
       setForm((f) => ({ ...f, file: files[0] }));
+    } else if (name === 'organizationId') {
+      // Find organization name from selected dropdown value
+      const selectedOrg = organizations.find(org => String(org.id) === String(value));
+      let temp = e.currentTarget.options[e.currentTarget.selectedIndex].text     
+      setForm((f) => ({ ...f, organizationId: value, organizationName: temp }));
     } else {
       setForm((f) => ({ ...f, [name]: value }));
     }
@@ -74,6 +79,8 @@ function CreateExpense() {
       const createdByUser = storedUser && (storedUser.name || storedUser.username || storedUser.email) ? (storedUser.name || storedUser.username || storedUser.email) : (localStorage.getItem('rememberedEmail') || '');
       const createdDate = new Date().toISOString().slice(0,10);
 
+      // Find organization name from selected organizationId
+      
       const expensePayload = {
         description: form.description,
         amount: Number(form.amount),
@@ -81,6 +88,7 @@ function CreateExpense() {
         expenseSubType: form.subtype,
         expenseType: form.type,
         organizationId: form.organizationId || undefined,
+        organizationName: form.organizationName || undefined,
         createdByUserId,
         createdByUser,
         createdDate,
@@ -106,7 +114,7 @@ function CreateExpense() {
       <Sidebar isOpen={true} />
   <PageCard title={location.pathname.includes('expenses-inward') || location.search.includes('type=CASH-IN') ? 'Create Expense - Inward' : location.pathname.includes('expenses-outward') || location.search.includes('type=CASH-OUT') ? 'Create Expense - Outward' : 'Create Expense'}>
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
-        <form onSubmit={handleSubmit} encType="multipart/form-data">
+        <form onSubmit={handleSubmit} encType="multipart/form-data">        
           <div className="form-grid">
             <div>
               <label>Organization</label>
