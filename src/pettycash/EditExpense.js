@@ -23,7 +23,7 @@ function EditExpense() {
         // Ensure organizationId is a string for dropdown matching
         let orgId = json.organizationId || '';
         if (typeof orgId !== 'string') orgId = String(orgId);
-        setForm({ description: json.description || '', amount: json.amount || '', employeeId: json.employeeId || '', organizationId: orgId });
+        setForm({ description: json.description || '', amount: json.amount || '', employeeId: json.employeeId || '', organizationId: orgId, organizationName:'' });
       })
       .catch(() => setError('Unable to load expense'))
       .finally(() => setLoading(false));
@@ -36,17 +36,28 @@ function EditExpense() {
           .catch(() => {});
   }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target; setForm(f => ({ ...f, [name]: value }));
+   const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setForm((f) => ({ ...f, file: files[0] }));
+    } else if (name === 'organizationId') {
+      // Find organization name from selected dropdown value
+      const selectedOrg = organizations.find(org => String(org.id) === String(value));
+      let temp = e.currentTarget.options[e.currentTarget.selectedIndex].text     
+      setForm((f) => ({ ...f, organizationId: value, organizationName: temp }));
+    } else {
+      setForm((f) => ({ ...f, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
-      const payload = { description: form.description, amount: Number(form.amount) };
+      const payload = { description: form.description, amount: Number(form.amount), organizationId: form.organizationId || undefined,
+        organizationName: form.organizationName || undefined };
       if (form.employeeId) payload.employeeId = Number(form.employeeId);
       if (form.organizationId) payload.organizationId = form.organizationId;
-      const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error('failed');
       navigate(`/pettycash/expenses/${id}`);
     } catch (err) { setError('Failed to save'); }
