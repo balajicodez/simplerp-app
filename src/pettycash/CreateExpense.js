@@ -104,7 +104,14 @@ function CreateExpense() {
         body: formData
       });
       if (!res.ok) throw new Error('failed');
-      navigate('/pettycash/expenses');
+      // Route to ExpenseInward or ExpenseOutward based on type
+      if (form.type === 'CASH-IN') {
+        navigate('/pettycash/expenses-inward');
+      } else if (form.type === 'CASH-OUT') {
+        navigate('/pettycash/expenses-outward');
+      } else {
+        navigate('/pettycash/expenses');
+      }
     } catch (err) { setError('Failed to create expense'); }
     finally { setLoading(false); }
   };
