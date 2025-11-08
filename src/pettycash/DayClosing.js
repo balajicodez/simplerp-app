@@ -52,6 +52,20 @@ function DayClosing() {
       .catch(() => { });
   }, []);
 
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    if (name === 'organizationId') {
+      // Find organization name from selected dropdown value
+      const selectedOrg = organizations.find(org => String(org.id) === String(value));
+      let temp = e.currentTarget.options[e.currentTarget.selectedIndex].text
+      if (e.currentTarget.selectedIndex >0) {
+        fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&organizationId=${value}`);
+      } else {
+        fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`);
+      }
+    }
+  };
+
   const handleDayClosing = async () => {
     setClosing(true);
     setSuccess('');
@@ -74,7 +88,7 @@ function DayClosing() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div>
             <label style={{ marginRight: 8 }}>Organization:</label>
-            <select value={selectedOrgId} onChange={e => setSelectedOrgId(e.target.value)} className="styled-select" style={{ minWidth: 180 }}>
+             <select name="organizationId" onChange={handleChange} className="styled-select" style={{ minWidth: 180 }}>
               <option value="">All organizations</option>
               {organizations.map(org => (
                 <option key={org.id || (org._links && org._links.self && org._links.self.href)} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>

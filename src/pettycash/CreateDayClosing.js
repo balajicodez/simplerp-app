@@ -45,6 +45,17 @@ function CreateDayClosing() {
     });
   }, []);
 
+  React.useEffect(() => {
+    // Fetch organizations for dropdown
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+      .then(res => res.json())
+      .then(data => {
+        const orgs = data._embedded ? data._embedded.organizations || [] : data;
+        setOrganizations(orgs);
+      })
+      .catch(() => { });
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);

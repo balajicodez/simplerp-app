@@ -34,12 +34,34 @@ function ExpensesOutward() {
     setLoading(false);
   };
 
+  
+    const handleChange = (e) => {
+      const { name, value, type, files } = e.target;
+      if (name === 'organizationId') {
+        // Find organization name from selected dropdown value
+        const selectedOrg = organizations.find(org => String(org.id) === String(value));
+        let temp = e.currentTarget.options[e.currentTarget.selectedIndex].text
+        if (e.currentTarget.selectedIndex >0) {
+          fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`);
+        } else {
+          fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN`);
+        }
+      }
+    };
+
   useEffect(() => {
     fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT`);
   }, [pageParam, sizeParam, selectedOrgId]);
 
   useEffect(() => {
-    fetchOrganizations().then(setOrganizations).catch(() => {});
+    // Fetch organizations for dropdown
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+      .then(res => res.json())
+      .then(data => {
+        const orgs = data._embedded ? data._embedded.organizations || [] : data;
+        setOrganizations(orgs);
+      })
+      .catch(() => { });
   }, []);
 
   return (
@@ -54,7 +76,7 @@ function ExpensesOutward() {
         </div>
         <div style={{ margin: '12px 0' }}>
           <label style={{ marginRight: 8 }}>Organization:</label>
-          <select value={selectedOrgId} onChange={e => setSelectedOrgId(e.target.value)} className="styled-select" style={{ minWidth: 180 }}>
+          <select name="organizationId" onChange={handleChange} className="styled-select" style={{ minWidth: 180 }}>
             <option value="">All organizations</option>
             {organizations.map(org => (
               <option key={org.id || org._links?.self?.href} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
