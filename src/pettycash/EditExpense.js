@@ -19,10 +19,21 @@ function EditExpense() {
     setLoading(true);
     fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`)
       .then(res => { if (!res.ok) throw new Error('fail'); return res.json(); })
-      .then(json => setForm({ description: json.description || '', amount: json.amount || '', employeeId: json.employeeId || '', organizationId: json.organizationId || '' }))
+      .then(json => {
+        // Ensure organizationId is a string for dropdown matching
+        let orgId = json.organizationId || '';
+        if (typeof orgId !== 'string') orgId = String(orgId);
+        setForm({ description: json.description || '', amount: json.amount || '', employeeId: json.employeeId || '', organizationId: orgId });
+      })
       .catch(() => setError('Unable to load expense'))
       .finally(() => setLoading(false));
-    fetchOrganizations().then(orgs => setOrganizations(orgs)).catch(() => {});
+      fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+          .then(res => res.json())
+          .then(data => {
+            const orgs = data._embedded ? data._embedded.organizations || [] : data;
+            setOrganizations(orgs);
+          })
+          .catch(() => {});
   }, [id]);
 
   const handleChange = (e) => {
@@ -45,7 +56,7 @@ function EditExpense() {
   return (
     <div>
       <Sidebar isOpen={true} />
-      <PageCard title={`Edit Expense ${id}`}>
+      <PageCard title={`Edit Expense`}>
         {error && <div style={{ color:'#c53030' }}>{error}</div>}
         {loading ? <div className="small">Loading...</div> : (
           <form onSubmit={handleSubmit}>
