@@ -3,7 +3,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
-import { APP_SERVER_URL_PREFIX } from '../constants.js';
+import { APP_SERVER_URL_PREFIX, } from '../constants.js';
 
 function DayClosingReport() {
   const [records, setRecords] = useState([]);
@@ -14,24 +14,38 @@ function DayClosingReport() {
   const [pdfUrl, setPdfUrl] = useState('');
   const [organizations, setOrganizations] = useState([]);
   const [selectedOrgId, setSelectedOrgId] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
 
   useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    setSelectedDate(today);
+    
     setLoading(true);
     setError('');
-    fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings`)
-      .then(res => res.json())
-      .then(data => {
-        let list = data._embedded ? data._embedded.pettyCashDayClosings || [] : data;
-        if (selectedOrgId) {
-          list = list.filter(rec => String(rec.organizationId) === String(selectedOrgId));
+    
+    const fetchDayClosingData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
         }
+        const data = await response.json();
+        const list = data._embedded ? data._embedded.pettyCashDayClosings || [] : data;
         setRecords(list);
+        
+        const cashInTotal = list.reduce((sum, rec) => sum + (rec.cashIn || 0), 0);
+        const cashOutTotal = list.reduce((sum, rec) => sum + (rec.cashOut || 0), 0);
+        setTotals({ cashIn: cashInTotal, cashOut: cashOutTotal });
+        
         setLoading(false);
-      })
-      .catch(() => {
+      } catch (err) {
         setError('Failed to fetch day closing records');
         setLoading(false);
-      });
+      }
+    };
+
+    fetchDayClosingData();
   }, [selectedOrgId]);
 
   useEffect(() => {
@@ -47,17 +61,29 @@ function DayClosingReport() {
 
   const handleGenerateReport = () => {
     try {
+      const filteredRecords = records.filter(rec => rec.closingDate === selectedDate);
+      
+      if (filteredRecords.length === 0) {
+        setReportMsg('No records found for the selected date');
+        return;
+      }
+
       const doc = new jsPDF();
+      
+      const selectedRecord = filteredRecords[0];
+      const startingBalance = selectedRecord.startingBalance || 0;
+
       doc.setFontSize(16);
       doc.text('Sri Divya Sarees', 105, 18, { align: 'center' });
       doc.setFontSize(12);
-      doc.text('Old Temple Road, Gulzar House, Hyderabad 500066', 105, 26, { align: 'center' });
+      doc.text('Old Temple Road, Gulzar House, Hyderabad 500066', 105, 26, { align: 'center' });   
+      doc.setFontSize(11);
       doc.setLineWidth(0.5);
       doc.line(20, 32, 190, 32);
       doc.setFontSize(14);
-      doc.text('Day Closing Report', 105, 40, { align: 'center' });
-
-      // Main report table columns
+      doc.text(`Day Closing Report - ${selectedDate}`, 14, 40, { align:"left" });
+      doc.setFontSize(13);
+      doc.text(`Opening Balance:  ${Number(startingBalance).toLocaleString()}`, 158, 40, { align: 'right',marginTop:"20px" });
       const mainTableColumn = [
         'Closing Date',
         'Description',
@@ -66,14 +92,16 @@ function DayClosingReport() {
         'Total Cash-In',
         'Total Cash-Out'
       ];
-      const mainTableRows = records.map(rec => [
+      
+      const mainTableRows = filteredRecords.map(rec => [
         rec.closingDate || '',
         rec.description || '',
         rec.createdBy || '',
         rec.createdTime || '',
-        rec.cashIn ? rec.cashIn : '-',
-        rec.cashOut ? rec.cashOut : '-'
+        rec.cashIn ? ` ${Number(rec.cashIn).toLocaleString()}` : '-',
+        rec.cashOut ? ` ${Number(rec.cashOut).toLocaleString()}` : '-'
       ]);
+
       autoTable(doc, {
         startY: 48,
         head: [mainTableColumn],
@@ -83,121 +111,597 @@ function DayClosingReport() {
         styles: { fontSize: 10 }
       });
 
-      // Notes/Coin Summary table
-      const coinColumns = ['1 Coin', '5 Coin', '10 Coin', '20 Coin'];
-      const noteColumns = ['10 Note', '20 Note', '50 Note', '100 Note', '200 Note', '500 Note'];
-      const soiledNoteColumns = ['10 Soiled', '20 Soiled', '50 Soiled', '100 Soiled', '200 Soiled', '500 Soiled'];
-      doc.setFontSize(13);
-      let nextY = doc.lastAutoTable.finalY + 12;
-      records.forEach((rec, idx) => {
-        // Coins Table
-        doc.text(`Coins Summary`, 105, nextY, { align: 'center' });
+      let currentY = doc.lastAutoTable.finalY + 15;
+
+      filteredRecords.forEach((rec, index) => {
+        if (index > 0) {
+          doc.addPage();
+          currentY = 20;
+        }
+
+        doc.setFontSize(12);
+        doc.text(`Day Closing Details - ${rec.closingDate}`, 20, currentY);
+        currentY += 10;
+
+        const infoTableData = [
+          ['Description:', rec.description || ''],
+          ['Created By:', rec.createdBy || ''],
+          ['Created Time:', rec.createdTime || ''],
+          ['Starting Balance:', rec.startingBalance ? ` ${Number(rec.startingBalance).toLocaleString()}` : ' 0'],
+          ['Cash In:', rec.cashIn ? ` ${Number(rec.cashIn).toLocaleString()}` : ' 0'],
+          ['Cash Out:', rec.cashOut ? ` ${Number(rec.cashOut).toLocaleString()}` : ' 0'],
+          ['Closing Balance:', rec.closingBalance ? ` ${Number(rec.closingBalance).toLocaleString()}` : ' 0']
+        ];
+
         autoTable(doc, {
-          startY: nextY + 4,
-          head: [['1 Coin', '5 Coin', '10 Coin', '20 Coin']],
-          body: [[
-            ...['1', '5', '10', '20'].map(coin => {
-              const key = `_${coin}CoinCount`;
-              return rec[key] !== undefined && rec[key] !== null ? rec[key] : '';
-            })
-          ]],
+          startY: currentY,
+          body: infoTableData,
+          theme: 'grid',
+          styles: { fontSize: 10 },
+          columnStyles: {
+            0: { fontStyle: 'bold', fillColor: [240, 240, 240] }
+          }
+        });
+
+        currentY = doc.lastAutoTable.finalY + 15;
+
+        doc.setFontSize(11);
+        doc.text('Coins Summary', 20, currentY);
+        currentY += 8;
+
+        const coinsData = [
+          ['1  Coin', '5  Coin', '10  Coin', '20  Coin'],
+          [
+            rec._1CoinCount || 0,
+            rec._5CoinCount || 0,
+            rec._10CoinCount || 0,
+            rec._20CoinCount || 0
+          ]
+        ];
+
+        autoTable(doc, {
+          startY: currentY,
+          head: [coinsData[0]],
+          body: [coinsData[1]],
           theme: 'grid',
           headStyles: { fillColor: [11, 59, 114] },
-          styles: { fontSize: 10 }
+          styles: { fontSize: 10, halign: 'center' }
         });
-        nextY = doc.lastAutoTable.finalY + 8;
-        // Notes Table
-        doc.text(`Notes Summary`, 105, nextY, { align: 'center' });
+
+        currentY = doc.lastAutoTable.finalY + 15;
+
+        doc.setFontSize(11);
+        doc.text('Notes Summary', 20, currentY);
+        currentY += 8;
+
+        const notesHead = ['10  Note', '20  Note', '50  Note', '100  Note', '200  Note', '500  Note'];
+        const notesData = [
+          rec._10NoteCount || 0,
+          rec._20NoteCount || 0,
+          rec._50NoteCount || 0,
+          rec._100NoteCount || 0,
+          rec._200NoteCount || 0,
+          rec._500NoteCount || 0
+        ];
+
         autoTable(doc, {
-          startY: nextY + 4,
-          head: [['10 Note', '20 Note', '50 Note', '100 Note', '200 Note', '500 Note', '10 Soiled', '20 Soiled', '50 Soiled', '100 Soiled', '200 Soiled', '500 Soiled']],
-          body: [[
-            ...['10', '20', '50', '100', '200', '500'].map(note => {
-              const key = `_${note}NoteCount`;
-              return rec[key] !== undefined && rec[key] !== null ? rec[key] : '';
-            }),
-            ...['10', '20', '50', '100', '200', '500'].map(note => {
-              const soiledKey = `_${note}SoiledNoteCount`;
-              return rec[soiledKey] !== undefined && rec[soiledKey] !== null ? rec[soiledKey] : '';
-            })
-          ]],
+          startY: currentY,
+          head: [notesHead],
+          body: [notesData],
           theme: 'grid',
           headStyles: { fillColor: [11, 59, 114] },
-          styles: { fontSize: 10 }
+          styles: { fontSize: 10, halign: 'center' }
         });
-        nextY = doc.lastAutoTable.finalY + 12;
+
+        currentY = doc.lastAutoTable.finalY + 15;
+
+        doc.setFontSize(11);
+        doc.text('Soiled Notes Summary', 20, currentY);
+        currentY += 8;
+
+        const soiledNotesHead = ['10  Soiled', '20  Soiled', '50  Soiled', '100  Soiled', '200  Soiled', '500  Soiled'];
+        const soiledNotesData = [
+          rec._10SoiledNoteCount || 0,
+          rec._20SoiledNoteCount || 0,
+          rec._50SoiledNoteCount || 0,
+          rec._100SoiledNoteCount || 0,
+          rec._200SoiledNoteCount || 0,
+          rec._500SoiledNoteCount || 0
+        ];
+
+        autoTable(doc, {
+          startY: currentY,
+          head: [soiledNotesHead],
+          body: [soiledNotesData],
+          theme: 'grid',
+          headStyles: { fillColor: [139, 0, 0] }, 
+          styles: { fontSize: 10, halign: 'center' }
+        });
+      });
+
+      const dateCashInTotal = filteredRecords.reduce((sum, rec) => sum + (rec.cashIn || 0), 0);
+      const dateCashOutTotal = filteredRecords.reduce((sum, rec) => sum + (rec.cashOut || 0), 0);
+
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text(`Grand Summary - ${selectedDate}`, 105, 20, { align: 'center' });
+      
+      const summaryData = [
+        ['Starting Balance:', ` ${Number(startingBalance).toLocaleString()}`],
+        ['Total Cash In:', ` ${Number(dateCashInTotal).toLocaleString()}`],
+        ['Total Cash Out:', ` ${Number(dateCashOutTotal).toLocaleString()}`],
+        ['Closing Balance:', ` ${Number(startingBalance + dateCashInTotal - dateCashOutTotal).toLocaleString()}`]
+      ];
+
+      autoTable(doc, {
+        startY: 30,
+        body: summaryData,
+        theme: 'grid',
+        styles: { fontSize: 12 },
+        columnStyles: {
+          0: { fontStyle: 'bold', fillColor: [240, 240, 240] }
+        }
       });
 
       const url = doc.output('bloburl');
       setPdfUrl(url);
-
+      setReportMsg(`PDF generated successfully for ${selectedDate}!`);
+      
     } catch (e) {
+      console.error('PDF generation error:', e);
       setReportMsg('Failed to generate PDF');
     }
   };
 
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      backgroundColor: '#f8fafc'
+    },
+    
+headerSection: {
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '24px',
+  padding: '6px 0',
+  borderBottom: '1px solid #e2e8f0',
+  gap: '20px',
+  
+  '@media (max-width: 768px)': {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: '16px',
+    padding: '12px 0'
+  }
+},
+
+dateSelector: {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  
+  '@media (max-width: 1024px)': {
+    gap: '10px'
+  },
+  
+  '@media (max-width: 768px)': {
+    justifyContent: 'space-between',
+    marginBottom: '0'
+  },
+    '@media (max-width: 480px)': {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: '8px'
+  }
+},
+
+dateLabel: {
+  fontWeight: '600',
+  color: '#374151',
+  fontSize: '14px',
+  
+  '@media (max-width: 480px)': {
+    textAlign: 'center',
+    fontSize: '13px'
+  }
+},
+
+dateInput: {
+  padding: '8px 12px',
+  border: '1px solid #d1d5db',
+  borderRadius: '6px',
+  fontSize: '14px',
+  backgroundColor: 'white',
+  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+    '@media (max-width: 480px)': {
+    width: '100%'
+  }
+},
+
+generateButton: {
+  background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
+  color: 'white',
+  border: 'none',
+  padding: '12px 14px',
+  borderRadius: '8px',
+  fontWeight: '600',
+  fontSize: '14px',
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  boxShadow: '0 2px 4px rgba(30, 58, 138, 0.3)',
+  whiteSpace: 'nowrap',
+  
+  '@media (max-width: 768px)': {
+    width: '100%',
+    padding: '14px 16px',
+    fontSize: '15px'
+  },
+  
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 4px 8px rgba(30, 58, 138, 0.4)'
+  }
+},
+    
+    summaryContainer: {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+  gap: '20px',
+  marginBottom: '24px',
+  padding: '0 16px',
+  
+  '@media (max-width: 1024px)': {
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: '15px'
+  },
+    '@media (max-width: 768px)': {
+    gridTemplateColumns: '1fr',
+    gap: '12px'
+  }
+},
+
+    summaryCard: {
+      background: 'white',
+      padding: '5px',
+      borderRadius: '12px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      textAlign: 'center',
+      minWidth: '50px',
+      border: '1px solid #e2e8f0'
+    },
+    cashInCard: {
+      borderLeft: '4px solid #2563eb',
+      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)'
+    },
+    cashOutCard: {
+      borderLeft: '4px solid #dc2626',
+      background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)'
+    },
+    netBalanceCard: {
+      borderLeft: '4px solid #059669',
+      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)'
+    },
+    summaryAmount: {
+      fontSize: '24px',
+      fontWeight: '700',
+      marginTop: '8px'
+    },
+    
+    tableContainer: {
+      background: 'white',
+      borderRadius: '12px',
+      overflowY: 'scroll', 
+      height: '400px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      marginBottom: '24px',
+      scrollbarWidth: 'none',         
+      msOverflowStyle: 'none',    
+    },
+    tableContainerInner: {
+      '&::-webkit-scrollbar': {
+        display: 'none',
+      },
+    },
+    table: {
+      width: '100%',
+      borderCollapse: 'collapse',
+    },
+    tableHeader: {
+      background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
+      color: 'white'
+    },
+    tableHeaderCell: {
+      padding: '16px 12px',
+      textAlign: 'left',
+      fontWeight: '600',
+      fontSize: '14px',
+      borderBottom: '2px solid #e2e8f0'
+    },
+    tableCell: {
+      padding: '14px 12px',
+      borderBottom: '1px solid #f1f5f9',
+      fontSize: '14px'
+    },
+    tableRow: {
+      transition: 'background-color 0.2s ease',
+      '&:hover': {
+        backgroundColor: '#f8fafc'
+      }
+    },
+    
+    notesSection: {
+      marginTop: '32px'
+    },
+    notesHeader: {
+      textAlign: 'center',
+      color: '#1e3a8a',
+      marginBottom: '16px',
+      fontSize: '20px',
+      fontWeight: '600'
+    },
+    scrollableContainer: {
+      maxHeight: '500px',
+      overflow: 'auto',
+      border: '1px solid #e2e8f0',
+      borderRadius: '12px',
+      background: 'white',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    },
+    
+    successMessage: {
+      color: '#059669',
+      backgroundColor: '#f0fdf4',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      border: '1px solid #bbf7d0',
+      marginBottom: '16px',
+      fontWeight: '500'
+    },
+    errorMessage: {
+      color: '#dc2626',
+      backgroundColor: '#fef2f2',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      border: '1px solid #fecaca',
+      marginBottom: '16px',
+      fontWeight: '500'
+    },
+    
+    pdfModal: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      background: 'rgba(0,0,0,0.6)',
+      zIndex: 9999,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backdropFilter: 'blur(4px)'
+    },
+    pdfContainer: {
+      background: '#fff',
+      borderRadius: '12px',
+      boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+      padding: '20px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      position: 'relative',
+      border: '1px solid #e2e8f0'
+    },
+    closeButton: {
+      position: 'absolute',
+      top: '-6px',
+      right: '-9px',
+      fontSize: '20px',
+      background: '#fefafaff',
+      border: 'none',
+      cursor: 'pointer',
+      color: '#645c5cff',
+      width: '19px',
+      height: '19px',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#eef1f4ff',
+      '&:hover': {
+        backgroundColor: '#007cf8',
+        color: '#000000ff',
+        cursor: 'pointer',
+      },
+    },
+    
+    loadingContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '40px',
+      color: '#64748b',
+      fontSize: '16px'
+    }
+  };
+
   return (
-    <div>
+    <div style={styles.container}>
       <Sidebar isOpen={true} />
       <PageCard title="Day Closing Report">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div>
-            <label style={{ marginRight: 8 }}>Organization:</label>
-            <select value={selectedOrgId} onChange={e => setSelectedOrgId(e.target.value)} className="styled-select" style={{ minWidth: 180 }}>
-              <option value="">All organizations</option>
-              {organizations.map(org => (
-                <option key={org.id || (org._links && org._links.self && org._links.self.href)} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
-              ))}
-            </select>
-          </div>
-          <button className="btn" onClick={handleGenerateReport}>Generate Report</button>
+        <div style={styles.headerSection}>
+          
+        <div style={styles.dateSelector}>
+          <label style={styles.dateLabel}>Select Date To Generate Report:</label>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            style={styles.dateInput}
+          />
         </div>
+          <button 
+            style={styles.generateButton}
+            onClick={handleGenerateReport}
+          >
+            📊 Generate Report
+          </button>
+        </div>
+
         {pdfUrl && (
-          <div style={{
-            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.4)', zIndex: 9999,
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <div style={{ background: '#fff', borderRadius: 8, boxShadow: '0 2px 16px rgba(0,0,0,0.18)', padding: 16, maxWidth: '90vw', maxHeight: '90vh', position: 'relative' }}>
-              <button style={{ position: 'absolute', top: 8, right: 8, fontSize: 18, background: 'transparent', border: 'none', cursor: 'pointer' }} onClick={() => { setPdfUrl(''); }}>×</button>
-              <iframe src={pdfUrl} title="Petty Cash PDF" style={{ width: '70vw', height: '80vh', border: 'none' }} />
-              <div style={{ textAlign: 'right', marginTop: 8 }}>
-                <a href={pdfUrl} download="PettyCashDayClosingReport.pdf" className="btn">Download PDF</a>
+          <div style={styles.pdfModal}>
+            <div style={styles.pdfContainer}>
+              <button 
+                style={styles.closeButton}
+                onClick={() => { setPdfUrl(''); }}
+              >
+                ×
+              </button>
+              <iframe 
+                src={pdfUrl} 
+                title="Day Closing PDF Report" 
+                style={{ 
+                  width: '70vw', 
+                  height: '75vh', 
+                  border: 'none',
+                  borderRadius: '8px'
+                }} 
+              />
+              <div style={{ textAlign: 'right', marginTop: '16px' }}>
+                <a 
+                  href={pdfUrl} 
+                  download={`DayClosingReport_${selectedDate}.pdf`} 
+                  style={{
+                    ...styles.generateButton,
+                    textDecoration: 'none',
+                    display: 'inline-block'
+                  }}
+                >
+                  📥 Download PDF
+                </a>
               </div>
             </div>
           </div>
         )}
-        {reportMsg && <div style={{ color: '#2563eb', marginBottom: 8 }}>{reportMsg}</div>}
-        {error && <div style={{ color: '#c53030' }}>{error}</div>}
-        {loading ? <div className="small">Loading...</div> : (
+        
+        {reportMsg && <div style={styles.successMessage}>✅ {reportMsg}</div>}
+        {error && <div style={styles.errorMessage}>❌ {error}</div>}
+        
+        {loading ? (
+          <div style={styles.loadingContainer}>
+            <div>Loading day closing records...</div>
+          </div>
+        ) : (
           <>
-            <div style={{ display: 'flex', gap: '32px', marginBottom: '16px' }}>
-              <div style={{ fontWeight: 500, color: '#2563eb' }}>Total Cash-In: ₹{totals.cashIn.toLocaleString()}</div>
-              <div style={{ fontWeight: 500, color: '#c53030' }}>Total Cash-Out: ₹{totals.cashOut.toLocaleString()}</div>
+            <div style={styles.summaryContainer}>
+              <div style={{...styles.summaryCard, ...styles.cashInCard}}>
+                <div style={{color: '#2563eb', fontWeight: '600', fontSize: '14px'}}>Total Cash-In</div>
+                <div style={{...styles.summaryAmount, color: '#2563eb'}}>
+                   {totals.cashIn.toLocaleString()}
+                </div>
+              </div>
+              <div style={{...styles.summaryCard, ...styles.cashOutCard}}>
+                <div style={{color: '#dc2626', fontWeight: '600', fontSize: '14px'}}>Total Cash-Out</div>
+                <div style={{...styles.summaryAmount, color: '#dc2626'}}>
+                   {totals.cashOut.toLocaleString()}
+                </div>
+              </div>
+              <div style={{...styles.summaryCard, ...styles.netBalanceCard}}>
+                <div style={{color: '#059669', fontWeight: '600', fontSize: '14px'}}>Net Balance</div>
+                <div style={{...styles.summaryAmount, color: '#059669'}}>
+                   {(totals.cashIn - totals.cashOut).toLocaleString()}
+                </div>
+              </div>
             </div>
-            <table className="payroll-table">
-              <thead>
-                <tr>
-                  <th>Closing Date</th>
-                  <th>Description</th>
-                  <th>Created By</th>
-                  <th>Created Time</th>
-                  <th>Total Cash-In</th>
-                  <th>Total Cash-Out</th>
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((rec, idx) => (
-                  <tr key={idx}>
-                    <td>{rec.closingDate}</td>
-                    <td>{rec.description}</td>
-                    <td>{rec.createdBy}</td>
-                    <td>{rec.createdTime}</td>
-                    <td>{rec.cashIn ? `₹${Number(rec.cashIn).toLocaleString()}` : '-'}</td>
-                    <td>{rec.cashOut ? `₹${Number(rec.cashOut).toLocaleString()}` : '-'}</td>
+            
+            <div style={styles.tableContainer}>
+              <table className="payroll-table" style={styles.table}>
+                <thead style={styles.tableHeader}>
+                  <tr>
+                    <th style={styles.tableHeaderCell}>Date</th>
+                    <th style={styles.tableHeaderCell}>Description</th>
+                    <th style={styles.tableHeaderCell}>Created By</th>
+                    <th style={styles.tableHeaderCell}>Created Time</th>
+                    <th style={styles.tableHeaderCell}>Starting Balance</th>
+                    <th style={styles.tableHeaderCell}>Credit</th>
+                    <th style={styles.tableHeaderCell}>Debit</th>
+                    <th style={styles.tableHeaderCell}>Closing Balance</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {records.map((rec, idx) => (
+                    <tr key={idx} style={styles.tableRow}>
+                      <td style={styles.tableCell}>{rec.closingDate}</td>
+                      <td style={styles.tableCell}>{rec.description}</td>
+                      <td style={styles.tableCell}>{rec.createdBy}</td>
+                      <td style={styles.tableCell}>{rec.createdTime}</td>
+                      <td style={styles.tableCell}> {Number(rec.startingBalance).toLocaleString()}</td>
+                      <td style={{...styles.tableCell, color: '#059669', fontWeight: '500'}}>
+                        {rec.cashIn ? ` ${Number(rec.cashIn).toLocaleString()}` : '-'}
+                      </td>
+                      <td style={{...styles.tableCell, color: '#dc2626', fontWeight: '500'}}>
+                        {rec.cashOut ? ` ${Number(rec.cashOut).toLocaleString()}` : '-'}
+                      </td>
+                      <td style={{...styles.tableCell, color: '#1e3a8a', fontWeight: '600'}}>
+                         {Number(rec.closingBalance).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            <div style={styles.notesSection}>
+              <h3 style={styles.notesHeader}>Notes & Coin Summary</h3>
+              <div style={styles.scrollableContainer}>
+                <table className="payroll-table" style={{...styles.table, minWidth: '100%'}}>
+                  <thead style={styles.tableHeader}>
+                    <tr>
+                      <th style={styles.tableHeaderCell}>Date</th>
+                      <th style={styles.tableHeaderCell}>1  Coin</th>
+                      <th style={styles.tableHeaderCell}>5  Coin</th>
+                      <th style={styles.tableHeaderCell}>10  Coin</th>
+                      <th style={styles.tableHeaderCell}>20  Coin</th>
+                      <th style={styles.tableHeaderCell}>10  Note</th>
+                      <th style={styles.tableHeaderCell}>20  Note</th>
+                      <th style={styles.tableHeaderCell}>50  Note</th>
+                      <th style={styles.tableHeaderCell}>100  Note</th>
+                      <th style={styles.tableHeaderCell}>200  Note</th>
+                      <th style={styles.tableHeaderCell}>500  Note</th>
+                      <th style={styles.tableHeaderCell}>10  Soiled</th>
+                      <th style={styles.tableHeaderCell}>20  Soiled</th>
+                      <th style={styles.tableHeaderCell}>50  Soiled</th>
+                      <th style={styles.tableHeaderCell}>100  Soiled</th>
+                      <th style={styles.tableHeaderCell}>200  Soiled</th>
+                      <th style={styles.tableHeaderCell}>500  Soiled</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {records.map((rec, idx) => (
+                      <tr key={idx} style={styles.tableRow}>
+                        <td style={styles.tableCell}>{rec.closingDate}</td>
+                        <td style={styles.tableCell}>{rec._1CoinCount || 0}</td>
+                        <td style={styles.tableCell}>{rec._5CoinCount || 0}</td>
+                        <td style={styles.tableCell}>{rec._10CoinCount || 0}</td>
+                        <td style={styles.tableCell}>{rec._20CoinCount || 0}</td>
+                        <td style={styles.tableCell}>{rec._10NoteCount || 0}</td>
+                        <td style={styles.tableCell}>{rec._20NoteCount || 0}</td>
+                        <td style={styles.tableCell}>{rec._50NoteCount || 0}</td>
+                        <td style={styles.tableCell}>{rec._100NoteCount || 0}</td>
+                        <td style={styles.tableCell}>{rec._200NoteCount || 0}</td>
+                        <td style={styles.tableCell}>{rec._500NoteCount || 0}</td>
+                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._10SoiledNoteCount || 0}</td>
+                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._20SoiledNoteCount || 0}</td>
+                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._50SoiledNoteCount || 0}</td>
+                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._100SoiledNoteCount || 0}</td>
+                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._200SoiledNoteCount || 0}</td>
+                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._500SoiledNoteCount || 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </>
         )}
       </PageCard>

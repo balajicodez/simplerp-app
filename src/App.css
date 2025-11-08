@@ -3,13 +3,17 @@
 }
 
 .content {
-  margin-left: 0;
+  margin-left: 40px;
   transition: margin-left 0.3s ease;
   padding: 20px;
 }
 
 .content.shifted {
   margin-left: 250px;
+}
+
+.content.not-shifted {
+  margin-left: 40px; 
 }
 
 .table {
@@ -51,7 +55,6 @@
   font-size: 14px;
 }
 
-/* Spinner.css */
 .loader {
   position: absolute;
   left: 60%;
@@ -66,7 +69,6 @@
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
-
 
 @keyframes spin {
   0% { transform: rotate(0deg); }

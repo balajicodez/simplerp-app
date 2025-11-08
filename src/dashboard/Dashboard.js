@@ -4,33 +4,49 @@ import './Dashboard.css';
 import PageCard from '../components/PageCard';
 
 function Dashboard() {
-
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div>
+        <div className="dashboard-container">
             <Sidebar isOpen={true} />
-            <PageCard title={"Welcome to Sri Divya Sarees - SimplERP solution"}>
-                <div className="mycontainer">
-                    <div>
-                        <h2 align="center">Employees</h2>
-                        <p align="center">10</p>
+            
+            <PageCard title={"Welcome to Sri Divya Sarees - SimplERP Solution"}>
+                
+                <div className="dashboard-grid">
+                    <div className="stat-card employees-card">
+                        <div className="card-icon">👥</div>
+                        <h3 className="card-title">Total Employees</h3>
+                        <p className="card-value">10</p>
                     </div>
-                    <div>
-                        <h2 align="center">Open Loans</h2>
-                        <p align="center"> 12</p>
+
+                    <div className="stat-card loans-card">
+                        <div className="card-icon">💰</div>
+                        <h3 className="card-title">Open Loans</h3>
+                        <p className="card-value">12</p>
                     </div>
-                    <div>
-                        <h2 align="center">Cash In</h2>
-                        <p align="center">72000</p>
+
+                    <div className="stat-card cashin-card">
+                        <div className="card-icon">📈</div>
+                        <h3 className="card-title">Cash In</h3>
+                        <p className="card-value">₹72,000</p>
                     </div>
-                    <div>
-                        <h2 align="center">Cash Out</h2>
-                        <p align="center">170300</p>
+
+                    <div className="stat-card cashout-card">
+                        <div className="card-icon">📉</div>
+                        <h3 className="card-title">Cash Out</h3>
+                        <p className="card-value">₹1,70,300</p>
                     </div>
+                </div>
+
+                <div className="insights-section">
+                    <h3 className="insights-title">Quick Insights</h3>
+                    <p className="insights-text">
+                        Monitor your business performance at a glance. Stay updated with real-time metrics.
+                    </p>
                 </div>
             </PageCard>
         </div>
     );
 }
+
 export default Dashboard;
