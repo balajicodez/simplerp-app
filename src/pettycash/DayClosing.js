@@ -18,7 +18,7 @@ function DayClosing() {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = Number(searchParams.get('page') || 0);
   const sizeParam = Number(searchParams.get('size') || 20);
-  const today = new Date().toISOString().slice(0,10);
+  const today = new Date().toISOString().slice(0, 10);
 
   const fetchUrl = async (url) => {
     setLoading(true);
@@ -26,7 +26,7 @@ function DayClosing() {
     try {
       const res = await fetch(url);
       const json = await res.json();
-      let list = (json.content ) || json.content || [];
+      let list = (json.content) || json.content || [];
       list = list.filter(e => e.createdDate === today);
       if (selectedOrgId) {
         list = list.filter(e => String(e.organizationId) === String(selectedOrgId));
@@ -42,9 +42,14 @@ function DayClosing() {
   }, [pageParam, sizeParam, selectedOrgId]);
 
   useEffect(() => {
-    import('../organization/organizationApi').then(mod => {
-      mod.fetchOrganizations().then(setOrganizations).catch(() => {});
-    });
+    // Fetch organizations for dropdown
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+      .then(res => res.json())
+      .then(data => {
+        const orgs = data._embedded ? data._embedded.organizations || [] : data;
+        setOrganizations(orgs);
+      })
+      .catch(() => { });
   }, []);
 
   const handleDayClosing = async () => {
@@ -65,7 +70,7 @@ function DayClosing() {
   return (
     <div>
       <Sidebar isOpen={true} />
-      <PageCard title={`Day Closing — ${today}`}>        
+      <PageCard title={`Day Closing — ${today}`}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div>
             <label style={{ marginRight: 8 }}>Organization:</label>
@@ -77,7 +82,7 @@ function DayClosing() {
             </select>
           </div>
           <button className="btn" style={{ marginLeft: 8 }} onClick={() => navigate('/pettycash/day-closing/create')}>Create Day Closing</button>
-        </div> 
+        </div>
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
         {success && <div style={{ color: '#2563eb' }}>{success}</div>}
         {loading ? <div className="small">Loading...</div> : (
@@ -90,7 +95,7 @@ function DayClosing() {
                   <th>Employee ID</th>
                   <th>Type</th>
                   <th>Created By</th>
-                  <th>Created Date</th>                 
+                  <th>Created Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -109,20 +114,20 @@ function DayClosing() {
             </table>
             <div className="payroll-controls">
               <div>
-                <button className="btn" disabled={!(links.prev || pageParam>0)} onClick={() => {
+                <button className="btn" disabled={!(links.prev || pageParam > 0)} onClick={() => {
                   if (links.prev) return fetchUrl(links.prev.href);
-                  const prev = Math.max(0, pageParam-1);
+                  const prev = Math.max(0, pageParam - 1);
                   setSearchParams({ page: prev, size: sizeParam });
                   fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${prev}&size=${sizeParam}`);
                 }}>Previous</button>
-                <button className="btn" style={{ marginLeft:8 }} disabled={!(links.next || items.length>=sizeParam)} onClick={() => {
+                <button className="btn" style={{ marginLeft: 8 }} disabled={!(links.next || items.length >= sizeParam)} onClick={() => {
                   if (links.next) return fetchUrl(links.next.href);
-                  const next = pageParam+1;
+                  const next = pageParam + 1;
                   setSearchParams({ page: next, size: sizeParam });
                   fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${next}&size=${sizeParam}`);
                 }}>Next</button>
               </div>
-              <div className="small">Page {pageParam+1}  Showing {items.length} results</div>
+              <div className="small">Page {pageParam + 1}  Showing {items.length} results</div>
             </div>
           </>
         )}

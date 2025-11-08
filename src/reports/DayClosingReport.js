@@ -35,9 +35,14 @@ function DayClosingReport() {
   }, [selectedOrgId]);
 
   useEffect(() => {
-    import('../organization/organizationApi').then(mod => {
-      mod.fetchOrganizations().then(setOrganizations).catch(() => {});
-    });
+    // Fetch organizations for dropdown
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+      .then(res => res.json())
+      .then(data => {
+        const orgs = data._embedded ? data._embedded.organizations || [] : data;
+        setOrganizations(orgs);
+      })
+      .catch(() => { });
   }, []);
 
   const handleGenerateReport = () => {
@@ -91,7 +96,7 @@ function DayClosingReport() {
           startY: nextY + 4,
           head: [['1 Coin', '5 Coin', '10 Coin', '20 Coin']],
           body: [[
-            ...['1','5','10','20'].map(coin => {
+            ...['1', '5', '10', '20'].map(coin => {
               const key = `_${coin}CoinCount`;
               return rec[key] !== undefined && rec[key] !== null ? rec[key] : '';
             })
@@ -107,11 +112,11 @@ function DayClosingReport() {
           startY: nextY + 4,
           head: [['10 Note', '20 Note', '50 Note', '100 Note', '200 Note', '500 Note', '10 Soiled', '20 Soiled', '50 Soiled', '100 Soiled', '200 Soiled', '500 Soiled']],
           body: [[
-            ...['10','20','50','100','200','500'].map(note => {
+            ...['10', '20', '50', '100', '200', '500'].map(note => {
               const key = `_${note}NoteCount`;
               return rec[key] !== undefined && rec[key] !== null ? rec[key] : '';
             }),
-            ...['10','20','50','100','200','500'].map(note => {
+            ...['10', '20', '50', '100', '200', '500'].map(note => {
               const soiledKey = `_${note}SoiledNoteCount`;
               return rec[soiledKey] !== undefined && rec[soiledKey] !== null ? rec[soiledKey] : '';
             })
@@ -125,7 +130,7 @@ function DayClosingReport() {
 
       const url = doc.output('bloburl');
       setPdfUrl(url);
-      
+
     } catch (e) {
       setReportMsg('Failed to generate PDF');
     }
@@ -146,7 +151,7 @@ function DayClosingReport() {
             </select>
           </div>
           <button className="btn" onClick={handleGenerateReport}>Generate Report</button>
-        </div>       
+        </div>
         {pdfUrl && (
           <div style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.4)', zIndex: 9999,
