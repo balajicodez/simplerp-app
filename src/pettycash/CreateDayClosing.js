@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 
 function CreateDayClosing() {
   const [description, setDescription] = useState('Day Closing');
+  const [organizations, setOrganizations] = useState([]);
+  const [organizationId, setOrganizationId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [startingBalance, setStartingBalance] = useState('');
   const [closingBalance, setClosingBalance] = useState('');
@@ -37,6 +39,12 @@ function CreateDayClosing() {
   // Get current time
   const createdTime = new Date().toISOString();
 
+  React.useEffect(() => {
+    import('../organization/organizationApi').then(mod => {
+      mod.fetchOrganizations().then(setOrganizations).catch(() => {});
+    });
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -50,6 +58,7 @@ function CreateDayClosing() {
         description: desc,
         createdBy: currentUser,
         createdTime,
+        organizationId: organizationId || undefined,
         startingBalance: startingBalance ? Number(startingBalance) : 0,
         closingBalance: closingBalance ? Number(closingBalance) : 0,
         tenNoteCount: tenNoteCount ? Number(tenNoteCount) : 0,
@@ -98,10 +107,19 @@ function CreateDayClosing() {
             <input type="number" value={startingBalance} onChange={e => setStartingBalance(e.target.value)} className="form-control" min="0" />
             <label style={{ minWidth: 120 }}>Closing Balance</label>
             <input type="number" value={closingBalance} onChange={e => setClosingBalance(e.target.value)} className="form-control" min="0" />
-          </div>
-          <div style={{ marginBottom: 24 }}>
-            <h3 style={{ margin: '16px 0 8px 0', color: '#2563eb' }}>Notes Summary</h3>
-            <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div>
+            <Sidebar isOpen={true} />
+            <PageCard title="Create Day Closing">
+              <div style={{ margin: '12px 0' }}>
+                <label style={{ marginRight: 8 }}>Organization:</label>
+                <select value={organizationId} onChange={e => setOrganizationId(e.target.value)} className="styled-select" style={{ minWidth: 180 }} required>
+                  <option value="">Select organization</option>
+                  {organizations.map(org => (
+                    <option key={org.id || (org._links && org._links.self && org._links.self.href)} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
+                  ))}
+                </select>
+              </div>
+              <form onSubmit={handleSubmit} className="form-grid">
               <div style={{ display: 'flex', gap: '16px' }}>
                 <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <label style={{ minWidth: 120 }}>10 Note Count</label>
