@@ -14,6 +14,8 @@ function ExpensesInward() {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = Number(searchParams.get('page') || 0);
   const sizeParam = Number(searchParams.get('size') || 20);
+  const [organizations, setOrganizations] = useState([]);
+  const [selectedOrgId, setSelectedOrgId] = useState('');
 
   const fetchUrl = async (url) => {
     setLoading(true);
@@ -28,8 +30,19 @@ function ExpensesInward() {
   };
 
   useEffect(() => {
-  fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN`);
+    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN`);
   }, [pageParam, sizeParam]);
+  
+  useEffect(() => {
+      // Fetch organizations for dropdown
+       fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+         .then(res => res.json())
+         .then(data => {
+           const orgs = data._embedded ? data._embedded.organizations || [] : data;
+          setOrganizations(orgs);
+         })
+         .catch(() => {});
+  }, []);
 
   return (
     <div>
@@ -40,6 +53,15 @@ function ExpensesInward() {
           <div>
             <button className="btn" onClick={() => navigate('/pettycash/expenses/create?type=CASH-IN')}>Create Expense</button>
           </div>
+        </div>
+        <div style={{ margin: '12px 0' }}>
+          <label style={{ marginRight: 8 }}>Organization:</label>
+          <select value={selectedOrgId} onChange={e => setSelectedOrgId(e.target.value)} className="styled-select" style={{ minWidth: 180 }}>
+            <option value="">All organizations</option>
+            {organizations.map(org => (
+              <option key={org.id || org._links?.self?.href} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
+            ))}
+          </select>
         </div>
         {loading ? <div className="small">Loading...</div> : (
           <>

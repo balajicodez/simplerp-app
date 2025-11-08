@@ -12,6 +12,8 @@ function DayClosingReport() {
   const [reportMsg, setReportMsg] = useState('');
   const [totals, setTotals] = useState({ cashIn: 0, cashOut: 0 });
   const [pdfUrl, setPdfUrl] = useState('');
+  const [organizations, setOrganizations] = useState([]);
+  const [selectedOrgId, setSelectedOrgId] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -19,14 +21,23 @@ function DayClosingReport() {
     fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings`)
       .then(res => res.json())
       .then(data => {
-        const list = data._embedded ? data._embedded.pettyCashDayClosings || [] : data;
-        setRecords(list);         
+        let list = data._embedded ? data._embedded.pettyCashDayClosings || [] : data;
+        if (selectedOrgId) {
+          list = list.filter(rec => String(rec.organizationId) === String(selectedOrgId));
+        }
+        setRecords(list);
         setLoading(false);
       })
       .catch(() => {
         setError('Failed to fetch day closing records');
         setLoading(false);
       });
+  }, [selectedOrgId]);
+
+  useEffect(() => {
+    import('../organization/organizationApi').then(mod => {
+      mod.fetchOrganizations().then(setOrganizations).catch(() => {});
+    });
   }, []);
 
   const handleGenerateReport = () => {
@@ -124,9 +135,18 @@ function DayClosingReport() {
     <div>
       <Sidebar isOpen={true} />
       <PageCard title="Day Closing Report">
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div>
+            <label style={{ marginRight: 8 }}>Organization:</label>
+            <select value={selectedOrgId} onChange={e => setSelectedOrgId(e.target.value)} className="styled-select" style={{ minWidth: 180 }}>
+              <option value="">All organizations</option>
+              {organizations.map(org => (
+                <option key={org.id || (org._links && org._links.self && org._links.self.href)} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
+              ))}
+            </select>
+          </div>
           <button className="btn" onClick={handleGenerateReport}>Generate Report</button>
-        </div>
+        </div>       
         {pdfUrl && (
           <div style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.4)', zIndex: 9999,
@@ -150,72 +170,29 @@ function DayClosingReport() {
               <div style={{ fontWeight: 500, color: '#c53030' }}>Total Cash-Out: ₹{totals.cashOut.toLocaleString()}</div>
             </div>
             <table className="payroll-table">
-                <thead>
-                  <tr>
-                    <th>Closing Date</th>
-                    <th>Description</th>
-                    <th>Created By</th>
-                    <th>Created Time</th>
-                    <th>Total Cash-In</th>
-                    <th>Total Cash-Out</th>
+              <thead>
+                <tr>
+                  <th>Closing Date</th>
+                  <th>Description</th>
+                  <th>Created By</th>
+                  <th>Created Time</th>
+                  <th>Total Cash-In</th>
+                  <th>Total Cash-Out</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records.map((rec, idx) => (
+                  <tr key={idx}>
+                    <td>{rec.closingDate}</td>
+                    <td>{rec.description}</td>
+                    <td>{rec.createdBy}</td>
+                    <td>{rec.createdTime}</td>
+                    <td>{rec.cashIn ? `₹${Number(rec.cashIn).toLocaleString()}` : '-'}</td>
+                    <td>{rec.cashOut ? `₹${Number(rec.cashOut).toLocaleString()}` : '-'}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {records.map((rec, idx) => (
-                    <tr key={idx}>
-                      <td>{rec.closingDate}</td>
-                      <td>{rec.description}</td>
-                      <td>{rec.createdBy}</td>
-                      <td>{rec.createdTime}</td>
-                      <td>{rec.cashIn ? `₹${Number(rec.cashIn).toLocaleString()}` : '-'}</td>
-                      <td>{rec.cashOut ? `₹${Number(rec.cashOut).toLocaleString()}` : '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div style={{ marginTop: 32 }}>
-                <h3 style={{ textAlign: 'center', color: '#2563eb', marginBottom: 8 }}>Notes/Coin Summary</h3>
-                <table className="payroll-table">
-                  <thead>
-                    <tr>
-                      <th>1₹ Coin</th>
-                      <th>5₹ Coin</th>
-                      <th>10₹ Coin</th>
-                      <th>20₹ Coin</th>
-                      <th>10₹ Note</th>
-                      <th>20₹ Note</th>
-                      <th>50₹ Note</th>
-                      <th>100₹ Note</th>
-                      <th>200₹ Note</th>
-                      <th>500₹ Note</th>
-                      <th>10₹ Soiled</th>
-                      <th>20₹ Soiled</th>
-                      <th>50₹ Soiled</th>
-                      <th>100₹ Soiled</th>
-                      <th>200₹ Soiled</th>
-                      <th>500₹ Soiled</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {records.map((rec, idx) => (
-                      <tr key={idx}>
-                        {['1','5','10','20'].map(coin => {
-                          const key = `_${coin}CoinCount`;
-                          return <td key={key}>{rec[key] !== undefined && rec[key] !== null ? rec[key] : ''}</td>;
-                        })}
-                        {['10','20','50','100','200','500'].map(note => {
-                          const key = `_${note}NoteCount`;
-                          return <td key={key}>{rec[key] !== undefined && rec[key] !== null ? rec[key] : ''}</td>;
-                        })}
-                        {['10','20','50','100','200','500'].map(note => {
-                          const soiledKey = `_${note}SoiledNoteCount`;
-                          return <td key={soiledKey}>{rec[soiledKey] !== undefined && rec[soiledKey] !== null ? rec[soiledKey] : ''}</td>;
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                ))}
+              </tbody>
+            </table>
           </>
         )}
       </PageCard>
