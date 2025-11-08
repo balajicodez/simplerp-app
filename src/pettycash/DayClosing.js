@@ -65,9 +65,8 @@ function DayClosing() {
   return (
     <div>
       <Sidebar isOpen={true} />
-      <PageCard title={`Day Closing — ${today}`}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:12 }}>
-          <div className="small">All expenses for today</div>
+      <PageCard title={`Day Closing — ${today}`}>        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div>
             <label style={{ marginRight: 8 }}>Organization:</label>
             <select value={selectedOrgId} onChange={e => setSelectedOrgId(e.target.value)} className="styled-select" style={{ minWidth: 180 }}>
@@ -76,9 +75,9 @@ function DayClosing() {
                 <option key={org.id || (org._links && org._links.self && org._links.self.href)} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
               ))}
             </select>
-            <button className="btn" style={{ marginLeft: 8 }} onClick={() => navigate('/pettycash/day-closing/create')}>Create Day Closing</button>
           </div>
-        </div>
+          <button className="btn" style={{ marginLeft: 8 }} onClick={() => navigate('/pettycash/day-closing/create')}>Create Day Closing</button>
+        </div> 
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
         {success && <div style={{ color: '#2563eb' }}>{success}</div>}
         {loading ? <div className="small">Loading...</div> : (

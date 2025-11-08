@@ -41,7 +41,7 @@ function CreateDayClosing() {
 
   React.useEffect(() => {
     import('../organization/organizationApi').then(mod => {
-      mod.fetchOrganizations().then(setOrganizations).catch(() => {});
+      mod.fetchOrganizations().then(setOrganizations).catch(() => { });
     });
   }, []);
 
@@ -107,99 +107,94 @@ function CreateDayClosing() {
             <input type="number" value={startingBalance} onChange={e => setStartingBalance(e.target.value)} className="form-control" min="0" />
             <label style={{ minWidth: 120 }}>Closing Balance</label>
             <input type="number" value={closingBalance} onChange={e => setClosingBalance(e.target.value)} className="form-control" min="0" />
-          <div>
-            <Sidebar isOpen={true} />
-            <PageCard title="Create Day Closing">
-              <div style={{ margin: '12px 0' }}>
-                <label style={{ marginRight: 8 }}>Organization:</label>
-                <select value={organizationId} onChange={e => setOrganizationId(e.target.value)} className="styled-select" style={{ minWidth: 180 }} required>
-                  <option value="">Select organization</option>
-                  {organizations.map(org => (
-                    <option key={org.id || (org._links && org._links.self && org._links.self.href)} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
-                  ))}
-                </select>
-              </div>
-              <form onSubmit={handleSubmit} className="form-grid">
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>10 Note Count</label>
-                  <input type="number" value={tenNoteCount} onChange={e => set10NoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>20 Note Count</label>
-                  <input type="number" value={twentyNoteCount} onChange={e => set20NoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>50 Note Count</label>
-                  <input type="number" value={fiftyNoteCount} onChange={e => set50NoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>100 Note Count</label>
-                  <input type="number" value={hundredNoteCount} onChange={e => set100NoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>200 Note Count</label>
-                  <input type="number" value={twoHundredNoteCount} onChange={e => set200NoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>500 Note Count</label>
-                  <input type="number" value={fiveHundredNoteCount} onChange={e => set500NoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>10 Soiled Note Count</label>
-                  <input type="number" value={tenSoiledNoteCount} onChange={e => set10SoiledNoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>20 Soiled Note Count</label>
-                  <input type="number" value={twentySoiledNoteCount} onChange={e => set20SoiledNoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>50 Soiled Note Count</label>
-                  <input type="number" value={fiftySoiledNoteCount} onChange={e => set50SoiledNoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>100 Soiled Note Count</label>
-                  <input type="number" value={hundredSoiledNoteCount} onChange={e => set100SoiledNoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>200 Soiled Note Count</label>
-                  <input type="number" value={twoHundredSoiledNoteCount} onChange={e => set200SoiledNoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>500 Soiled Note Count</label>
-                  <input type="number" value={fiveHundredSoiledNoteCount} onChange={e => set500SoiledNoteCount(e.target.value)} className="form-control" min="0" />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>1 Coin Count</label>
-                  <input type="number" value={oneCoinCount} onChange={e => set1CoinCount(e.target.value)} className="form-control" min="0" />
-                </div>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>5 Coin Count</label>
-                  <input type="number" value={fiveCoinCount} onChange={e => set5CoinCount(e.target.value)} className="form-control" min="0" />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>10 Coin Count</label>
-                  <input type="number" value={tenCoinCount} onChange={e => set10CoinCount(e.target.value)} className="form-control" min="0" />
-                </div>
-                <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <label style={{ minWidth: 120 }}>20 Coin Count</label>
-                  <input type="number" value={twentyCoinCount} onChange={e => set20CoinCount(e.target.value)} className="form-control" min="0" />
-                </div>
-              </div>
+          </div>
+          <div style={{ margin: '12px 0' }}>
+            <label style={{ marginRight: 8 }}>Organization:</label>
+            <select value={organizationId} onChange={e => setOrganizationId(e.target.value)} className="styled-select" style={{ minWidth: 180 }} required>
+              <option value="">Select organization</option>
+              {organizations.map(org => (
+                <option key={org.id || (org._links && org._links.self && org._links.self.href)} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>10 Note Count</label>
+              <input type="number" value={tenNoteCount} onChange={e => set10NoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>20 Note Count</label>
+              <input type="number" value={twentyNoteCount} onChange={e => set20NoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>50 Note Count</label>
+              <input type="number" value={fiftyNoteCount} onChange={e => set50NoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>100 Note Count</label>
+              <input type="number" value={hundredNoteCount} onChange={e => set100NoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>200 Note Count</label>
+              <input type="number" value={twoHundredNoteCount} onChange={e => set200NoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>500 Note Count</label>
+              <input type="number" value={fiveHundredNoteCount} onChange={e => set500NoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>10 Soiled Note Count</label>
+              <input type="number" value={tenSoiledNoteCount} onChange={e => set10SoiledNoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>20 Soiled Note Count</label>
+              <input type="number" value={twentySoiledNoteCount} onChange={e => set20SoiledNoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>50 Soiled Note Count</label>
+              <input type="number" value={fiftySoiledNoteCount} onChange={e => set50SoiledNoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>100 Soiled Note Count</label>
+              <input type="number" value={hundredSoiledNoteCount} onChange={e => set100SoiledNoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>200 Soiled Note Count</label>
+              <input type="number" value={twoHundredSoiledNoteCount} onChange={e => set200SoiledNoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>500 Soiled Note Count</label>
+              <input type="number" value={fiveHundredSoiledNoteCount} onChange={e => set500SoiledNoteCount(e.target.value)} className="form-control" min="0" />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>1 Coin Count</label>
+              <input type="number" value={oneCoinCount} onChange={e => set1CoinCount(e.target.value)} className="form-control" min="0" />
+            </div>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>5 Coin Count</label>
+              <input type="number" value={fiveCoinCount} onChange={e => set5CoinCount(e.target.value)} className="form-control" min="0" />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>10 Coin Count</label>
+              <input type="number" value={tenCoinCount} onChange={e => set10CoinCount(e.target.value)} className="form-control" min="0" />
+            </div>
+            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <label style={{ minWidth: 120 }}>20 Coin Count</label>
+              <input type="number" value={twentyCoinCount} onChange={e => set20CoinCount(e.target.value)} className="form-control" min="0" />
             </div>
           </div>
           <button className="btn" type="submit" disabled={loading} style={{ marginLeft: 16, minWidth: 180 }}>{loading ? 'Saving...' : 'Create Day Closing'}</button>
