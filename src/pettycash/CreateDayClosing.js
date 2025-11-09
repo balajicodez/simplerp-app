@@ -125,7 +125,6 @@ function CreateDayClosing() {
       if (!res.ok) {
         const data = await res.text();
         setError(data);
-
       } else {
         setSuccess('Day closing created!');
         setTimeout(() => navigate('/pettycash/day-closing'), 1200);
