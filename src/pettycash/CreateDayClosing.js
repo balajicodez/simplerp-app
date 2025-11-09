@@ -122,9 +122,14 @@ function CreateDayClosing() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error('Failed');
-      setSuccess('Day closing created!');
-      setTimeout(() => navigate('/pettycash/day-closing'), 1200);
+      if (!res.ok) {
+        const data = await res.text();
+        setError(data);
+
+      } else {
+        setSuccess('Day closing created!');
+        setTimeout(() => navigate('/pettycash/day-closing'), 1200);
+      }
     } catch (e) {
       setError('Failed to create day closing');
     } finally {
