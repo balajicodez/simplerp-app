@@ -125,7 +125,7 @@ function CreateExpense() {
           <div className="form-grid">
             <div>
               <label>Organization</label>
-              <select name="organizationId" value={form.organizationId} onChange={handleChange} required className="styled-select">
+              <select name="organizationId" type="dropdown"value={form.organizationId} onChange={handleChange} required className="styled-select">
                 <option value="">Select organization</option>
                 {organizations.map(org => (
                   <option key={org.id || org._links?.self?.href} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>

@@ -10,7 +10,7 @@ function CreateDayClosing() {
   const [organizations, setOrganizations] = useState([]);
   const [organizationId, setOrganizationId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [startingBalance, setStartingBalance] = useState('');
+  const [openingBalance, setOpeningBalance] = useState('');
   const [closingBalance, setClosingBalance] = useState('');
   const [tenNoteCount, set10NoteCount] = useState('');
   const [twentyNoteCount, set20NoteCount] = useState('');
@@ -56,6 +56,34 @@ function CreateDayClosing() {
       .catch(() => { });
   }, []);
 
+  const handleChange = async (e) => {
+    const { name, value, type, files } = e.target;
+    if (type === 'select-one') {
+      setOrganizationId(e.target.value);
+      const res = await fetch(`${APP_SERVER_URL_PREFIX}/petty-cash/day-closing/init?closingDate=${date}&organizationId=${e.target.value}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setOpeningBalance(data.cashIn);
+        setClosingBalance(data.cashOut);
+      }
+    } else if (type === 'date') {
+      setDate(e.target.value);
+      const res = await fetch(`${APP_SERVER_URL_PREFIX}/petty-cash/day-closing/init?closingDate=${e.target.value}&organizationId=${organizationId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setOpeningBalance(data.cashIn);
+        setClosingBalance(data.cashOut);
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -70,7 +98,7 @@ function CreateDayClosing() {
         createdBy: currentUser,
         createdTime,
         organizationId: organizationId || undefined,
-        startingBalance: startingBalance ? Number(startingBalance) : 0,
+        openingBalance: openingBalance ? Number(openingBalance) : 0,
         closingBalance: closingBalance ? Number(closingBalance) : 0,
         tenNoteCount: tenNoteCount ? Number(tenNoteCount) : 0,
         twentyNoteCount: twentyNoteCount ? Number(twentyNoteCount) : 0,
@@ -109,25 +137,35 @@ function CreateDayClosing() {
       <Sidebar isOpen={true} />
       <PageCard title="Create Day Closing">
         <form onSubmit={handleSubmit} className="form">
-          <div className="form-group" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: 24 }}>
-            <label style={{ minWidth: 100 }}>Description</label>
-            <input type="text" value={description} onChange={e => setDescription(e.target.value)} className="form-control" style={{ minWidth: 180 }} />
-            <label style={{ minWidth: 100 }}>Date</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className="form-control" style={{ minWidth: 180 }} />
-            <label style={{ minWidth: 120 }}>Starting Balance</label>
-            <input type="number" value={startingBalance} onChange={e => setStartingBalance(e.target.value)} className="form-control" min="0" />
-            <label style={{ minWidth: 120 }}>Closing Balance</label>
-            <input type="number" value={closingBalance} onChange={e => setClosingBalance(e.target.value)} className="form-control" min="0" />
+          <div className="form-grid">
+            <div>
+              <label style={{ minWidth: 100 }}>Organization:</label>
+              <select value={organizationId} type="dropdown" onChange={handleChange} className="styled-select" style={{ minWidth: 180 }} required>
+                <option value="">Select organization</option>
+                {organizations.map(org => (
+                  <option key={org.id || (org._links && org._links.self && org._links.self.href)} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label style={{ minWidth: 100 }}>Description</label>
+              <input type="text" value={description} onChange={e => setDescription(e.target.value)} className="form-control" style={{ minWidth: 180 }} />
+            </div>
+            <div>
+              <label style={{ minWidth: 100 }}>Date</label>
+              <input type="date" value={date} onChange={handleChange} className="form-control" style={{ minWidth: 180 }} />
+            </div>
+            <div>
+              <label style={{ minWidth: 120 }}>Opening Balance</label>
+              <input type="number" value={openingBalance} onChange={e => setOpeningBalance(e.target.value)} className="form-control" min="0" />
+            </div>
+            <div>
+              <label style={{ minWidth: 120 }}>Closing Balance</label>
+              <input type="number" value={closingBalance} onChange={e => setClosingBalance(e.target.value)} className="form-control" min="0" />
+            </div>
+
           </div>
-          <div style={{ margin: '12px 0' }}>
-            <label style={{ marginRight: 8 }}>Organization:</label>
-            <select value={organizationId} onChange={e => setOrganizationId(e.target.value)} className="styled-select" style={{ minWidth: 180 }} required>
-              <option value="">Select organization</option>
-              {organizations.map(org => (
-                <option key={org.id || (org._links && org._links.self && org._links.self.href)} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
-              ))}
-            </select>
-          </div>
+
           <div style={{ display: 'flex', gap: '16px' }}>
             <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
               <label style={{ minWidth: 120 }}>10 Note Count</label>

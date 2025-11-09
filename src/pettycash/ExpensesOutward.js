@@ -42,9 +42,9 @@ function ExpensesOutward() {
         const selectedOrg = organizations.find(org => String(org.id) === String(value));
         let temp = e.currentTarget.options[e.currentTarget.selectedIndex].text
         if (e.currentTarget.selectedIndex >0) {
-          fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`);
+          fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`);
         } else {
-          fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN`);
+          fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT`);
         }
       }
     };
@@ -108,7 +108,7 @@ function ExpensesOutward() {
                         <button className="btn" onClick={() => setModalFile(it.imageData)}>View</button>
                       ) : (it.fileUrl || it.file ? (
                         <button className="btn" onClick={() => setModalFile(it.fileUrl || it.file)}>View</button>
-                      ) : '')}
+                      ) : '')}
                     </td>
                     <td>
                       <button className="btn" onClick={() => navigate(`/pettycash/expenses/${it.id || (it._links && it._links.self && it._links.self.href.split('/').pop())}/edit`)}>Edit</button>
