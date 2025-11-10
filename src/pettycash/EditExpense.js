@@ -58,7 +58,10 @@ function EditExpense() {
       if (form.employeeId) payload.employeeId = Number(form.employeeId);
       if (form.organizationId) payload.organizationId = form.organizationId;
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-      if (!res.ok) throw new Error('failed');
+      if (!res.ok) {
+        const data = await res.text();
+        setError(data);
+      }
       navigate(`/pettycash/expenses/${id}`);
     } catch (err) { setError('Failed to save'); }
     finally { setLoading(false); }
