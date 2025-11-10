@@ -10,7 +10,7 @@ function DayClosingReport() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [reportMsg, setReportMsg] = useState('');
-  const [totals, setTotals] = useState({ cashIn: 0, cashOut: 0 });
+  const [totals, setTotals] = useState({ cashIn: 0, cashOut: 0 , startingBalance: 0});
   const [pdfUrl, setPdfUrl] = useState('');
   const [organizations, setOrganizations] = useState([]);
   const [selectedOrgId, setSelectedOrgId] = useState('');
@@ -36,7 +36,7 @@ function DayClosingReport() {
         
         const cashInTotal = list.reduce((sum, rec) => sum + (rec.cashIn || 0), 0);
         const cashOutTotal = list.reduce((sum, rec) => sum + (rec.cashOut || 0), 0);
-        setTotals({ cashIn: cashInTotal, cashOut: cashOutTotal });
+        setTotals({ cashIn: cashInTotal, cashOut: cashOutTotal, startingBalance: data._embedded.pettyCashDayClosings[0].startingBalance });
         
         setLoading(false);
       } catch (err) {
@@ -597,7 +597,7 @@ generateButton: {
               <div style={{...styles.summaryCard, ...styles.cashInCard}}>
                 <div style={{color: '#2563eb', fontWeight: '600', fontSize: '14px'}}>Total Cash-In</div>
                 <div style={{...styles.summaryAmount, color: '#2563eb'}}>
-                   {totals.cashIn.toLocaleString()}
+                   {totals.startingBalance.toLocaleString()}
                 </div>
               </div>
               <div style={{...styles.summaryCard, ...styles.cashOutCard}}>
@@ -609,7 +609,7 @@ generateButton: {
               <div style={{...styles.summaryCard, ...styles.netBalanceCard}}>
                 <div style={{color: '#059669', fontWeight: '600', fontSize: '14px'}}>Net Balance</div>
                 <div style={{...styles.summaryAmount, color: '#059669'}}>
-                   {(totals.cashIn - totals.cashOut).toLocaleString()}
+                   {(totals.startingBalance - totals.cashOut).toLocaleString()}
                 </div>
               </div>
             </div>
