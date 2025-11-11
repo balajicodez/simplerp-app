@@ -143,7 +143,7 @@ function CreateDayClosing() {
         <form onSubmit={handleSubmit} className="form">
           <div className="form-grid">
             <div>
-              <label style={{ minWidth: 100 }}>Organization:</label>
+              <label style={{ minWidth: 100 }}>Branch:</label>
               <select value={organizationId} type="dropdown" onChange={handleChange} className="styled-select" style={{ minWidth: 180 }} required>
                 <option value="">Select organization</option>
                 {organizations.map(org => (
@@ -160,11 +160,11 @@ function CreateDayClosing() {
               <input type="date" value={date} onChange={handleChange} className="form-control" style={{ minWidth: 180 }} />
             </div>
             <div>
-              <label style={{ minWidth: 120 }}>Opening Balance</label>
+              <label style={{ minWidth: 120 }}>Total Day Cash-In</label>
               <input type="number" value={openingBalance} onChange={e => setOpeningBalance(e.target.value)} className="form-control" min="0" />
             </div>
             <div>
-              <label style={{ minWidth: 120 }}>Closing Balance</label>
+              <label style={{ minWidth: 120 }}>Total Day Cash-Out</label>
               <input type="number" value={closingBalance} onChange={e => setClosingBalance(e.target.value)} className="form-control" min="0" />
             </div>
 

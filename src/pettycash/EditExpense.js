@@ -76,7 +76,7 @@ function EditExpense() {
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
               <div>
-                <label>Organization</label>
+                <label>Branch</label>
                 <select name="organizationId" value={form.organizationId} onChange={handleChange} required>
                   <option value="">Select organization</option>
                   {organizations.map(org => (

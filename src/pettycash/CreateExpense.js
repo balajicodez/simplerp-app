@@ -124,7 +124,7 @@ function CreateExpense() {
         <form onSubmit={handleSubmit} encType="multipart/form-data">        
           <div className="form-grid">
             <div>
-              <label>Organization</label>
+              <label>Branch</label>
               <select name="organizationId" type="dropdown"value={form.organizationId} onChange={handleChange} required className="styled-select">
                 <option value="">Select organization</option>
                 {organizations.map(org => (
@@ -133,27 +133,24 @@ function CreateExpense() {
               </select>
             </div>
             <div>
+              <label>Expense Date</label>
+              <input name="expenseDate" type="date" value={form.expenseDate} onChange={handleChange} />
+            </div>
+            <div>
               <label>Description</label>
               <input name="description" value={form.description} onChange={handleChange} required />
             </div>
+             
             <div>
               <label>Amount</label>
               <input name="amount" type="number" value={form.amount} onChange={handleChange} required />
             </div>
             <div>
-              <label>Expense Type</label>
+              <label>Category</label>
               <select name="subtype" value={form.subtype} onChange={handleChange} required={subtypes.length>0} className="styled-select">
-                <option value="">Select expense type</option>
+                <option value="">Select category</option>
                 {subtypes.map((s, i) => <option key={i} value={s}>{s}</option>)}
               </select>
-            </div>
-            <div>
-              <label>Employee ID</label>
-              <input name="employeeId" type="number" value={form.employeeId} onChange={handleChange} />
-            </div>
-            <div>
-              <label>Expense Date</label>
-              <input name="expenseDate" type="date" value={form.expenseDate} onChange={handleChange} />
             </div>
             <div>
               <label>Reference Number</label>

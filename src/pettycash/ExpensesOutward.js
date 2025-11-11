@@ -67,7 +67,7 @@ function ExpensesOutward() {
   return (
     <div>
       <Sidebar isOpen={true} />
-      <PageCard title="Expenses - Outward">
+      <PageCard title="Cashflow - Outward">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="small">Outward expenses (CASH-OUT)</div>
           <div>
@@ -75,7 +75,7 @@ function ExpensesOutward() {
           </div>
         </div>
         <div style={{ margin: '12px 0' }}>
-          <label style={{ marginRight: 8 }}>Organization:</label>
+          <label style={{ marginRight: 8 }}>Branch:</label>
           <select name="organizationId" onChange={handleChange} className="styled-select" style={{ minWidth: 180 }}>
             <option value="">All organizations</option>
             {organizations.map(org => (
@@ -90,7 +90,7 @@ function ExpensesOutward() {
                 <tr>
                   <th>Description</th>
                   <th>Amount</th>
-                  <th>Employee ID</th>
+                 
                   <th>Type</th>
                   <th>Receipt</th>
                   <th>Edit</th>
@@ -101,7 +101,7 @@ function ExpensesOutward() {
                   <tr key={idx}>
                     <td>{it.description}</td>
                     <td>{it.amount}</td>
-                    <td>{it.employeeId}</td>
+                  
                     <td>{it.expenseSubType}</td>
                     <td>
                       {it.imageData ? (
