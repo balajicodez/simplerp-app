@@ -1,0 +1,454 @@
+/* Enhanced Create Expense Styles - Compact Version */
+
+/* Header Stats */
+.header-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 5px;
+}
+
+.stat-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 5px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+}
+
+.stat-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  opacity: 0.9;
+}
+
+/* Enhanced Form Inputs */
+.employee-input-wrapper,
+.date-input-wrapper,
+.reference-input-wrapper {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 0.9rem;
+  z-index: 2;
+}
+
+.employee-input-wrapper .form-input,
+.date-input-wrapper .form-input,
+.reference-input-wrapper .form-input {
+  padding-left: 32px !important;
+}
+
+/* Category Options */
+.category-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.category-icon {
+  font-size: 0.9rem;
+}
+
+/* Form Sections - Reduced Padding */
+.form-section {
+  padding: 7px !important;
+}
+
+.section-title {
+  font-size: 1rem !important;
+  margin: 0 0 12px 0 !important;
+}
+
+.section-icon {
+  font-size: 1.1rem !important;
+}
+
+/* Form Grid - Tighter */
+.enhanced-grid {
+  gap: 12px !important;
+}
+
+.form-group {
+  gap: 4px !important;
+}
+
+.form-label {
+  font-size: 0.8rem !important;
+}
+
+.form-input, .form-select {
+  padding: 8px 12px !important;
+  font-size: 0.9rem !important;
+}
+
+/* Amount Input */
+.currency-symbol {
+  left: 12px !important;
+  font-size: 0.9rem !important;
+}
+
+.amount-input {
+  padding-left: 32px !important;
+}
+
+/* Character Count */
+.char-count {
+  font-size: 0.7rem !important;
+  margin-top: 2px !important;
+}
+
+/* File Upload Enhancements */
+.file-upload-area {
+  padding: 6px 6px !important;
+}
+
+.file-upload-area.has-file {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.file-upload-area.has-file .upload-icon {
+  color: #10b981;
+}
+
+.upload-icon {
+  font-size: 2rem !important;
+}
+
+.upload-text strong {
+  font-size: 0.9rem !important;
+}
+
+.upload-text span {
+  font-size: 0.8rem !important;
+}
+
+.upload-text small {
+  font-size: 0.7rem !important;
+}
+
+.file-preview {
+  padding: 12px !important;
+}
+
+.file-info {
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+.file-icon {
+  font-size: 1.2rem !important;
+}
+
+.file-name {
+  font-size: 0.9rem !important;
+  margin-bottom: 1px !important;
+}
+
+.file-meta {
+  gap: 8px !important;
+  font-size: 0.7rem !important;
+}
+
+.file-type {
+  padding: 1px 4px !important;
+  font-size: 0.65rem !important;
+}
+
+.preview-header {
+  margin-bottom: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+.preview-header span {
+  font-size: 0.9rem !important;
+}
+
+.preview-close {
+  font-size: 1rem !important;
+  padding: 1px !important;
+}
+
+.preview-image {
+  max-width: 150px !important;
+  max-height: 150px !important;
+}
+
+/* Summary Section */
+.summary-section {
+  padding: 16px !important;
+}
+
+.summary-grid {
+  gap: 2px !important;
+}
+
+.summary-item {
+  padding: 8px 12px !important;
+}
+
+.summary-label {
+  font-size: 1rem !important;
+}
+
+.summary-value {
+  font-size: 1rem !important;
+  margin-left: 4px;
+}
+
+.summary-value.amount {
+  font-size: 0.9rem !important;
+  color: #24c58f;
+}
+
+/* Enhanced Buttons */
+.btn-primary, .btn-secondary, .btn-outline {
+  padding: 8px 16px !important;
+  font-size: 0.85rem !important;
+}
+
+.submit-btn {
+  min-width: 140px !important;
+}
+
+.btn-icon {
+  font-size: 0.9rem !important;
+}
+
+.submit-btn.loading {
+  background: #9ca3af !important;
+  cursor: not-allowed;
+}
+
+/* Form Select Enhancements */
+.form-select {
+  background-size: 14px 14px !important;
+  padding-right: 32px !important;
+}
+
+/* Loading Animation Enhancement */
+.loading-spinner-small {
+  width: 14px !important;
+  height: 14px !important;
+  border-width: 1.5px !important;
+}
+
+/* Form Actions - Compact */
+.form-actions {
+  padding: 16px 0 !important;
+  margin-top: 16px !important;
+}
+
+.action-buttons {
+  gap: 8px !important;
+}
+
+/* Alerts - Compact */
+.alert {
+  padding: 12px !important;
+  margin-bottom: 16px !important;
+}
+
+.alert-icon {
+  font-size: 1rem !important;
+}
+
+.alert-content {
+  font-size: 0.85rem !important;
+}
+
+/* Header - Compact */
+.create-expense-header {
+  padding: 16px !important;
+  margin-bottom: 20px !important;
+}
+
+.create-expense-header .header-icon {
+  font-size: 2.2rem !important;
+  padding: 12px !important;
+}
+
+.header-text h1 {
+  font-size: 1.4rem !important;
+  margin: 0 0 4px 0 !important;
+}
+
+.header-text p {
+  font-size: 0.85rem !important;
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+  .header-stats {
+    justify-content: center;
+  }
+  
+  .stat-badge {
+    min-width: 60px;
+    padding: 6px 8px;
+  }
+  
+  .stat-number {
+    font-size: 1rem;
+  }
+  
+  .stat-label {
+    font-size: 0.65rem;
+  }
+  
+  .summary-grid {
+   display: flex;
+  }
+  
+  .summary-item {
+    padding: 6px 8px;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    font-size:16px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .action-buttons {
+    width: 100%;
+    gap: 6px;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-outline {
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .create-expense-header .header-content {
+    gap: 12px;
+  }
+  
+  .create-expense-header .header-icon {
+    font-size: 1.8rem !important;
+    padding: 8px !important;
+  }
+  
+  .header-text h1 {
+    font-size: 1.2rem !important;
+  }
+  
+  .header-text p {
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Extra Small Screens */
+@media (max-width: 480px) {
+  .form-section {
+    padding: 12px !important;
+  }
+  
+  .enhanced-grid {
+    grid-template-columns: 1fr;
+    gap: 8px !important;
+  }
+  
+  .create-expense-header {
+    padding: 12px !important;
+  }
+  
+  .header-stats {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .stat-badge {
+    min-width: 80px;
+  }
+}
+
+/* Hover Effects */
+.form-group:hover .form-label {
+  color: #3b82f6;
+}
+
+.file-upload-area:hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Focus States Enhancement */
+.form-input:focus,
+.form-select:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+/* Success State Animation */
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.alert-success {
+  animation: successPulse 0.4s ease-in-out;
+}
+
+/* Print Styles */
+@media print {
+  .create-expense-header,
+  .form-actions,
+  .file-upload-section {
+    display: none;
+  }
+  
+  .form-section {
+    break-inside: avoid;
+    border: 1px solid #000;
+    padding: 8px !important;
+  }
+  
+  .form-input, .form-select {
+    padding: 4px 8px !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Compact Table Styles (if needed elsewhere) */
+.compact-table {
+  font-size: 0.8rem;
+}
+
+.compact-table th,
+.compact-table td {
+  padding: 6px 8px !important;
+}
+
+/* Utility classes for extra small spacing */
+.p-1 { padding: 0.25rem; }
+.p-2 { padding: 0.5rem; }
+.m-1 { margin: 0.25rem; }
+.m-2 { margin: 0.5rem; }
+
+.text-xs { font-size: 0.7rem; }
+.text-sm { font-size: 0.8rem; }
