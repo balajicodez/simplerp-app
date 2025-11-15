@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
-import './PettyCash.css';
+import './EditExpense.css';
 
 function ExpenseView() {
   const { id } = useParams();
@@ -25,55 +25,260 @@ function ExpenseView() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const getExpenseTypeColor = () => {
+    if (!expense?.expenseType) return '#6b7280';
+    return expense.expenseType === 'CASH-IN' ? '#10b981' : '#ef4444';
+  };
+
+  const getExpenseIcon = () => {
+    if (!expense?.expenseType) return '📝';
+    return expense.expenseType === 'CASH-IN' ? '💰' : '💸';
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
   return (
-    <div>
+    <div className="page-container">
       <Sidebar isOpen={true} />
-      <PageCard title={expense ? `Expense ${expense.id || id}` : 'Expense Details'}>
-        {loading && <div className="small">Loading...</div>}
-        {error && <div style={{ color: '#c53030' }}>{error}</div>}
+      <PageCard title="Expense Details">
+        
+        {/* Header Section */}
+        <div className="expense-view-header" style={{ backgroundColor: getExpenseTypeColor() }}>
+          <div className="header-content">
+            <div className="header-icon">{getExpenseIcon()}</div>
+            <div className="header-text">
+              <h1>Expense #{expense?.id || id}</h1>
+              <p>Detailed view of expense transaction</p>
+              {expense?.expenseType && (
+                <div className="expense-type-badge">
+                  {expense.expenseType}
+                </div>
+              )}
+            </div>
+            <div className="amount-display">
+              <div className="amount-figure">
+                {expense?.amount ? formatCurrency(expense.amount) : '--'}
+              </div>
+              <div className="amount-label">Total Amount</div>
+            </div>
+          </div>
+        </div>
+
+        {loading && (
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Loading expense details...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="alert alert-error">
+            <div className="alert-icon">⚠️</div>
+            <div className="alert-content">
+              <strong>Error:</strong> {error}
+            </div>
+          </div>
+        )}
 
         {expense && (
-          <div>
-            <table className="payroll-table">
-              <tbody>
-                <tr>
-                  <th>Description</th>
-                  <td>{expense.description}</td>
-                </tr>
-                <tr>
-                  <th>Amount</th>
-                  <td>{expense.amount}</td>
-                </tr>
-                <tr>
-                  <th>Employee ID</th>
-                  <td>{expense.employeeId}</td>
-                </tr>
-                {expense.date && (
-                  <tr>
-                    <th>Date</th>
-                    <td>{expense.date}</td>
-                  </tr>
-                )}
-                { (expense.createdByUser || expense.createdBy) && (
-                  <tr>
-                    <th>Created By</th>
-                    <td>{expense.createdByUser || expense.createdBy}</td>
-                  </tr>
-                ) }
-                { expense.createdDate && (
-                  <tr>
-                    <th>Created Date</th>
-                    <td>{expense.createdDate}</td>
-                  </tr>
-                ) }
+          <div className="expense-details-container">
+            {/* Main Details Card */}
+            <div className="details-card">
+              <div className="card-header">
+                <h3>Transaction Information</h3>
+                <div className="status-badge" style={{ backgroundColor: getExpenseTypeColor() }}>
+                  {expense.expenseType || 'Unknown'}
+                </div>
+              </div>
+              
+              <div className="details-grid">
+                <div className="detail-group">
+                  <label className="detail-label">Branch Name</label>
+                  <div className="detail-value">{expense.branchName || 'Not specified'}</div>
+                </div>
                 
-              </tbody>
-            </table>
+                <div className="detail-group">
+                  <label className="detail-label">Amount</label>
+                  <div className="detail-value amount-highlight">
+                    {formatCurrency(expense.amount)}
+                  </div>
+                </div>
 
-            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-              <button className="btn" onClick={() => navigate('/pettycash/expenses')}>Back</button>
-              <button className="btn" onClick={() => navigate(`/pettycash/expenses/${id}/edit`)}>Edit</button>
+                <div className="detail-group">
+                  <label className="detail-label">Employee ID</label>
+                  <div className="detail-value">
+                    {expense.employeeId || (
+                      <span className="empty-state">Not assigned</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="detail-group">
+                  <label className="detail-label">Expense Category</label>
+                  <div className="detail-value">
+                    <span className="category-tag">
+                      {expense.expenseSubType || 'General'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="detail-group">
+                  <label className="detail-label">Reference Number</label>
+                  <div className="detail-value">
+                    {expense.referenceNumber || (
+                      <span className="empty-state">No reference</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="detail-group">
+                  <label className="detail-label">Organization</label>
+                  <div className="detail-value">
+                    {expense.organizationName || 'Not specified'}
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {/* Dates Card */}
+            <div className="details-card">
+              <div className="card-header">
+                <h3>Timeline</h3>
+                <div className="timeline-icon">📅</div>
+              </div>
+              
+              <div className="details-grid">
+                <div className="detail-group">
+                  <label className="detail-label">Expense Date</label>
+                  <div className="detail-value">
+                    {formatDate(expense.expenseDate)}
+                  </div>
+                </div>
+
+                <div className="detail-group">
+                  <label className="detail-label">Created Date</label>
+                  <div className="detail-value">
+                    {formatDate(expense.createdDate)}
+                  </div>
+                </div>
+
+                <div className="detail-group">
+                  <label className="detail-label">Created By</label>
+                  <div className="detail-value">
+                    {expense.createdByUser || (
+                      <span className="empty-state">System</span>
+                    )}
+                  </div>
+                </div>
+
+                {expense.createdByUserId && (
+                  <div className="detail-group">
+                    <label className="detail-label">Created By User ID</label>
+                    <div className="detail-value">
+                      <code className="user-id">{expense.createdByUserId}</code>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Receipt Section */}
+            {(expense.imageData || expense.fileUrl || expense.file) && (
+              <div className="details-card">
+                <div className="card-header">
+                  <h3>Receipt Attachment</h3>
+                  <div className="attachment-icon">📎</div>
+                </div>
+                
+                <div className="receipt-section">
+                  <div className="receipt-preview">
+                    {expense.imageData ? (
+                      <img 
+                        src={`data:image/png;base64,${expense.imageData}`} 
+                        alt="Expense Receipt" 
+                        className="receipt-image"
+                      />
+                    ) : (
+                      <div className="file-info">
+                        <div className="file-icon">📄</div>
+                        <div className="file-details">
+                          <div className="file-name">
+                            {expense.imageFileName || 'Receipt File'}
+                          </div>
+                          <div className="file-type">
+                            {expense.imageContentType || 'File'}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="action-buttons-container">
+              <button 
+                className="btn-secondary"
+                onClick={() => navigate('/pettycash/expenses')}
+              >
+                <span className="btn-icon">←</span>
+                Back to List
+              </button>
+              
+              <div className="primary-actions">
+                <button 
+                  className="btn-outline"
+                  onClick={() => navigate(-1)}
+                >
+                  <span className="btn-icon">↶</span>
+                  Go Back
+                </button>
+                
+                <button 
+                  className="btn-primary"
+                  onClick={() => navigate(`/pettycash/expenses/${id}/edit`)}
+                >
+                  <span className="btn-icon">✏️</span>
+                  Edit Expense
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!expense && !loading && !error && (
+          <div className="no-data-state">
+            <div className="no-data-icon">📝</div>
+            <h3>No Expense Found</h3>
+            <p>Unable to load expense details for ID: {id}</p>
+            <button 
+              className="btn-primary"
+              onClick={() => navigate('/pettycash/expenses')}
+            >
+              Back to Expenses
+            </button>
           </div>
         )}
       </PageCard>
@@ -82,4 +287,3 @@ function ExpenseView() {
 }
 
 export default ExpenseView;
-

@@ -8,7 +8,17 @@ import { APP_SERVER_URL_PREFIX } from '../constants.js';
 function EditExpense() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ description:'', amount:'', employeeId:'', organizationId:'' });
+  const [form, setForm] = useState({ 
+    branchName: '', 
+    amount: '', 
+    employeeId: '', 
+    organizationId: '', 
+    organizationName: '',
+    expenseType: '',
+    expenseSubType: '',
+    referenceNumber: '',
+    expenseDate: new Date().toISOString().slice(0, 10)
+  });
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,32 +27,52 @@ function EditExpense() {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
+    
+    // Fetch expense details
     fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`)
-      .then(res => { if (!res.ok) throw new Error('fail'); return res.json(); })
+      .then(res => { 
+        if (!res.ok) throw new Error('Failed to load expense'); 
+        return res.json(); 
+      })
       .then(json => {
         // Ensure organizationId is a string for dropdown matching
         let orgId = json.organizationId || '';
         if (typeof orgId !== 'string') orgId = String(orgId);
+        
         setForm({ 
-          description: json.description || '', 
+          branchName: json.branchName || '', 
           amount: json.amount || '', 
           employeeId: json.employeeId || '', 
           organizationId: orgId, 
-          organizationName: '',
+          organizationName: json.organizationName || '',
           expenseType: json.expenseType || '',
-          expenseSubType: json.expenseSubType || ''
+          expenseSubType: json.expenseSubType || '',
+          referenceNumber: json.referenceNumber || '',
+          expenseDate: json.expenseDate || json.createdDate || new Date().toISOString().slice(0, 10)
         });
       })
-      .catch(() => setError('Unable to load expense'))
-      .finally(() => setLoading(false));
-      
+      .catch((err) => {
+        console.error('Error loading expense:', err);
+        setError('Unable to load expense details');
+      });
+
+    // Fetch organizations
     fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
-      .then(res => res.json())
-      .then(data => {
-        const orgs = data._embedded ? data._embedded.organizations || [] : data;
-        setOrganizations(orgs);
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load organizations');
+        return res.json();
       })
-      .catch(() => {});
+      .then(data => {
+        const orgs = data._embedded ? data._embedded.organizations || [] : data || [];
+        setOrganizations(Array.isArray(orgs) ? orgs : []);
+      })
+      .catch((err) => {
+        console.error('Error loading organizations:', err);
+        setOrganizations([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [id]);
 
   const handleChange = (e) => {
@@ -55,8 +85,8 @@ function EditExpense() {
     } else if (name === 'organizationId') {
       // Find organization name from selected dropdown value
       const selectedOrg = organizations.find(org => String(org.id) === String(value));
-      let temp = e.currentTarget.options[e.currentTarget.selectedIndex].text     
-      setForm((f) => ({ ...f, organizationId: value, organizationName: temp }));
+      const orgName = selectedOrg ? selectedOrg.name : '';
+      setForm((f) => ({ ...f, organizationId: value, organizationName: orgName }));
     } else {
       setForm((f) => ({ ...f, [name]: value }));
     }
@@ -68,15 +98,33 @@ function EditExpense() {
     setSuccess('');
     setLoading(true);
     
+    // Validation
+    if (!form.organizationId) {
+      setError('Please select an organization');
+      setLoading(false);
+      return;
+    }
+    if (!form.branchName.trim()) {
+      setError('Please enter a branch name');
+      setLoading(false);
+      return;
+    }
+    if (!form.amount || Number(form.amount) <= 0) {
+      setError('Please enter a valid amount');
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = { 
-        description: form.description, 
+        branchName: form.branchName.trim(),
         amount: Number(form.amount), 
         organizationId: form.organizationId || undefined,
-        organizationName: form.organizationName || undefined 
+        organizationName: form.organizationName || undefined,
+        employeeId: form.employeeId ? Number(form.employeeId) : undefined,
+        referenceNumber: form.referenceNumber || undefined,
+        expenseDate: form.expenseDate || undefined
       };
-      if (form.employeeId) payload.employeeId = Number(form.employeeId);
-      if (form.organizationId) payload.organizationId = form.organizationId;
       
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, { 
         method: 'PATCH', 
@@ -85,8 +133,8 @@ function EditExpense() {
       });
       
       if (!res.ok) {
-        const data = await res.text();
-        setError(data);
+        const errorText = await res.text();
+        setError(errorText || 'Failed to update expense');
       } else {
         setSuccess('Expense updated successfully!');
         setTimeout(() => {
@@ -94,6 +142,7 @@ function EditExpense() {
         }, 1500);
       }
     } catch (err) { 
+      console.error('Error updating expense:', err);
       setError('Failed to save expense. Please try again.'); 
     }
     finally { 
@@ -113,6 +162,9 @@ function EditExpense() {
     return '📝';
   };
 
+  // Safe organization count
+  const organizationCount = Array.isArray(organizations) ? organizations.length : 0;
+
   return (
     <div className="page-container">
       <Sidebar isOpen={true} />
@@ -121,16 +173,16 @@ function EditExpense() {
         <div className={`edit-expense-header ${getExpenseTypeColor()}-header`}>
           <div className="header-content">
             <div className="header-icon">{getExpenseIcon()}</div>
-             <div className="header-stats">
-            <div className="stat-badge">
-              <span className="stat-number">{organizations.length}</span>
-              <span className="stat-label">Organizations</span>
+            <div className="header-stats">
+              <div className="stat-badge">
+                <span className="stat-number">{organizationCount}</span>
+                <span className="stat-label">Organizations</span>
+              </div>
+              <div className="stat-badge">
+                <span className="stat-number">{id ? '1' : '0'}</span>
+                <span className="stat-label">Expense</span>
+              </div>
             </div>
-            <div className="stat-badge">
-              <span className="stat-number">{id ? '1' : '0'}</span>
-              <span className="stat-label">Expense</span>
-            </div>
-          </div>
             <div className="header-text">
               <h1>Edit Expense #{id}</h1>
               <p>Update expense details and organization information</p>
@@ -146,8 +198,8 @@ function EditExpense() {
               )}
             </div>
           </div>
-         
         </div>
+
         <div className="edit-expense-form">
           {error && (
             <div className="alert alert-error">
@@ -167,7 +219,7 @@ function EditExpense() {
             </div>
           )}
 
-          {loading ? (
+          {loading && !form.branchName ? (
             <div className="loading-state">
               <div className="loading-spinner"></div>
               <p>Loading expense details...</p>
@@ -190,31 +242,33 @@ function EditExpense() {
                         onChange={handleChange} 
                         className="form-select"
                         required
+                        disabled={loading}
                       >
                         <option value="">Select organization</option>
-                        {organizations.map(org => (
-                          <option 
-                            key={org.id || org._links?.self?.href} 
-                            value={org.id || (org._links?.self?.href.split('/').pop())}
-                          >
-                            {org.name}
-                          </option>
-                        ))}
+                        {Array.isArray(organizations) && organizations.map(org => {
+                          const orgId = org.id || (org._links?.self?.href.split('/').pop());
+                          return (
+                            <option key={orgId} value={orgId}>
+                              {org.name}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label required">Description</label>
+                      <label className="form-label required">Branch Name</label>
                       <input 
-                        name="description" 
-                        value={form.description} 
+                        name="branchName" 
+                        value={form.branchName} 
                         onChange={handleChange} 
                         className="form-input"
-                        placeholder="Enter expense description..."
+                        placeholder="Enter branch name..."
                         maxLength={200}
                         required
+                        disabled={loading}
                       />
-                      <div className="char-count">{form.description.length}/200</div>
+                      <div className="char-count">{form.branchName.length}/200</div>
                     </div>
                     
                     <div className="form-group">
@@ -231,11 +285,12 @@ function EditExpense() {
                           min="0"
                           step="0.01"
                           required
+                          disabled={loading}
                         />
                       </div>
                     </div>
 
-                    <div className="form-group">
+                    {/* <div className="form-group">
                       <label className="form-label">Employee ID</label>
                       <div className="employee-input-wrapper">
                         <span className="input-icon">👤</span>
@@ -246,11 +301,46 @@ function EditExpense() {
                           onChange={handleChange} 
                           className="form-input"
                           placeholder="Enter employee ID (optional)"
+                          disabled={loading}
+                        />
+                      </div>
+                    </div> */}
+
+                    {/* <div className="form-group">
+                      <label className="form-label">Reference Number</label>
+                      <div className="reference-input-wrapper">
+                        <span className="input-icon">🔢</span>
+                        <input 
+                          name="referenceNumber" 
+                          type="text" 
+                          value={form.referenceNumber} 
+                          onChange={handleChange} 
+                          className="form-input"
+                          placeholder="Optional reference number"
+                          maxLength={50}
+                          disabled={loading}
+                        />
+                      </div>
+                      <div className="char-count">{form.referenceNumber.length}/50</div>
+                    </div> */}
+
+                    <div className="form-group">
+                      <label className="form-label">Expense Date</label>
+                      <div className="date-input-wrapper">
+                        <span className="input-icon" style={{marginLeft:"-10px"}}>📅</span>
+                        <input 
+                          name="expenseDate" 
+                          type="date" 
+                          value={form.expenseDate} 
+                          onChange={handleChange} 
+                          className="form-input"
+                          disabled={loading}
                         />
                       </div>
                     </div>
                   </div>
                 </div>
+
                 <div className="form-section summary-section">
                   <h3 className="section-title">
                     <span className="section-icon">📊</span>
@@ -264,7 +354,13 @@ function EditExpense() {
                     <div className="summary-item">
                       <span className="summary-label">Organization:</span>
                       <span className="summary-value">
-                        {organizations.find(org => String(org.id) === String(form.organizationId))?.name || 'Not selected'}
+                        {form.organizationName || 'Not selected'}
+                      </span>
+                    </div>
+                    <div className="summary-item">
+                      <span className="summary-label">Branch:</span>
+                      <span className="summary-value">
+                        {form.branchName || 'Not entered'}
                       </span>
                     </div>
                     <div className="summary-item">
@@ -282,6 +378,7 @@ function EditExpense() {
                   </div>
                 </div>
               </div>
+
               <div className="form-actions">
                 <button 
                   type="button" 

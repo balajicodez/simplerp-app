@@ -658,3 +658,292 @@ button:disabled {
     border: 1px solid #000;
   }
 }
+
+/* Expense View Styles */
+.expense-view-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.expense-view-header .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.expense-view-header .header-icon {
+  font-size: 48px;
+  opacity: 0.9;
+}
+
+.expense-view-header .header-text h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.expense-view-header .header-text p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 16px;
+}
+
+.expense-type-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+.amount-display {
+  text-align: right;
+}
+
+.amount-figure {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.amount-label {
+  font-size: 14px;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Details Container */
+.expense-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.details-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.status-badge {
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.timeline-icon,
+.attachment-icon {
+  font-size: 24px;
+  opacity: 0.7;
+}
+
+/* Details Grid */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 16px;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.amount-highlight {
+  font-size: 20px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.category-tag {
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.empty-state {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.user-id {
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Receipt Section */
+.receipt-section {
+  display: flex;
+  justify-content: center;
+}
+
+.receipt-preview {
+  max-width: 400px;
+  text-align: center;
+}
+
+.receipt-image {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 2px dashed #d1d5db;
+}
+
+.file-icon {
+  font-size: 32px;
+  opacity: 0.7;
+}
+
+.file-details {
+  text-align: left;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.file-type {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+/* Action Buttons */
+.action-buttons-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 0;
+  border-top: 2px solid #f3f4f6;
+}
+
+.primary-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* No Data State */
+.no-data-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.no-data-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.no-data-state h3 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  color: #6b7280;
+}
+
+.no-data-state p {
+  margin: 0 0 24px 0;
+  color: #9ca3af;
+  font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .expense-view-header .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .amount-display {
+    text-align: center;
+  }
+  
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .primary-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .primary-actions button {
+    flex: 1;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}

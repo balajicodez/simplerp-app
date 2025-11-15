@@ -3,29 +3,35 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
-import { APP_SERVER_URL_PREFIX, } from '../constants.js';
+import { APP_SERVER_URL_PREFIX } from '../constants.js';
 
 function DayClosingReport() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [reportMsg, setReportMsg] = useState('');
-  const [totals, setTotals] = useState({ cashIn: 0, cashOut: 0 , startingBalance: 0});
+  const [totals, setTotals] = useState({ cashIn: 0, cashOut: 0, startingBalance: 0 });
   const [pdfUrl, setPdfUrl] = useState('');
   const [organizations, setOrganizations] = useState([]);
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
 
+  // Safe number formatting function
+  const safeToLocaleString = (value) => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return '0';
+    }
+    return Number(value).toLocaleString();
+  };
+
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     setSelectedDate(today);
     
-    setLoading(true);
-    setError('');
-    
     const fetchDayClosingData = async () => {
       try {
         setLoading(true);
+        setError('');
         const response = await fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings`);
         if (!response.ok) {
           throw new Error('Failed to fetch data');
@@ -34,9 +40,21 @@ function DayClosingReport() {
         const list = data._embedded ? data._embedded.pettyCashDayClosings || [] : data;
         setRecords(list);
         
-        const cashInTotal = list.reduce((sum, rec) => sum + (rec.cashIn || 0), 0);
-        const cashOutTotal = list.reduce((sum, rec) => sum + (rec.cashOut || 0), 0);
-        setTotals({ cashIn: cashInTotal, cashOut: cashOutTotal, startingBalance: data._embedded.pettyCashDayClosings[0].startingBalance });
+        // Safe calculation of totals
+        const cashInTotal = list.reduce((sum, rec) => sum + (Number(rec.cashIn) || 0), 0);
+        const cashOutTotal = list.reduce((sum, rec) => sum + (Number(rec.cashOut) || 0), 0);
+        
+        // Safe starting balance calculation
+        let startingBalance = 0;
+        if (list.length > 0 && list[0].startingBalance) {
+          startingBalance = Number(list[0].startingBalance) || 0;
+        }
+        
+        setTotals({ 
+          cashIn: cashInTotal, 
+          cashOut: cashOutTotal, 
+          startingBalance: startingBalance 
+        });
         
         setLoading(false);
       } catch (err) {
@@ -71,7 +89,7 @@ function DayClosingReport() {
       const doc = new jsPDF();
       
       const selectedRecord = filteredRecords[0];
-      const startingBalance = selectedRecord.startingBalance || 0;
+      const startingBalance = Number(selectedRecord.startingBalance) || 0;
 
       doc.setFontSize(16);
       doc.text('Sri Divya Sarees', 105, 18, { align: 'center' });
@@ -81,9 +99,10 @@ function DayClosingReport() {
       doc.setLineWidth(0.5);
       doc.line(20, 32, 190, 32);
       doc.setFontSize(14);
-      doc.text(`Day Closing Report - ${selectedDate}`, 14, 40, { align:"left" });
+      doc.text(`Day Closing Report - ${selectedDate}`, 14, 40, { align: "left" });
       doc.setFontSize(13);
-      doc.text(`Opening Balance:  ${Number(startingBalance).toLocaleString()}`, 158, 40, { align: 'right',marginTop:"20px" });
+      doc.text(`Opening Balance:  ${safeToLocaleString(startingBalance)}`, 158, 40, { align: 'right', marginTop: "20px" });
+      
       const mainTableColumn = [
         'Closing Date',
         'Description',
@@ -98,8 +117,8 @@ function DayClosingReport() {
         rec.description || '',
         rec.createdBy || '',
         rec.createdTime || '',
-        rec.cashIn ? ` ${Number(rec.cashIn).toLocaleString()}` : '-',
-        rec.cashOut ? ` ${Number(rec.cashOut).toLocaleString()}` : '-'
+        rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : '-',
+        rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : '-'
       ]);
 
       autoTable(doc, {
@@ -127,10 +146,10 @@ function DayClosingReport() {
           ['Description:', rec.description || ''],
           ['Created By:', rec.createdBy || ''],
           ['Created Time:', rec.createdTime || ''],
-          ['Starting Balance:', rec.startingBalance ? ` ${Number(rec.startingBalance).toLocaleString()}` : ' 0'],
-          ['Cash In:', rec.cashIn ? ` ${Number(rec.cashIn).toLocaleString()}` : ' 0'],
-          ['Cash Out:', rec.cashOut ? ` ${Number(rec.cashOut).toLocaleString()}` : ' 0'],
-          ['Closing Balance:', rec.closingBalance ? ` ${Number(rec.closingBalance).toLocaleString()}` : ' 0']
+          ['Starting Balance:', rec.startingBalance ? ` ${safeToLocaleString(rec.startingBalance)}` : ' 0'],
+          ['Cash In:', rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : ' 0'],
+          ['Cash Out:', rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : ' 0'],
+          ['Closing Balance:', rec.closingBalance ? ` ${safeToLocaleString(rec.closingBalance)}` : ' 0']
         ];
 
         autoTable(doc, {
@@ -219,18 +238,18 @@ function DayClosingReport() {
         });
       });
 
-      const dateCashInTotal = filteredRecords.reduce((sum, rec) => sum + (rec.cashIn || 0), 0);
-      const dateCashOutTotal = filteredRecords.reduce((sum, rec) => sum + (rec.cashOut || 0), 0);
+      const dateCashInTotal = filteredRecords.reduce((sum, rec) => sum + (Number(rec.cashIn) || 0), 0);
+      const dateCashOutTotal = filteredRecords.reduce((sum, rec) => sum + (Number(rec.cashOut) || 0), 0);
 
       doc.addPage();
       doc.setFontSize(14);
       doc.text(`Grand Summary - ${selectedDate}`, 105, 20, { align: 'center' });
       
       const summaryData = [
-        ['Starting Balance:', ` ${Number(startingBalance).toLocaleString()}`],
-        ['Total Cash In:', ` ${Number(dateCashInTotal).toLocaleString()}`],
-        ['Total Cash Out:', ` ${Number(dateCashOutTotal).toLocaleString()}`],
-        ['Closing Balance:', ` ${Number(startingBalance + dateCashInTotal - dateCashOutTotal).toLocaleString()}`]
+        ['Starting Balance:', ` ${safeToLocaleString(startingBalance)}`],
+        ['Total Cash In:', ` ${safeToLocaleString(dateCashInTotal)}`],
+        ['Total Cash Out:', ` ${safeToLocaleString(dateCashOutTotal)}`],
+        ['Closing Balance:', ` ${safeToLocaleString(startingBalance + dateCashInTotal - dateCashOutTotal)}`]
       ];
 
       autoTable(doc, {
@@ -259,116 +278,66 @@ function DayClosingReport() {
       backgroundColor: '#f8fafc'
     },
     
-headerSection: {
-  display: 'flex',
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '24px',
-  padding: '6px 0',
-  borderBottom: '1px solid #e2e8f0',
-  gap: '20px',
-  
-  '@media (max-width: 768px)': {
-    flexDirection: 'column',
-    alignItems: 'stretch',
-    gap: '16px',
-    padding: '12px 0'
-  }
-},
-
-dateSelector: {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-  
-  '@media (max-width: 1024px)': {
-    gap: '10px'
-  },
-  
-  '@media (max-width: 768px)': {
-    justifyContent: 'space-between',
-    marginBottom: '0'
-  },
-    '@media (max-width: 480px)': {
-    flexDirection: 'column',
-    alignItems: 'stretch',
-    gap: '8px'
-  }
-},
-
-dateLabel: {
-  fontWeight: '600',
-  color: '#374151',
-  fontSize: '14px',
-  
-  '@media (max-width: 480px)': {
-    textAlign: 'center',
-    fontSize: '13px'
-  }
-},
-
-dateInput: {
-  padding: '8px 12px',
-  border: '1px solid #d1d5db',
-  borderRadius: '6px',
-  fontSize: '14px',
-  backgroundColor: 'white',
-  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-    '@media (max-width: 480px)': {
-    width: '100%'
-  }
-},
-
-generateButton: {
-  background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
-  color: 'white',
-  border: 'none',
-  padding: '12px 14px',
-  borderRadius: '8px',
-  fontWeight: '600',
-  fontSize: '14px',
-  cursor: 'pointer',
-  transition: 'all 0.3s ease',
-  boxShadow: '0 2px 4px rgba(30, 58, 138, 0.3)',
-  whiteSpace: 'nowrap',
-  
-  '@media (max-width: 768px)': {
-    width: '100%',
-    padding: '14px 16px',
-    fontSize: '15px'
-  },
-  
-  '&:hover': {
-    transform: 'scale(1.05)',
-    boxShadow: '0 4px 8px rgba(30, 58, 138, 0.4)'
-  }
-},
+    headerSection: {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '24px',
+      padding: '6px 0',
+      borderBottom: '1px solid #e2e8f0',
+      gap: '20px',
+    },
+    
+    dateSelector: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+    },
+    
+    dateLabel: {
+      fontWeight: '600',
+      color: '#374151',
+      fontSize: '14px',
+    },
+    
+    dateInput: {
+      padding: '8px 12px',
+      border: '1px solid #d1d5db',
+      borderRadius: '6px',
+      fontSize: '14px',
+      backgroundColor: 'white',
+      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+    },
+    
+    generateButton: {
+      background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
+      color: 'white',
+      border: 'none',
+      padding: '12px 14px',
+      borderRadius: '8px',
+      fontWeight: '600',
+      fontSize: '14px',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      boxShadow: '0 2px 4px rgba(30, 58, 138, 0.3)',
+      whiteSpace: 'nowrap',
+    },
     
     summaryContainer: {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-  gap: '20px',
-  marginBottom: '24px',
-  padding: '0 16px',
-  
-  '@media (max-width: 1024px)': {
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '15px'
-  },
-    '@media (max-width: 768px)': {
-    gridTemplateColumns: '1fr',
-    gap: '12px'
-  }
-},
-
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+      gap: '20px',
+      marginBottom: '24px',
+      padding: '0 16px',
+    },
+    
     summaryCard: {
       background: 'white',
-      padding: '5px',
+      padding: '20px',
       borderRadius: '12px',
       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
       textAlign: 'center',
-      minWidth: '50px',
       border: '1px solid #e2e8f0'
     },
     cashInCard: {
@@ -392,17 +361,10 @@ generateButton: {
     tableContainer: {
       background: 'white',
       borderRadius: '12px',
-      overflowY: 'scroll', 
+      overflow: 'auto',
       height: '400px',
       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
       marginBottom: '24px',
-      scrollbarWidth: 'none',         
-      msOverflowStyle: 'none',    
-    },
-    tableContainerInner: {
-      '&::-webkit-scrollbar': {
-        display: 'none',
-      },
     },
     table: {
       width: '100%',
@@ -426,9 +388,6 @@ generateButton: {
     },
     tableRow: {
       transition: 'background-color 0.2s ease',
-      '&:hover': {
-        backgroundColor: '#f8fafc'
-      }
     },
     
     notesSection: {
@@ -494,25 +453,21 @@ generateButton: {
     },
     closeButton: {
       position: 'absolute',
-      top: '-6px',
-      right: '-9px',
+      top: '-10px',
+      right: '-10px',
       fontSize: '20px',
-      background: '#fefafaff',
+      background: '#fff',
       border: 'none',
       cursor: 'pointer',
-      color: '#645c5cff',
-      width: '19px',
-      height: '19px',
+      color: '#645c5c',
+      width: '30px',
+      height: '30px',
       borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#eef1f4ff',
-      '&:hover': {
-        backgroundColor: '#007cf8',
-        color: '#000000ff',
-        cursor: 'pointer',
-      },
+      backgroundColor: '#eef1f4',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
     },
     
     loadingContainer: {
@@ -530,16 +485,15 @@ generateButton: {
       <Sidebar isOpen={true} />
       <PageCard title="Day Closing Report">
         <div style={styles.headerSection}>
-          
-        <div style={styles.dateSelector}>
-          <label style={styles.dateLabel}>Select Date To Generate Report:</label>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            style={styles.dateInput}
-          />
-        </div>
+          <div style={styles.dateSelector}>
+            <label style={styles.dateLabel}>Select Date To Generate Report:</label>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              style={styles.dateInput}
+            />
+          </div>
           <button 
             style={styles.generateButton}
             onClick={handleGenerateReport}
@@ -597,19 +551,19 @@ generateButton: {
               <div style={{...styles.summaryCard, ...styles.cashInCard}}>
                 <div style={{color: '#2563eb', fontWeight: '600', fontSize: '14px'}}>Total Cash-In</div>
                 <div style={{...styles.summaryAmount, color: '#2563eb'}}>
-                   {totals.startingBalance.toLocaleString()}
+                  {safeToLocaleString(totals.cashIn)}
                 </div>
               </div>
               <div style={{...styles.summaryCard, ...styles.cashOutCard}}>
                 <div style={{color: '#dc2626', fontWeight: '600', fontSize: '14px'}}>Total Cash-Out</div>
                 <div style={{...styles.summaryAmount, color: '#dc2626'}}>
-                   {totals.cashOut.toLocaleString()}
+                  {safeToLocaleString(totals.cashOut)}
                 </div>
               </div>
               <div style={{...styles.summaryCard, ...styles.netBalanceCard}}>
                 <div style={{color: '#059669', fontWeight: '600', fontSize: '14px'}}>Net Balance</div>
                 <div style={{...styles.summaryAmount, color: '#059669'}}>
-                   {(totals.startingBalance - totals.cashOut).toLocaleString()}
+                  {safeToLocaleString(totals.cashIn - totals.cashOut)}
                 </div>
               </div>
             </div>
@@ -635,15 +589,15 @@ generateButton: {
                       <td style={styles.tableCell}>{rec.description}</td>
                       <td style={styles.tableCell}>{rec.createdBy}</td>
                       <td style={styles.tableCell}>{rec.createdTime}</td>
-                      <td style={styles.tableCell}> {Number(rec.startingBalance).toLocaleString()}</td>
+                      <td style={styles.tableCell}>{safeToLocaleString(rec.startingBalance)}</td>
                       <td style={{...styles.tableCell, color: '#059669', fontWeight: '500'}}>
-                        {rec.cashIn ? ` ${Number(rec.cashIn).toLocaleString()}` : '-'}
+                        {rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : '-'}
                       </td>
                       <td style={{...styles.tableCell, color: '#dc2626', fontWeight: '500'}}>
-                        {rec.cashOut ? ` ${Number(rec.cashOut).toLocaleString()}` : '-'}
+                        {rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : '-'}
                       </td>
                       <td style={{...styles.tableCell, color: '#1e3a8a', fontWeight: '600'}}>
-                         {Number(rec.closingBalance).toLocaleString()}
+                        {safeToLocaleString(rec.closingBalance)}
                       </td>
                     </tr>
                   ))}

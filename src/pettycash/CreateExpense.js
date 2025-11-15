@@ -7,7 +7,7 @@ import { APP_SERVER_URL_PREFIX } from "../constants.js";
 
 function CreateExpense() {
   const [form, setForm] = useState({ 
-    description: '', 
+    branchName: '', 
     amount: '', 
     employeeId: '', 
     subtype: '', 
@@ -27,21 +27,24 @@ function CreateExpense() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determine expense type and title
-  const getExpenseType = () => {
-    const params = new URLSearchParams(location.search);
-    let filterType = params.get('type');
-    if (!filterType) {
-      if (location.pathname.includes('expenses-inward')) filterType = 'CASH-IN';
-      if (location.pathname.includes('expenses-outward')) filterType = 'CASH-OUT';
+const getExpenseType = () => {
+  const params = new URLSearchParams(location.search);
+  let filterType = params.get('type');
+  if (!filterType) {
+    if (location.pathname.includes('expenses-inward') || location.pathname.includes('create') && location.search.includes('CASH-IN')) {
+      filterType = 'CASH-IN';
     }
-    return filterType || '';
-  };
+    if (location.pathname.includes('expenses-outward') || location.pathname.includes('create') && location.search.includes('CASH-OUT')) {
+      filterType = 'CASH-OUT';
+    }
+  }
+  return filterType || '';
+};
 
   const getPageTitle = () => {
     const type = getExpenseType();
-    if (type === 'CASH-IN') return 'Create Inward Expense';
-    if (type === 'CASH-OUT') return 'Create Outward Expense';
+    if (type === 'CASH-IN') return 'Create Inward ';
+    if (type === 'CASH-OUT') return 'Create Outward ';
     return 'Create Expense';
   };
 
@@ -83,41 +86,43 @@ function CreateExpense() {
       setForm((f) => ({ ...f, [name]: value }));
     }
   };
+  
+useEffect(() => {
+  let mounted = true;
+  const expenseType = getExpenseType();
+  
+  // Automatically set the expense type based on the current page
+  setForm(f => ({ ...f, type: expenseType }));
 
-  useEffect(() => {
-    let mounted = true;
-    const expenseType = getExpenseType();
-    setForm(f => ({ ...f, type: expenseType }));
+  fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`)
+    .then(res => {
+      if (!res.ok) throw new Error('no masters');
+      return res.json();
+    })
+    .then(json => {
+      const list = (json._embedded && json._embedded.expenseTypeMasters) || json._embedded || json || [];
+      // Filter subtypes based on the automatically determined expense type
+      const vals = list
+        .filter(m => m.type === expenseType) // Only get categories for current type
+        .map(m => (m.subtype || m.subType)).filter(Boolean);
+      const uniq = Array.from(new Set(vals));
+      if (mounted) setSubtypes(uniq);
+    })
+    .catch(() => {
+      // ignore failures — dropdown will be empty
+    });
 
-    fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`)
-      .then(res => {
-        if (!res.ok) throw new Error('no masters');
-        return res.json();
-      })
-      .then(json => {
-        const list = (json._embedded && json._embedded.expenseTypeMasters) || json._embedded || json || [];
-        const vals = list
-          .filter(m => !expenseType || m.type === expenseType)
-          .map(m => (m.subtype || m.subType)).filter(Boolean);
-        const uniq = Array.from(new Set(vals));
-        if (mounted) setSubtypes(uniq);
-      })
-      .catch(() => {
-        // ignore failures — dropdown will be empty
-      });
-
-    // Fetch organizations for dropdown
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
-      .then(res => res.json())
-      .then(data => {
-        const orgs = data._embedded ? data._embedded.organizations || [] : data;
-        if (mounted) setOrganizations(orgs);
-      })
-      .catch(() => {});
-      
-    return () => { mounted = false; };
-  }, [location.pathname, location.search]);
-
+  // Fetch organizations for dropdown
+  fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+    .then(res => res.json())
+    .then(data => {
+      const orgs = data._embedded ? data._embedded.organizations || [] : data;
+      if (mounted) setOrganizations(orgs);
+    })
+    .catch(() => {});
+    
+  return () => { mounted = false; };
+}, [location.pathname, location.search]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -128,8 +133,8 @@ function CreateExpense() {
       setError('Please select an organization');
       return;
     }
-    if (!form.description.trim()) {
-      setError('Please enter a description');
+    if (!form.branchName.trim()) {
+      setError('Please enter a branch name');
       return;
     }
     if (!form.amount || Number(form.amount) <= 0) {
@@ -155,13 +160,13 @@ function CreateExpense() {
       const createdDate = new Date().toISOString().slice(0,10);
 
       const expensePayload = {
-        description: form.description.trim(),
+        branchName: form.branchName.trim(),
         amount: Number(form.amount),
         employeeId: form.employeeId ? Number(form.employeeId) : undefined,
         expenseSubType: form.subtype,
         expenseType: form.type,
         organizationId: form.organizationId || undefined,
-        // organizationName: form.organizationName || undefined,
+        organizationName: form.organizationName || undefined,
         createdByUserId,
         createdByUser,
         createdDate,
@@ -200,7 +205,7 @@ function CreateExpense() {
 
   const clearForm = () => {
     setForm({ 
-      description: '', 
+      branchName: '', 
       amount: '', 
       employeeId: '', 
       subtype: '', 
@@ -317,17 +322,17 @@ function CreateExpense() {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label required">Description</label>
+                    <label className="form-label required">Branch Name</label>
                     <input 
-                      name="description" 
-                      value={form.description} 
+                      name="branchName" 
+                      value={form.branchName} 
                       onChange={handleChange} 
                       className="form-input"
-                      placeholder="Enter expense description..."
+                      placeholder="Enter branch name..."
                       maxLength={200}
                       required
                     />
-                    <div className="char-count">{form.description.length}/200</div>
+                    <div className="char-count">{form.branchName.length}/200</div>
                   </div>
                   
                   <div className="form-group">
@@ -348,33 +353,46 @@ function CreateExpense() {
                     </div>
                   </div>
 
-                  {subtypes.length > 0 && (
-                    <div className="form-group">
-                      <label className="form-label required">Expense Category</label>
-                      <select 
-                        name="subtype" 
-                        value={form.subtype} 
+                 {subtypes.length > 0 && (
+  <div className="form-group">
+    <label className="form-label required">Expense Category</label>
+    <select 
+      name="subtype" 
+      value={form.subtype} 
+      onChange={handleChange} 
+      className="form-select"
+      required={subtypes.length > 0}
+    >
+      <option value="">Select category</option>
+      {subtypes.map((s, i) => (
+        <option key={i} value={s}>
+          <span className="category-option">
+            <span className="category-icon">{getCategoryIcon(s)}</span>
+            {s}
+          </span>
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+                   <div className="form-group">
+                    <label className="form-label">Expense Date</label>
+                    <div className="date-input-wrapper">
+                      <span className="input-icon" style={{marginLeft:"-10px"}}>📅</span>
+                      <input 
+                        name="expenseDate" 
+                        type="date" 
+                        value={form.expenseDate} 
                         onChange={handleChange} 
-                        className="form-select"
-                        required={subtypes.length > 0}
-                      >
-                        <option value="">Select category</option>
-                        {subtypes.map((s, i) => (
-                          <option key={i} value={s}>
-                            <span className="category-option">
-                              <span className="category-icon">{getCategoryIcon(s)}</span>
-                              {s}
-                            </span>
-                          </option>
-                        ))}
-                      </select>
+                        className="form-input"
+                      />
                     </div>
-                  )}
+                  </div>
+                  
                 </div>
               </div>
 
-              {/* Additional Details Section */}
-              <div className="form-section">
+              {/* <div className="form-section">
                 <h3 className="section-title">
                   <span className="section-icon">📋</span>
                   Additional Details
@@ -395,20 +413,7 @@ function CreateExpense() {
                     </div>
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label">Expense Date</label>
-                    <div className="date-input-wrapper">
-                      <span className="input-icon">📅</span>
-                      <input 
-                        name="expenseDate" 
-                        type="date" 
-                        value={form.expenseDate} 
-                        onChange={handleChange} 
-                        className="form-input"
-                      />
-                    </div>
-                  </div>
-                  
+                 
                   <div className="form-group">
                     <label className="form-label">Reference Number</label>
                     <div className="reference-input-wrapper">
@@ -426,7 +431,7 @@ function CreateExpense() {
                     <div className="char-count">{form.referenceNumber.length}/50</div>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* File Upload Section */}
               <div className="form-section">
@@ -514,7 +519,7 @@ function CreateExpense() {
                 </div>
               </div>
 
-              <div className="form-section summary-section">
+              {/* <div className="form-section summary-section">
                 <h3 className="section-title">
                   <span className="section-icon">📊</span>
                   Expense Summary
@@ -524,6 +529,12 @@ function CreateExpense() {
                     <span className="summary-label">Organization:</span>
                     <span className="summary-value">
                       {form.organizationName || 'Not selected'}
+                    </span>
+                  </div>
+                  <div className="summary-item">
+                    <span className="summary-label">Branch:</span>
+                    <span className="summary-value">
+                      {form.branchName || 'Not entered'}
                     </span>
                   </div>
                   <div className="summary-item">
@@ -545,10 +556,10 @@ function CreateExpense() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
-            {/* Enhanced Form Actions */}
+        
             <div className="form-actions">
               <button 
                 type="button" 
@@ -583,7 +594,6 @@ function CreateExpense() {
                     </>
                   ) : (
                     <>
-                      
                       Create Expense
                     </>
                   )}

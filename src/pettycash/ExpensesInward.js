@@ -64,6 +64,21 @@ function ExpensesInward() {
     return String(value);
   };
 
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
   // Filter items based on search term
   const filteredItems = items.filter(item => {
     if (!searchTerm) return true;
@@ -71,10 +86,13 @@ function ExpensesInward() {
     const searchLower = safeToString(searchTerm).toLowerCase();
     
     return (
-      safeToString(item.description).toLowerCase().includes(searchLower) ||
+      safeToString(item.branchName).toLowerCase().includes(searchLower) ||
       safeToString(item.employeeId).toLowerCase().includes(searchLower) ||
       safeToString(item.expenseSubType).toLowerCase().includes(searchLower) ||
-      safeToString(item.amount).includes(searchTerm) // Direct number comparison without toLowerCase
+      safeToString(item.amount).includes(searchTerm) || // Direct number comparison without toLowerCase
+      safeToString(item.expenseDate).toLowerCase().includes(searchLower) ||
+      safeToString(item.createdDate).toLowerCase().includes(searchLower) ||
+      safeToString(item.referenceNumber).toLowerCase().includes(searchLower)
     );
   });
 
@@ -90,6 +108,13 @@ function ExpensesInward() {
       if (aValue == null && bValue == null) return 0;
       if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
       if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
+      
+      // Handle date sorting
+      if (sortConfig.key.includes('Date')) {
+        const aDate = new Date(aValue);
+        const bDate = new Date(bValue);
+        return sortConfig.direction === 'ascending' ? aDate - bDate : bDate - aDate;
+      }
       
       // Handle different data types
       if (typeof aValue === 'number' && typeof bValue === 'number') {
@@ -149,7 +174,7 @@ function ExpensesInward() {
         <div className="dashboard-header">
           <div className="header-content">
             <div className="header-text">
-              <h1>Cash Inward Transactions</h1>
+              <h1>Cash Inward </h1>
               <p>Manage and track all cash inflow expenses (CASH-IN)</p>
             </div>
             <button 
@@ -193,7 +218,7 @@ function ExpensesInward() {
               <div className="search-icon">🔍</div>
               <input
                 type="text"
-                placeholder="Search by description, employee ID, type, or amount..."
+                placeholder="Search by branch, employee ID, type, amount, or date..."
                 value={searchTerm}
                 onChange={handleSearch}
                 className="search-input"
@@ -269,29 +294,25 @@ function ExpensesInward() {
               <table className="modern-table">
                 <thead>
                   <tr>
-                    <th 
-                      onClick={() => handleSort('description')}
-                      className="sortable-header"
-                    >
-                      Description {getSortIcon('description')}
-                    </th>
+                   
                     <th 
                       onClick={() => handleSort('amount')}
                       className="sortable-header"
                     >
                       Amount {getSortIcon('amount')}
                     </th>
-                    <th 
-                      onClick={() => handleSort('employeeId')}
-                      className="sortable-header"
-                    >
-                      Employee ID {getSortIcon('employeeId')}
-                    </th>
+                    
                     <th 
                       onClick={() => handleSort('expenseSubType')}
                       className="sortable-header"
                     >
                       Type {getSortIcon('expenseSubType')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('createdDate')}
+                      className="sortable-header"
+                    >
+                      Created Date {getSortIcon('createdDate')}
                     </th>
                     <th>Receipt</th>
                     <th>Actions</th>
@@ -300,7 +321,7 @@ function ExpensesInward() {
                 <tbody>
                   {sortedItems.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="no-data">
+                      <td colSpan="8" className="no-data">
                         <div className="no-data-content">
                           <div className="no-data-icon">📝</div>
                           <p>
@@ -331,17 +352,19 @@ function ExpensesInward() {
                   ) : (
                     sortedItems.map((item, idx) => (
                       <tr key={idx} className="table-row">
-                        <td className="description-cell">
-                          <div className="description-text">{item.description}</div>
-                        </td>
+                        
                         <td className="amount-cell">
                           <span className="amount-badge">₹{item.amount?.toLocaleString()}</span>
                         </td>
-                        <td className="employee-cell">
-                          {item.employeeId || '-'}
-                        </td>
+                        
                         <td className="type-cell">
                           <span className="type-tag">{item.expenseSubType || 'General'}</span>
+                        </td>
+                        
+                        <td className="date-cell">
+                          <div className="date-display">
+                            {formatDate(item.createdDate)}
+                          </div>
                         </td>
                         <td className="receipt-cell">
                           {item.imageData || item.fileUrl || item.file ? (
