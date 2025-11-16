@@ -1,42 +1,43 @@
 import React, { useState } from 'react';
 import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
-import './PettyCash.css';
+import './CreateDayClosing.css';
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
 import { useNavigate } from 'react-router-dom';
 
 function CreateDayClosing() {
   const [description, setDescription] = useState('Day Closing');
+  const [comment, setComment] = useState('');
   const [organizations, setOrganizations] = useState([]);
   const [organizationId, setOrganizationId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [openingBalance, setOpeningBalance] = useState('');
+  const [inward, setInward] = useState('');
+  const [outward, setOutward] = useState('');
   const [closingBalance, setClosingBalance] = useState('');
-  const [tenNoteCount, set10NoteCount] = useState('');
-  const [twentyNoteCount, set20NoteCount] = useState('');
-  const [fiftyNoteCount, set50NoteCount] = useState('');
-  const [hundredNoteCount, set100NoteCount] = useState('');
-  const [twoHundredNoteCount, set200NoteCount] = useState('');
-  const [fiveHundredNoteCount, set500NoteCount] = useState('');
-  const [tenSoiledNoteCount, set10SoiledNoteCount] = useState('');
-  const [twentySoiledNoteCount, set20SoiledNoteCount] = useState('');
-  const [fiftySoiledNoteCount, set50SoiledNoteCount] = useState('');
-  const [hundredSoiledNoteCount, set100SoiledNoteCount] = useState('');
-  const [twoHundredSoiledNoteCount, set200SoiledNoteCount] = useState('');
-  const [fiveHundredSoiledNoteCount, set500SoiledNoteCount] = useState('');
-  const [oneCoinCount, set1CoinCount] = useState('');
-  const [fiveCoinCount, set5CoinCount] = useState('');
-  const [tenCoinCount, set10CoinCount] = useState('');
-  const [twentyCoinCount, set20CoinCount] = useState('');
+  
+  // Denomination states
+  const [denominations, setDenominations] = useState({
+    // Notes
+    500: { good: '', bad: '' },
+    200: { good: '', bad: '' },
+    100: { good: '', bad: '' },
+    50: { good: '', bad: '' },
+    20: { good: '', bad: '' },
+    10: { good: '', bad: '' },
+    // Coins
+    '20c': { good: '', bad: '' },
+    '10c': { good: '', bad: '' },
+    '5c': { good: '', bad: '' },
+    '1c': { good: '', bad: '' }
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [balanceError, setBalanceError] = useState('');
   const navigate = useNavigate();
 
-  // Get current user from localStorage (adjust key as needed)
   const currentUser = localStorage.getItem('username') || localStorage.getItem('user') || '';
-  // Date field now controlled by user
-  // Get current time
   const createdTime = new Date().toISOString();
 
   React.useEffect(() => {
@@ -46,7 +47,6 @@ function CreateDayClosing() {
   }, []);
 
   React.useEffect(() => {
-    // Fetch organizations for dropdown
     fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
       .then(res => res.json())
       .then(data => {
@@ -57,31 +57,96 @@ function CreateDayClosing() {
   }, []);
 
   const handleChange = async (e) => {
-    const { name, value, type, files } = e.target;
+    const { name, value, type } = e.target;
     if (type === 'select-one') {
-      setOrganizationId(e.target.value);
-      const res = await fetch(`${APP_SERVER_URL_PREFIX}/petty-cash/day-closing/init?closingDate=${date}&organizationId=${e.target.value}`, {
+      const selectedOrgId = e.target.value;
+      setOrganizationId(selectedOrgId);
+      
+      if (selectedOrgId && date) {
+        await fetchBalanceData(date, selectedOrgId);
+      }
+    } else if (type === 'date') {
+      const selectedDate = e.target.value;
+      setDate(selectedDate);
+      
+      if (organizationId && selectedDate) {
+        await fetchBalanceData(selectedDate, organizationId);
+      }
+    }
+  };
+
+  const fetchBalanceData = async (closingDate, orgId) => {
+    try {
+      const res = await fetch(`${APP_SERVER_URL_PREFIX}/petty-cash/day-closing/init?closingDate=${closingDate}&organizationId=${orgId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
 
       if (res.ok) {
         const data = await res.json();
-        setOpeningBalance(data.cashIn);
-        setClosingBalance(data.cashOut);
+        setInward(data.cashIn || '0');
+        setOutward(data.cashOut || '0');
+        setClosingBalance(data.closingBalance || '0');
+      } else {
+        // Reset fields if API call fails
+        setInward('');
+        setOutward('');
+        setClosingBalance('');
       }
-    } else if (type === 'date') {
-      setDate(e.target.value);
-      const res = await fetch(`${APP_SERVER_URL_PREFIX}/petty-cash/day-closing/init?closingDate=${e.target.value}&organizationId=${organizationId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setOpeningBalance(data.cashIn);
-        setClosingBalance(data.cashOut);
-      }
+    } catch (error) {
+      console.error('Error fetching balance data:', error);
+      setInward('');
+      setOutward('');
+      setClosingBalance('');
     }
+  };
+
+  const handleDenominationChange = (denom, field, value) => {
+    setDenominations(prev => ({
+      ...prev,
+      [denom]: {
+        ...prev[denom],
+        [field]: value
+      }
+    }));
+  };
+
+  const calculateTotalAmount = (denom, good, bad) => {
+    const goodCount = parseInt(good) || 0;
+    const badCount = parseInt(bad) || 0;
+    const totalCount = goodCount + badCount;
+    return totalCount * denom;
+  };
+
+  const getTotalSummary = () => {
+    let totalGood = 0;
+    let totalBad = 0;
+    let totalAmount = 0;
+
+    Object.entries(denominations).forEach(([denom, counts]) => {
+      const denominationValue = denom === '20c' ? 20 : denom === '10c' ? 10 : denom === '5c' ? 5 : denom === '1c' ? 1 : parseInt(denom);
+      const good = parseInt(counts.good) || 0;
+      const bad = parseInt(counts.bad) || 0;
+      
+      totalGood += good * denominationValue;
+      totalBad += bad * denominationValue;
+      totalAmount += (good + bad) * denominationValue;
+    });
+
+    return { totalGood, totalBad, totalAmount };
+  };
+
+  const validateClosingBalance = () => {
+    const { totalAmount } = getTotalSummary();
+    const apiClosingBalance = parseFloat(closingBalance) || 0;
+    
+    if (Math.abs(totalAmount - apiClosingBalance) > 0.01) { // Allow small floating point differences
+      setBalanceError(`Closing balance mismatch! Denomination total: ₹${totalAmount.toFixed(2)} vs API closing balance: ₹${apiClosingBalance.toFixed(2)}`);
+      return false;
+    }
+    
+    setBalanceError('');
+    return true;
   };
 
   const handleSubmit = async (e) => {
@@ -89,34 +154,54 @@ function CreateDayClosing() {
     setLoading(true);
     setError('');
     setSuccess('');
+    setBalanceError('');
+
+    // Validate closing balance before submission
+    if (!validateClosingBalance()) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Defensive: ensure description is not null or 0
       const desc = typeof description === 'string' && description.trim() ? description.trim() : 'Day Closing';
+      
+      const {
+        totalGood: cashIn,
+        totalBad: cashOut,
+        totalAmount: closingBalanceCalc
+      } = getTotalSummary();
+
       const payload = {
         closingDate: date,
         description: desc,
         createdBy: currentUser,
+        comment: comment,
         createdTime,
         organizationId: organizationId || undefined,
-        openingBalance: openingBalance ? Number(openingBalance) : 0,
-        closingBalance: closingBalance ? Number(closingBalance) : 0,
-        tenNoteCount: tenNoteCount ? Number(tenNoteCount) : 0,
-        twentyNoteCount: twentyNoteCount ? Number(twentyNoteCount) : 0,
-        fiftyNoteCount: fiftyNoteCount ? Number(fiftyNoteCount) : 0,
-        hundredNoteCount: hundredNoteCount ? Number(hundredNoteCount) : 0,
-        twoHundredNoteCount: twoHundredNoteCount ? Number(twoHundredNoteCount) : 0,
-        fiveHundredNoteCount: fiveHundredNoteCount ? Number(fiveHundredNoteCount) : 0,
-        tenSoiledNoteCount: tenSoiledNoteCount ? Number(tenSoiledNoteCount) : 0,
-        twentySoiledNoteCount: twentySoiledNoteCount ? Number(twentySoiledNoteCount) : 0,
-        fiftySoiledNoteCount: fiftySoiledNoteCount ? Number(fiftySoiledNoteCount) : 0,
-        hundredSoiledNoteCount: hundredSoiledNoteCount ? Number(hundredSoiledNoteCount) : 0,
-        twoHundredSoiledNoteCount: twoHundredSoiledNoteCount ? Number(twoHundredSoiledNoteCount) : 0,
-        fiveHundredSoiledNoteCount: fiveHundredSoiledNoteCount ? Number(fiveHundredSoiledNoteCount) : 0,
-        oneCoinCount: oneCoinCount ? Number(oneCoinCount) : 0,
-        fiveCoinCount: fiveCoinCount ? Number(fiveCoinCount) : 0,
-        tenCoinCount: tenCoinCount ? Number(tenCoinCount) : 0,
-        twentyCoinCount: twentyCoinCount ? Number(twentyCoinCount) : 0
+        inward: inward ? Number(inward) : 0,
+        outward: outward ? Number(outward) : 0,
+        closingBalance: closingBalanceCalc || (closingBalance ? Number(closingBalance) : 0),
+        cashIn,
+        cashOut,
+        tenNoteCount: denominations[10]?.good || 0,
+        twentyNoteCount: denominations[20]?.good || 0,
+        fiftyNoteCount: denominations[50]?.good || 0,
+        hundredNoteCount: denominations[100]?.good || 0,
+        twoHundredNoteCount: denominations[200]?.good || 0,
+        fiveHundredNoteCount: denominations[500]?.good || 0,
+        tenSoiledNoteCount: denominations[10]?.bad || 0,
+        twentySoiledNoteCount: denominations[20]?.bad || 0,
+        fiftySoiledNoteCount: denominations[50]?.bad || 0,
+        hundredSoiledNoteCount: denominations[100]?.bad || 0,
+        twoHundredSoiledNoteCount: denominations[200]?.bad || 0,
+        fiveHundredSoiledNoteCount: denominations[500]?.bad || 0,
+        oneCoinCount: denominations['1c']?.good || 0,
+        fiveCoinCount: denominations['5c']?.good || 0,
+        tenCoinCount: denominations['10c']?.good || 0,
+        twentyCoinCount: denominations['20c']?.good || 0,
+        denominations: denominations
       };
+
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/petty-cash/day-closing`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -126,7 +211,7 @@ function CreateDayClosing() {
         const data = await res.text();
         setError(data);
       } else {
-        setSuccess('Day closing created!');
+        setSuccess('Day closing created successfully!');
         setTimeout(() => navigate('/pettycash/day-closing'), 1200);
       }
     } catch (e) {
@@ -136,124 +221,238 @@ function CreateDayClosing() {
     }
   };
 
+  const denominationConfig = [
+    { value: 500, type: 'Note', label: '500' },
+    { value: 200, type: 'Note', label: '200' },
+    { value: 100, type: 'Note', label: '100' },
+    { value: 50, type: 'Note', label: '50' },
+    { value: 20, type: 'Note', label: '20' },
+    { value: 10, type: 'Note', label: '10' },
+    { value: '20c', type: 'Coin', label: '20' },
+    { value: '10c', type: 'Coin', label: '10' },
+    { value: '5c', type: 'Coin', label: '5' },
+    { value: '1c', type: 'Coin', label: '1' }
+  ];
+
+  const { totalGood, totalBad, totalAmount } = getTotalSummary();
+
+  // Validate closing balance on denomination changes
+  React.useEffect(() => {
+    if (closingBalance) {
+      validateClosingBalance();
+    }
+  }, [denominations, closingBalance]);
+
   return (
-    <div>
+    <div className="day-closing-container">
       <Sidebar isOpen={true} />
-      <PageCard title="Create Day Closing">
-        <form onSubmit={handleSubmit} className="form">
-          <div className="form-grid">
-            <div>
-              <label style={{ minWidth: 100 }}>Branch:</label>
-              <select value={organizationId} type="dropdown" onChange={handleChange} className="styled-select" style={{ minWidth: 180 }} required>
-                <option value="">Select organization</option>
-                {organizations.map(org => (
-                  <option key={org.id || (org._links && org._links.self && org._links.self.href)} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label style={{ minWidth: 100 }}>Description</label>
-              <input type="text" value={description} onChange={e => setDescription(e.target.value)} className="form-control" style={{ minWidth: 180 }} />
-            </div>
-            <div>
-              <label style={{ minWidth: 100 }}>Date</label>
-              <input type="date" value={date} onChange={handleChange} className="form-control" style={{ minWidth: 180 }} />
-            </div>
-            <div>
-              <label style={{ minWidth: 120 }}>Total Day Cash-In</label>
-              <input type="number" value={openingBalance} onChange={e => setOpeningBalance(e.target.value)} className="form-control" min="0" />
-            </div>
-            <div>
-              <label style={{ minWidth: 120 }}>Total Day Cash-Out</label>
-              <input type="number" value={closingBalance} onChange={e => setClosingBalance(e.target.value)} className="form-control" min="0" />
-            </div>
+      <PageCard title="Create Day Closing Report">
+       
 
+        <form onSubmit={handleSubmit} className="day-closing-form">
+          {/* Basic Information Section */}
+          <div className="form-section">
+            <h3 className="section-title">Basic Information</h3>
+            <div className="form-grid">
+              <div className="form-group">
+                <label className="form-label">Organization</label>
+                <select 
+                  value={organizationId} 
+                  onChange={handleChange} 
+                  className="form-select" 
+                  required
+                >
+                  <option value="">Select organization</option>
+                  {organizations.map(org => (
+                    <option 
+                      key={org.id || (org._links && org._links.self && org._links.self.href)} 
+                      value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}
+                    >
+                      {org.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <input 
+                  type="text" 
+                  value={description} 
+                  onChange={e => setDescription(e.target.value)} 
+                  className="form-input" 
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Date</label>
+                <input 
+                  type="date" 
+                  value={date} 
+                  onChange={handleChange} 
+                  className="form-input" 
+                />
+              </div>
+             <div className="form-group">
+              <label className="form-label">Comment</label>
+              <textarea 
+                value={comment} 
+                onChange={e => setComment(e.target.value)} 
+                className="form-input textarea-input"
+                rows={4}
+                placeholder="Enter your comments here..."
+              />
+                </div>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>10 Note Count</label>
-              <input type="number" value={tenNoteCount} onChange={e => set10NoteCount(e.target.value)} className="form-control" min="0" />
-            </div>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>20 Note Count</label>
-              <input type="number" value={twentyNoteCount} onChange={e => set20NoteCount(e.target.value)} className="form-control" min="0" />
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>50 Note Count</label>
-              <input type="number" value={fiftyNoteCount} onChange={e => set50NoteCount(e.target.value)} className="form-control" min="0" />
-            </div>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>100 Note Count</label>
-              <input type="number" value={hundredNoteCount} onChange={e => set100NoteCount(e.target.value)} className="form-control" min="0" />
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>200 Note Count</label>
-              <input type="number" value={twoHundredNoteCount} onChange={e => set200NoteCount(e.target.value)} className="form-control" min="0" />
-            </div>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>500 Note Count</label>
-              <input type="number" value={fiveHundredNoteCount} onChange={e => set500NoteCount(e.target.value)} className="form-control" min="0" />
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>10 Soiled Note Count</label>
-              <input type="number" value={tenSoiledNoteCount} onChange={e => set10SoiledNoteCount(e.target.value)} className="form-control" min="0" />
-            </div>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>20 Soiled Note Count</label>
-              <input type="number" value={twentySoiledNoteCount} onChange={e => set20SoiledNoteCount(e.target.value)} className="form-control" min="0" />
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>50 Soiled Note Count</label>
-              <input type="number" value={fiftySoiledNoteCount} onChange={e => set50SoiledNoteCount(e.target.value)} className="form-control" min="0" />
-            </div>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>100 Soiled Note Count</label>
-              <input type="number" value={hundredSoiledNoteCount} onChange={e => set100SoiledNoteCount(e.target.value)} className="form-control" min="0" />
+          <div className="form-section">
+            <h3 className="section-title">Balance Summary</h3>
+            <div className="balance-grid">
+              <div className="balance-card">
+                <label className="balance-label">Inward</label>
+                <input 
+                  type="number" 
+                  value={inward} 
+                  onChange={e => setInward(e.target.value)} 
+                  className="balance-input" 
+                  min="0" 
+                  readOnly // Made readOnly since it comes from API
+                />
+              </div>
+              
+              <div className="balance-card">
+                <label className="balance-label">Outward</label>
+                <input 
+                  type="number" 
+                  value={outward} 
+                  onChange={e => setOutward(e.target.value)} 
+                  className="balance-input" 
+                  min="0" 
+                  readOnly // Made readOnly since it comes from API
+                />
+              </div>
+              
+              <div className="balance-card">
+                <label className="balance-label">Closing Balance</label>
+                <input 
+                  type="number" 
+                  value={closingBalance} 
+                  onChange={e => setClosingBalance(e.target.value)} 
+                  className="balance-input" 
+                  min="0" 
+                  readOnly // Made readOnly since it comes from API
+                />
+              </div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>200 Soiled Note Count</label>
-              <input type="number" value={twoHundredSoiledNoteCount} onChange={e => set200SoiledNoteCount(e.target.value)} className="form-control" min="0" />
-            </div>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>500 Soiled Note Count</label>
-              <input type="number" value={fiveHundredSoiledNoteCount} onChange={e => set500SoiledNoteCount(e.target.value)} className="form-control" min="0" />
+
+          <div className="form-section">
+            <h3 className="section-title">Denomination Details</h3>
+            <div className="denomination-table-container">
+              <table className="denomination-table">
+                <thead>
+                  <tr>
+                    <th>Denomination</th>
+                    <th>Type</th>
+                    <th>No (Good)</th>
+                    <th>No (Bad)</th>
+                    <th>Total Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {denominationConfig.map((denom) => {
+                    const denomData = denominations[denom.value];
+                    const totalAmount = calculateTotalAmount(
+                      denom.value === '20c' ? 20 : 
+                      denom.value === '10c' ? 10 : 
+                      denom.value === '5c' ? 5 : 
+                      denom.value === '1c' ? 1 : denom.value,
+                      denomData.good,
+                      denomData.bad
+                    );
+
+                    return (
+                      <tr key={denom.value}>
+                        <td className="denom-value">{denom.label}</td>
+                        <td className="denom-type">{denom.type}</td>
+                        <td>
+                          <input
+                            type="number"
+                            min="0"
+                            value={denomData.good}
+                            onChange={(e) => handleDenominationChange(denom.value, 'good', e.target.value)}
+                            className="denom-input good"
+                            placeholder="0"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            min="0"
+                            value={denomData.bad}
+                            onChange={(e) => handleDenominationChange(denom.value, 'bad', e.target.value)}
+                            className="denom-input bad"
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="total-amount">
+                          ₹{totalAmount.toFixed(2)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="denomination-total">
+                    <td colSpan="2"><strong>Grand Total</strong></td>
+                    <td><strong>Good: ₹{totalGood.toFixed(2)}</strong></td>
+                    <td><strong>Bad: ₹{totalBad.toFixed(2)}</strong></td>
+                    <td><strong>₹{totalAmount.toFixed(2)}</strong></td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>1 Coin Count</label>
-              <input type="number" value={oneCoinCount} onChange={e => set1CoinCount(e.target.value)} className="form-control" min="0" />
+
+          {/* Balance Error Message */}
+          {balanceError && (
+            <div className="message error-message">
+              <span className="message-icon">⚠️</span>
+              {balanceError}
             </div>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>5 Coin Count</label>
-              <input type="number" value={fiveCoinCount} onChange={e => set5CoinCount(e.target.value)} className="form-control" min="0" />
-            </div>
+          )}
+
+          <div className="form-actions">
+            <button 
+              className={`submit-btn ${loading ? 'loading' : ''} ${balanceError ? 'disabled' : ''}`} 
+              type="submit" 
+              disabled={loading || balanceError}
+            >
+              {loading ? (
+                <>
+                  <span className="spinner"></span>
+                  Saving...
+                </>
+              ) : (
+                'Create Day Closing Report'
+              )}
+            </button>
           </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>10 Coin Count</label>
-              <input type="number" value={tenCoinCount} onChange={e => set10CoinCount(e.target.value)} className="form-control" min="0" />
+
+          {error && (
+            <div className="message error-message">
+              <span className="message-icon">⚠️</span>
+              {error}
             </div>
-            <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <label style={{ minWidth: 120 }}>20 Coin Count</label>
-              <input type="number" value={twentyCoinCount} onChange={e => set20CoinCount(e.target.value)} className="form-control" min="0" />
+          )}
+          {success && (
+            <div className="message success-message">
+              <span className="message-icon">✅</span>
+              {success}
             </div>
-          </div>
-          <button className="btn" type="submit" disabled={loading} style={{ marginLeft: 16, minWidth: 180 }}>{loading ? 'Saving...' : 'Create Day Closing'}</button>
+          )}
         </form>
-        {error && <div style={{ color: '#c53030' }}>{error}</div>}
-        {success && <div style={{ color: '#2563eb' }}>{success}</div>}
       </PageCard>
     </div>
   );

@@ -4,152 +4,524 @@ import PageCard from '../components/PageCard';
 import './PettyCash.css';
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { fetchOrganizations } from '../organization/organizationApi';
 
 function ExpensesOutward() {
   const [items, setItems] = useState([]);
   const [links, setLinks] = useState({});
   const [loading, setLoading] = useState(false);
   const [modalFile, setModalFile] = useState(null);
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const pageParam = Number(searchParams.get('page') || 0);
-  const sizeParam = Number(searchParams.get('size') || 20);
   const [organizations, setOrganizations] = useState([]);
   const [selectedOrgId, setSelectedOrgId] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
+  
+  const navigate = useNavigate();
+  const pageParam = Number(searchParams.get('page') || 0);
+  const sizeParam = Number(searchParams.get('size') || 20);
+
+  // Calculate statistics for outward expenses
+  const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const totalTransactions = items.length;
+  const averageExpense = totalTransactions > 0 ? totalAmount / totalTransactions : 0;
 
   const fetchUrl = async (url) => {
     setLoading(true);
     try {
       const res = await fetch(url);
       const json = await res.json();
-      let list = (json.content ) || json.content || [];
+      let list = json.content || json._embedded?.expenses || [];
       list = list.filter(e => e.expenseType === 'CASH-OUT');
-      if (selectedOrgId) {
-        list = list.filter(e => String(e.organizationId) === String(selectedOrgId));
-      }
       setItems(list);
       setLinks(json._links || {});
-    } catch (e) { console.error(e); }
-    setLoading(false);
+    } catch (e) { 
+      console.error('Failed to fetch outward expenses:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  
-    const handleChange = (e) => {
-      const { name, value, type, files } = e.target;
-      if (name === 'organizationId') {
-        // Find organization name from selected dropdown value
-        const selectedOrg = organizations.find(org => String(org.id) === String(value));
-        let temp = e.currentTarget.options[e.currentTarget.selectedIndex].text
-        if (e.currentTarget.selectedIndex >0) {
-          fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`);
-        } else {
-          fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT`);
-        }
+  const handleOrganizationChange = (e) => {
+    const value = e.target.value;
+    setSelectedOrgId(value);
+    
+    if (value) {
+      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`);
+      setSearchParams({ page: 0, size: sizeParam });
+    } else {
+      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT`);
+      setSearchParams({ page: 0, size: sizeParam });
+    }
+  };
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Safe string conversion function
+  const safeToString = (value) => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'number') return value.toString();
+    if (typeof value === 'string') return value;
+    return String(value);
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  // Filter items based on search term
+  const filteredItems = items.filter(item => {
+    if (!searchTerm) return true;
+    
+    const searchLower = safeToString(searchTerm).toLowerCase();
+    
+    return (
+      safeToString(item.branchName).toLowerCase().includes(searchLower) ||
+      safeToString(item.employeeId).toLowerCase().includes(searchLower) ||
+      safeToString(item.expenseSubType).toLowerCase().includes(searchLower) ||
+      safeToString(item.amount).includes(searchTerm) || // Direct number comparison without toLowerCase
+      safeToString(item.expenseDate).toLowerCase().includes(searchLower) ||
+      safeToString(item.createdDate).toLowerCase().includes(searchLower) ||
+      safeToString(item.referenceNumber).toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Sort items
+  const sortedItems = React.useMemo(() => {
+    if (!sortConfig.key) return filteredItems;
+    
+    return [...filteredItems].sort((a, b) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+      
+      // Handle null/undefined values
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
+      if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
+      
+      // Handle date sorting
+      if (sortConfig.key.includes('Date')) {
+        const aDate = new Date(aValue);
+        const bDate = new Date(bValue);
+        return sortConfig.direction === 'ascending' ? aDate - bDate : bDate - aDate;
       }
-    };
+      
+      // Handle different data types
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // String comparison
+      const aString = safeToString(aValue).toLowerCase();
+      const bString = safeToString(bValue).toLowerCase();
+      
+      if (aString < bString) {
+        return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      if (aString > bString) {
+        return sortConfig.direction === 'ascending' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredItems, sortConfig]);
+
+  const handleSort = (key) => {
+    setSortConfig(current => ({
+      key,
+      direction: current.key === key && current.direction === 'ascending' ? 'descending' : 'ascending'
+    }));
+  };
 
   useEffect(() => {
     fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT`);
-  }, [pageParam, sizeParam, selectedOrgId]);
+  }, [pageParam, sizeParam]);
 
   useEffect(() => {
-    // Fetch organizations for dropdown
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
-      .then(res => res.json())
-      .then(data => {
+    const fetchOrganizations = async () => {
+      try {
+        const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`);
+        const data = await response.json();
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         setOrganizations(orgs);
-      })
-      .catch(() => { });
+      } catch (error) {
+        console.error('Failed to fetch organizations:', error);
+      }
+    };
+    fetchOrganizations();
   }, []);
 
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return '↕️';
+    return sortConfig.direction === 'ascending' ? '↑' : '↓';
+  };
+
+  // Get expense type color
+  const getExpenseTypeColor = (type) => {
+    const typeColors = {
+      'SALARY': '#ef4444',
+      'OFFICE_SUPPLIES': '#f59e0b',
+      'TRAVEL': '#8b5cf6',
+      'UTILITIES': '#06b6d4',
+      'MAINTENANCE': '#84cc16',
+      'OTHER': '#6b7280'
+    };
+    return typeColors[type] || '#6b7280';
+  };
+
   return (
-    <div>
+    <div className="page-container">
       <Sidebar isOpen={true} />
-      <PageCard title="Cashflow - Outward">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div className="small">Outward expenses (CASH-OUT)</div>
-          <div>
-            <button className="btn" onClick={() => navigate('/pettycash/expenses/create?type=CASH-OUT')}>Create Expense</button>
+      <PageCard title="Cash Outward Management">
+        
+        {/* Header Section with Stats */}
+        <div className="dashboard-header outward-header">
+          <div className="header-content">
+            <div className="header-text">
+              <h1>Cash Outward </h1>
+              <p>Manage and track all cash outflow expenses (CASH-OUT)</p>
+            </div>
+            <button 
+              className="btn-primary create-btn"
+              onClick={() => navigate('/pettycash/expenses/create?type=CASH-OUT')}
+            >
+              <span className="btn-icon">+</span>
+              Create New Outward
+            </button>
+          </div>
+          
+          {/* Statistics Cards */}
+          <div className="stats-grid">
+            <div className="stat-card outward-stat">
+              <div className="stat-icon">💸</div>
+              <div className="stat-content">
+                <div className="stat-value">₹{totalAmount.toLocaleString()}</div>
+                <div className="stat-label">Total Outflow</div>
+              </div>
+            </div>
+            <div className="stat-card outward-stat">
+              <div className="stat-icon">📤</div>
+              <div className="stat-content">
+                <div className="stat-value">{totalTransactions}</div>
+                <div className="stat-label">Expenses</div>
+              </div>
+            </div>
+            <div className="stat-card outward-stat">
+              <div className="stat-icon">📊</div>
+              <div className="stat-content">
+                <div className="stat-value">₹{Math.round(averageExpense).toLocaleString()}</div>
+                <div className="stat-label">Average per Expense</div>
+              </div>
+            </div>
+            <div className="stat-card outward-stat">
+              <div className="stat-icon">🏢</div>
+              <div className="stat-content">
+                <div className="stat-value">
+                  {selectedOrgId ? '1' : organizations.length}
+                </div>
+                <div className="stat-label">
+                  {selectedOrgId ? 'Selected Org' : 'Organizations'}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div style={{ margin: '12px 0' }}>
-          <label style={{ marginRight: 8 }}>Branch:</label>
-          <select name="organizationId" onChange={handleChange} className="styled-select" style={{ minWidth: 180 }}>
-            <option value="">All organizations</option>
-            {organizations.map(org => (
-              <option key={org.id || org._links?.self?.href} value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}>{org.name}</option>
-            ))}
-          </select>
-        </div>
-        {loading ? <div className="small">Loading...</div> : (
-          <>
-            <table className="payroll-table">
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th>Amount</th>
-                 
-                  <th>Type</th>
-                  <th>Receipt</th>
-                  <th>Edit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((it, idx) => (
-                  <tr key={idx}>
-                    <td>{it.description}</td>
-                    <td>{it.amount}</td>
-                  
-                    <td>{it.expenseSubType}</td>
-                    <td>
-                      {it.imageData ? (
-                        <button className="btn" onClick={() => setModalFile(it.imageData)}>View</button>
-                      ) : (it.fileUrl || it.file ? (
-                        <button className="btn" onClick={() => setModalFile(it.fileUrl || it.file)}>View</button>
-                      ) : '')}
-                    </td>
-                    <td>
-                      <button className="btn" onClick={() => navigate(`/pettycash/expenses/${it.id || (it._links && it._links.self && it._links.self.href.split('/').pop())}/edit`)}>Edit</button>
-                    </td>
-                  </tr>
+
+        {/* Filters and Search Section */}
+        <div className="filters-section">
+          <div className="filters-grid">
+            <div className="search-box">
+              <div className="search-icon">🔍</div>
+              <input
+                type="text"
+                placeholder="Search by branch, employee ID, type, amount, or date..."
+                value={searchTerm}
+                onChange={handleSearch}
+                className="search-input"
+              />
+              {searchTerm && (
+                <button 
+                  className="clear-search"
+                  onClick={() => setSearchTerm('')}
+                  title="Clear search"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            
+            <div className="filter-group">
+              <label>Organization</label>
+              <select 
+                value={selectedOrgId} 
+                onChange={handleOrganizationChange}
+                className="filter-select"
+              >
+                <option value="">All Organizations</option>
+                {organizations.map(org => (
+                  <option 
+                    key={org.id || org._links?.self?.href} 
+                    value={org.id || (org._links?.self?.href.split('/').pop())}
+                  >
+                    {org.name}
+                  </option>
                 ))}
-              </tbody>
-            </table>
-            {modalFile && (
-              <div className="modal" style={{ position: 'fixed', top:0, left:0, width:'100vw', height:'100vh', background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }} onClick={() => setModalFile(null)}>
-                <div style={{ background:'#fff', padding:24, borderRadius:8, maxWidth:'80vw', maxHeight:'80vh', overflow:'auto' }} onClick={e => e.stopPropagation()}>
-                  <h3>Receipt</h3>
-                  {modalFile.startsWith('data:image') ? (
-                    <img src={modalFile} alt="Expense File" style={{ maxWidth:'60vw', maxHeight:'60vh', border:'none' }} />
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label>Items per page</label>
+              <select 
+                value={sizeParam}
+                onChange={(e) => setSearchParams({ page: 0, size: e.target.value })}
+                className="filter-select"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Search Results Info */}
+        {searchTerm && (
+          <div className="search-results-info">
+            Found {filteredItems.length} expenses matching "{searchTerm}"
+            <button 
+              className="clear-search-btn"
+              onClick={() => setSearchTerm('')}
+            >
+              Clear search
+            </button>
+          </div>
+        )}
+
+        {/* Data Table */}
+        {loading ? (
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Loading outward expenses...</p>
+          </div>
+        ) : (
+          <>
+            <div className="table-container">
+              <table className="modern-table">
+                <thead>
+                  <tr>
+                    <th 
+                      onClick={() => handleSort('amount')}
+                      className="sortable-header"
+                    >
+                      Amount {getSortIcon('amount')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('expenseSubType')}
+                      className="sortable-header"
+                    >
+                      Type {getSortIcon('expenseSubType')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('createdDate')}
+                      className="sortable-header"
+                    >
+                      Created Date {getSortIcon('createdDate')}
+                    </th>
+                    <th>Receipt</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedItems.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="no-data">
+                        <div className="no-data-content">
+                          <div className="no-data-icon">💸</div>
+                          <p>
+                            {searchTerm 
+                              ? `No expenses found for "${searchTerm}"`
+                              : 'No outward expenses found'
+                            }
+                          </p>
+                          {searchTerm || selectedOrgId ? (
+                            <p className="no-data-subtext">
+                              Try adjusting your search or filter criteria
+                            </p>
+                          ) : null}
+                          {!searchTerm ? (
+                            <button 
+                              className="btn-primary"
+                              onClick={() => navigate('/pettycash/expenses/create?type=CASH-OUT')}
+                            >
+                              Create First Outward Expense
+                            </button>
+                          ) : (
+                            <button 
+                              className="btn-secondary"
+                              onClick={() => setSearchTerm('')}
+                            >
+                              Clear Search
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   ) : (
-                    <img src={`data:image/png;base64,${modalFile}`} alt="Expense File" style={{ maxWidth:'60vw', maxHeight:'60vh', border:'none' }} />
+                    sortedItems.map((item, idx) => (
+                      <tr key={idx} className="table-row">
+                        <td className="amount-cell">
+                          <span className="amount-badge outward-amount">
+                            -₹{item.amount?.toLocaleString()}
+                          </span>
+                          <div className="expense-details">
+                            {/* {item.branchName && (
+                              <div className="branch-name">Branch: {item.branchName}</div>
+                            )} */}
+                            {/* {item.employeeId && (
+                              <div className="employee-info">Employee: {item.employeeId}</div>
+                            )} */}
+                           
+                          </div>
+                        </td>
+                        <td className="type-cell">
+                          <span 
+                            className="type-tag"
+                            style={{ 
+                              backgroundColor: getExpenseTypeColor(item.expenseSubType),
+                              color: 'white'
+                            }}
+                          >
+                            {item.expenseSubType || 'General'}
+                          </span>
+                        </td>
+                        <td className="date-cell">
+                          <div className="date-display">
+                            {formatDate(item.createdDate)}
+                          </div>
+                          {item.expenseDate && item.expenseDate !== item.createdDate && (
+                            <div className="expense-date">
+                              Expense: {formatDate(item.expenseDate)}
+                            </div>
+                          )}
+                        </td>
+                        <td className="receipt-cell">
+                          {item.imageData || item.fileUrl || item.file ? (
+                            <button 
+                              className="btn-outline view-btn"
+                              onClick={() => setModalFile(item.imageData || item.fileUrl || item.file)}
+                            >
+                              👁️ View
+                            </button>
+                          ) : (
+                            <span className="no-receipt">No receipt</span>
+                          )}
+                        </td>
+                        <td className="actions-cell">
+                          <div className="action-buttons">
+                            <button 
+                              className="btn-outline edit-btn"
+                              onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
+                              title="Edit expense"
+                            >
+                              ✏️
+                            </button>
+                            <button 
+                              className="btn-outline view-btn"
+                              onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}`)}
+                              title="View details"
+                            >
+                              👁️
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   )}
-                  <div style={{ marginTop:12 }}>
-                    <button className="btn" onClick={() => setModalFile(null)}>Close</button>
-                  </div>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {sortedItems.length > 0 && (
+              <div className="pagination-section">
+                <div className="pagination-info">
+                  Showing {sortedItems.length} expenses • Page {pageParam + 1} • 
+                  Total: ₹{totalAmount.toLocaleString()}
+                </div>
+                <div className="pagination-controls">
+                  <button 
+                    className="btn-outline"
+                    disabled={!(links.prev || pageParam > 0)}
+                    onClick={() => {
+                      if (links.prev) return fetchUrl(links.prev.href);
+                      const prev = Math.max(0, pageParam - 1);
+                      setSearchParams({ page: prev, size: sizeParam });
+                    }}
+                  >
+                    ← Previous
+                  </button>
+                  <span className="page-indicator">
+                    Page {pageParam + 1}
+                  </span>
+                  <button 
+                    className="btn-outline"
+                    disabled={!(links.next || items.length >= sizeParam)}
+                    onClick={() => {
+                      if (links.next) return fetchUrl(links.next.href);
+                      const next = pageParam + 1;
+                      setSearchParams({ page: next, size: sizeParam });
+                    }}
+                  >
+                    Next →
+                  </button>
                 </div>
               </div>
             )}
-            <div className="payroll-controls">
-              <div>
-                <button className="btn" disabled={!(links.prev || pageParam>0)} onClick={() => {
-                  if (links.prev) return fetchUrl(links.prev.href);
-                  const prev = Math.max(0, pageParam-1);
-                  setSearchParams({ page: prev, size: sizeParam });
-                  fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${prev}&size=${sizeParam}`);
-                }}>Previous</button>
-                <button className="btn" style={{ marginLeft:8 }} disabled={!(links.next || items.length>=sizeParam)} onClick={() => {
-                  if (links.next) return fetchUrl(links.next.href);
-                  const next = pageParam+1;
-                  setSearchParams({ page: next, size: sizeParam });
-                  fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${next}&size=${sizeParam}`);
-                }}>Next</button>
-              </div>
-              <div className="small">Page {pageParam+1}  Showing {items.length} results</div>
-            </div>
           </>
+        )}
+
+        {/* Receipt Modal */}
+        {modalFile && (
+          <div className="modal-overlay" onClick={() => setModalFile(null)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Expense Receipt</h3>
+                <button 
+                  className="modal-close"
+                  onClick={() => setModalFile(null)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="modal-body">
+                {modalFile.startsWith('data:image') ? (
+                  <img src={modalFile} alt="Expense Receipt" className="receipt-image" />
+                ) : (
+                  <img src={`data:image/png;base64,${modalFile}`} alt="Expense Receipt" className="receipt-image" />
+                )}
+              </div>
+              <div className="modal-footer">
+                <button 
+                  className="btn-primary"
+                  onClick={() => setModalFile(null)}
+                >
+                  Close Preview
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </PageCard>
     </div>
