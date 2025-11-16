@@ -7,7 +7,7 @@ import { APP_SERVER_URL_PREFIX } from "../constants.js";
 
 function CreateExpense() {
   const [form, setForm] = useState({ 
-    branchName: '', 
+    transactionDate: new Date().toISOString().slice(0, 10), 
     amount: '', 
     employeeId: '', 
     subtype: '', 
@@ -133,8 +133,8 @@ useEffect(() => {
       setError('Please select an organization');
       return;
     }
-    if (!form.branchName.trim()) {
-      setError('Please enter a branch name');
+    if (!form.transactionDate) {
+      setError('Please enter a transaction date');
       return;
     }
     if (!form.amount || Number(form.amount) <= 0) {
@@ -160,7 +160,7 @@ useEffect(() => {
       const createdDate = new Date().toISOString().slice(0,10);
 
       const expensePayload = {
-        branchName: form.branchName.trim(),
+        transactionDate: form.transactionDate,
         amount: Number(form.amount),
         employeeId: form.employeeId ? Number(form.employeeId) : undefined,
         expenseSubType: form.subtype,
@@ -205,7 +205,7 @@ useEffect(() => {
 
   const clearForm = () => {
     setForm({ 
-      branchName: '', 
+      transactionDate: new Date().toISOString().slice(0, 10), 
       amount: '', 
       employeeId: '', 
       subtype: '', 
@@ -322,17 +322,18 @@ useEffect(() => {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label required">Branch Name</label>
-                    <input 
-                      name="branchName" 
-                      value={form.branchName} 
-                      onChange={handleChange} 
-                      className="form-input"
-                      placeholder="Enter branch name..."
-                      maxLength={200}
-                      required
-                    />
-                    <div className="char-count">{form.branchName.length}/200</div>
+                    <label className="form-label required">Transaction Date</label>
+                    <div className="date-input-wrapper">
+                      <span className="input-icon" style={{marginLeft:"-10px"}}>📅</span>
+                      <input 
+                        name="transactionDate" 
+                        type="date" 
+                        value={form.transactionDate} 
+                        onChange={handleChange} 
+                        className="form-input"
+                        required
+                      />
+                    </div>
                   </div>
                   
                   <div className="form-group">
@@ -532,9 +533,9 @@ useEffect(() => {
                     </span>
                   </div>
                   <div className="summary-item">
-                    <span className="summary-label">Branch:</span>
+                    <span className="summary-label">Transaction Date:</span>
                     <span className="summary-value">
-                      {form.branchName || 'Not entered'}
+                      {form.transactionDate || 'Not entered'}
                     </span>
                   </div>
                   <div className="summary-item">

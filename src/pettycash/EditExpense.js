@@ -9,7 +9,7 @@ function EditExpense() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [form, setForm] = useState({ 
-    branchName: '', 
+    transactionDate: new Date().toISOString().slice(0, 10), 
     amount: '', 
     employeeId: '', 
     organizationId: '', 
@@ -40,7 +40,7 @@ function EditExpense() {
         if (typeof orgId !== 'string') orgId = String(orgId);
         
         setForm({ 
-          branchName: json.branchName || '', 
+          transactionDate: json.transactionDate || new Date().toISOString().slice(0, 10), 
           amount: json.amount || '', 
           employeeId: json.employeeId || '', 
           organizationId: orgId, 
@@ -104,8 +104,8 @@ function EditExpense() {
       setLoading(false);
       return;
     }
-    if (!form.branchName.trim()) {
-      setError('Please enter a branch name');
+    if (!form.transactionDate) {
+      setError('Please enter a transaction date');
       setLoading(false);
       return;
     }
@@ -117,7 +117,7 @@ function EditExpense() {
 
     try {
       const payload = { 
-        branchName: form.branchName.trim(),
+        transactionDate: form.transactionDate,
         amount: Number(form.amount), 
         organizationId: form.organizationId || undefined,
         organizationName: form.organizationName || undefined,
@@ -219,7 +219,7 @@ function EditExpense() {
             </div>
           )}
 
-          {loading && !form.branchName ? (
+          {loading && !form.transactionDate ? (
             <div className="loading-state">
               <div className="loading-spinner"></div>
               <p>Loading expense details...</p>
@@ -257,18 +257,19 @@ function EditExpense() {
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label required">Branch Name</label>
-                      <input 
-                        name="branchName" 
-                        value={form.branchName} 
-                        onChange={handleChange} 
-                        className="form-input"
-                        placeholder="Enter branch name..."
-                        maxLength={200}
-                        required
-                        disabled={loading}
-                      />
-                      <div className="char-count">{form.branchName.length}/200</div>
+                      <label className="form-label required">Transaction Date</label>
+                      <div className="date-input-wrapper">
+                        <span className="input-icon" style={{marginLeft:"-10px"}}>📅</span>
+                        <input 
+                          name="transactionDate" 
+                          type="date" 
+                          value={form.transactionDate} 
+                          onChange={handleChange} 
+                          className="form-input"
+                          required
+                          disabled={loading}
+                        />
+                      </div>
                     </div>
                     
                     <div className="form-group">
@@ -354,9 +355,9 @@ function EditExpense() {
                       </span>
                     </div>
                     <div className="summary-item">
-                      <span className="summary-label">Branch:</span>
+                      <span className="summary-label">Transaction Date:</span>
                       <span className="summary-value">
-                        {form.branchName || 'Not entered'}
+                        {form.transactionDate || 'Not entered'}
                       </span>
                     </div>
                     <div className="summary-item">

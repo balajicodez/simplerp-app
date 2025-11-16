@@ -66,21 +66,6 @@ function ExpensesOutward() {
     return String(value);
   };
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    } catch (e) {
-      return dateString;
-    }
-  };
-
   // Filter items based on search term
   const filteredItems = items.filter(item => {
     if (!searchTerm) return true;
@@ -88,13 +73,10 @@ function ExpensesOutward() {
     const searchLower = safeToString(searchTerm).toLowerCase();
     
     return (
-      safeToString(item.branchName).toLowerCase().includes(searchLower) ||
+      safeToString(item.description).toLowerCase().includes(searchLower) ||
       safeToString(item.employeeId).toLowerCase().includes(searchLower) ||
       safeToString(item.expenseSubType).toLowerCase().includes(searchLower) ||
-      safeToString(item.amount).includes(searchTerm) || // Direct number comparison without toLowerCase
-      safeToString(item.expenseDate).toLowerCase().includes(searchLower) ||
-      safeToString(item.createdDate).toLowerCase().includes(searchLower) ||
-      safeToString(item.referenceNumber).toLowerCase().includes(searchLower)
+      safeToString(item.amount).includes(searchTerm) // Direct number comparison without toLowerCase
     );
   });
 
@@ -110,13 +92,6 @@ function ExpensesOutward() {
       if (aValue == null && bValue == null) return 0;
       if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
       if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
-      
-      // Handle date sorting
-      if (sortConfig.key.includes('Date')) {
-        const aDate = new Date(aValue);
-        const bDate = new Date(bValue);
-        return sortConfig.direction === 'ascending' ? aDate - bDate : bDate - aDate;
-      }
       
       // Handle different data types
       if (typeof aValue === 'number' && typeof bValue === 'number') {
@@ -189,7 +164,7 @@ function ExpensesOutward() {
         <div className="dashboard-header outward-header">
           <div className="header-content">
             <div className="header-text">
-              <h1>Cash Outward </h1>
+              <h1>Cash Outward Transactions</h1>
               <p>Manage and track all cash outflow expenses (CASH-OUT)</p>
             </div>
             <button 
@@ -245,7 +220,7 @@ function ExpensesOutward() {
               <div className="search-icon">🔍</div>
               <input
                 type="text"
-                placeholder="Search by branch, employee ID, type, amount, or date..."
+                placeholder="Search expenses by description, employee, type, or amount..."
                 value={searchTerm}
                 onChange={handleSearch}
                 className="search-input"
@@ -322,22 +297,28 @@ function ExpensesOutward() {
                 <thead>
                   <tr>
                     <th 
+                      onClick={() => handleSort('description')}
+                      className="sortable-header"
+                    >
+                      Description {getSortIcon('description')}
+                    </th>
+                    <th 
                       onClick={() => handleSort('amount')}
                       className="sortable-header"
                     >
                       Amount {getSortIcon('amount')}
                     </th>
                     <th 
+                      onClick={() => handleSort('employeeId')}
+                      className="sortable-header"
+                    >
+                      Employee {getSortIcon('employeeId')}
+                    </th>
+                    <th 
                       onClick={() => handleSort('expenseSubType')}
                       className="sortable-header"
                     >
-                      Type {getSortIcon('expenseSubType')}
-                    </th>
-                    <th 
-                      onClick={() => handleSort('createdDate')}
-                      className="sortable-header"
-                    >
-                      Created Date {getSortIcon('createdDate')}
+                      Category {getSortIcon('expenseSubType')}
                     </th>
                     <th>Receipt</th>
                     <th>Actions</th>
@@ -346,7 +327,7 @@ function ExpensesOutward() {
                 <tbody>
                   {sortedItems.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="no-data">
+                      <td colSpan="6" className="no-data">
                         <div className="no-data-content">
                           <div className="no-data-icon">💸</div>
                           <p>
@@ -381,18 +362,27 @@ function ExpensesOutward() {
                   ) : (
                     sortedItems.map((item, idx) => (
                       <tr key={idx} className="table-row">
+                        <td className="description-cell">
+                          <div className="description-text" title={item.description}>
+                            {item.description}
+                          </div>
+                          {item.organizationId && (
+                            <div className="org-badge">
+                              {organizations.find(org => 
+                                String(org.id) === String(item.organizationId) || 
+                                String(org._links?.self?.href.split('/').pop()) === String(item.organizationId)
+                              )?.name || 'Organization'}
+                            </div>
+                          )}
+                        </td>
                         <td className="amount-cell">
                           <span className="amount-badge outward-amount">
                             -₹{item.amount?.toLocaleString()}
                           </span>
-                          <div className="expense-details">
-                            {/* {item.branchName && (
-                              <div className="branch-name">Branch: {item.branchName}</div>
-                            )} */}
-                            {/* {item.employeeId && (
-                              <div className="employee-info">Employee: {item.employeeId}</div>
-                            )} */}
-                           
+                        </td>
+                        <td className="employee-cell">
+                          <div className="employee-info">
+                            <span className="employee-id">{item.employeeId || 'N/A'}</span>
                           </div>
                         </td>
                         <td className="type-cell">
@@ -405,16 +395,6 @@ function ExpensesOutward() {
                           >
                             {item.expenseSubType || 'General'}
                           </span>
-                        </td>
-                        <td className="date-cell">
-                          <div className="date-display">
-                            {formatDate(item.createdDate)}
-                          </div>
-                          {item.expenseDate && item.expenseDate !== item.createdDate && (
-                            <div className="expense-date">
-                              Expense: {formatDate(item.expenseDate)}
-                            </div>
-                          )}
                         </td>
                         <td className="receipt-cell">
                           {item.imageData || item.fileUrl || item.file ? (
