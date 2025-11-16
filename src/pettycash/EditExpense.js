@@ -346,11 +346,7 @@ function EditExpense() {
                     <span className="section-icon">📊</span>
                     Expense Summary
                   </h3>
-                  <div className="summary-grid">
-                    <div className="summary-item">
-                      <span className="summary-label">Expense ID:</span>
-                      <span className="summary-value id">{id}</span>
-                    </div>
+                  <div className="summary-grid">                   
                     <div className="summary-item">
                       <span className="summary-label">Organization:</span>
                       <span className="summary-value">
