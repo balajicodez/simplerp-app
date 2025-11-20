@@ -130,7 +130,7 @@ function DayClosing() {
                 onClick={() => navigate('/pettycash/day-closing/create')}
               >
                 <span className="btn-icon" style={{color:"white"}}>+</span>
-                New Transaction
+                Perform Day Closing
               </button>
               {/* <button 
                 className={`btn-primary day-closing-btn ${closing ? 'loading' : ''}`}
