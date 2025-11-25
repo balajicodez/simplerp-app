@@ -235,7 +235,7 @@ function EditExpense() {
                   </h3>
                   <div className="form-grid enhanced-grid">
                     <div className="form-group">
-                      <label className="form-label required">Organization</label>
+                      <label className="form-label required">Branch</label>
                       <select 
                         name="organizationId" 
                         value={form.organizationId} 
@@ -244,7 +244,7 @@ function EditExpense() {
                         required
                         disabled={loading}
                       >
-                        <option value="">Select organization</option>
+                        <option value="">Select branch</option>
                         {Array.isArray(organizations) && organizations.map(org => {
                           const orgId = org.id || (org._links?.self?.href.split('/').pop());
                           return (

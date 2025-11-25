@@ -78,7 +78,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 className={({ isActive }) => isActive ? 'active' : ''}
                 data-icon="📥"
               >
-                📥 Expenses - Inward
+                📥 Cash FLow - Inward
               </NavLink>
             </li>
             <li className="subitem">
@@ -87,7 +87,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 className={({ isActive }) => isActive ? 'active' : ''}
                 data-icon="📤"
               >
-                📤 Expenses - Outward
+                📤 Cash FLow  - Outward
               </NavLink>
             </li>
             <li className="subitem">

@@ -135,6 +135,24 @@ function ExpensesInward() {
     });
   }, [filteredItems, sortConfig]);
 
+  // Helper function to check if date is today
+const isToday = (dateString) => {
+  if (!dateString) return false;
+  
+  try {
+    const itemDate = new Date(dateString);
+    const today = new Date();
+    
+    return (
+      itemDate.getDate() === today.getDate() &&
+      itemDate.getMonth() === today.getMonth() &&
+      itemDate.getFullYear() === today.getFullYear()
+    );
+  } catch (e) {
+    console.error('Invalid date:', dateString, e);
+    return false;
+  }
+};
   const handleSort = (key) => {
     setSortConfig(current => ({
       key,
@@ -378,14 +396,20 @@ function ExpensesInward() {
                             <span className="no-receipt">No receipt</span>
                           )}
                         </td>
-                        <td className="actions-cell">
+                       <td className="actions-cell">
+                        {isToday(item.createdDate) ? (
                           <button 
                             className="btn-outline edit-btn"
                             onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
                           >
                             ✏️ Edit
                           </button>
-                        </td>
+                        ) : (
+                          <span className="edit-disabled" title="Can only edit today's transactions">
+                            🔒 Locked
+                          </span>
+                        )}
+                      </td>
                       </tr>
                     ))
                   )}

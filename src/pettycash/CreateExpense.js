@@ -16,7 +16,8 @@ function CreateExpense() {
     referenceNumber: '', 
     file: null, 
     organizationId: '', 
-    organizationName: '' 
+    organizationName: '',
+    currentBalance: '' 
   });
   const [organizations, setOrganizations] = useState([]);
   const [subtypes, setSubtypes] = useState([]);
@@ -24,22 +25,24 @@ function CreateExpense() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
+  const [fetchedBalance, setFetchedBalance] = useState(0);
+  const [balanceLoading, setBalanceLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-const getExpenseType = () => {
-  const params = new URLSearchParams(location.search);
-  let filterType = params.get('type');
-  if (!filterType) {
-    if (location.pathname.includes('expenses-inward') || location.pathname.includes('create') && location.search.includes('CASH-IN')) {
-      filterType = 'CASH-IN';
+  const getExpenseType = () => {
+    const params = new URLSearchParams(location.search);
+    let filterType = params.get('type');
+    if (!filterType) {
+      if (location.pathname.includes('expenses-inward') || location.pathname.includes('create') && location.search.includes('CASH-IN')) {
+        filterType = 'CASH-IN';
+      }
+      if (location.pathname.includes('expenses-outward') || location.pathname.includes('create') && location.search.includes('CASH-OUT')) {
+        filterType = 'CASH-OUT';
+      }
     }
-    if (location.pathname.includes('expenses-outward') || location.pathname.includes('create') && location.search.includes('CASH-OUT')) {
-      filterType = 'CASH-OUT';
-    }
-  }
-  return filterType || '';
-};
+    return filterType || '';
+  };
 
   const getPageTitle = () => {
     const type = getExpenseType();
@@ -62,67 +65,159 @@ const getExpenseType = () => {
     return '📝';
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
-    setError('');
-    setSuccess('');
+  // Add this useEffect for debugging
+useEffect(() => {
+  console.log('Form state updated:', {
+    organizationId: form.organizationId,
+    transactionDate: form.transactionDate,
+    currentBalance: form.currentBalance,
+    fetchedBalance: fetchedBalance,
+    expenseType: getExpenseType()
+  });
+}, [form.organizationId, form.transactionDate, form.currentBalance, fetchedBalance]);
+
+const fetchCurrentBalance = async (organizationId, date) => {
+  if (!organizationId || !date || getExpenseType() !== 'CASH-OUT') {
+    // setFetchedBalance(0);
+    setForm(f => ({ ...f, currentBalance: '' }));
+    return;
+  }
+
+  setBalanceLoading(true);
+  try {
+    const response = await fetch(
+      `${APP_SERVER_URL_PREFIX}/expenses/balance?organizationId=${organizationId}&createdDate=${date}`
+    );
     
-    if (type === 'file') {
-      const file = files[0];
-      setForm((f) => ({ ...f, file }));
+    if (response.ok) {
+      const balanceData = await response.json();
+      console.log('Balance API Response:', balanceData); // Debug log
       
-      // Create preview for image files
-      if (file && file.type.startsWith('image/')) {
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-      } else {
-        setPreviewUrl('');
+      let balance = 0;
+      
+      if (balanceData.totalBalance !== undefined && balanceData.totalBalance !== null) {
+        balance = balanceData.totalBalance;
+      } else if (balanceData.cashInAmt !== undefined && balanceData.cashOutAmt !== undefined) {
+        balance = (balanceData.cashInAmt || 0) - (balanceData.cashOutAmt || 0);
       }
-    } else if (name === 'organizationId') {
-      const selectedOrg = organizations.find(org => String(org.id) === String(value));
-      const orgName = e.currentTarget.options[e.currentTarget.selectedIndex].text;
-      setForm((f) => ({ ...f, organizationId: value, organizationName: orgName }));
+      
+      balance = Number(balance) || 0;
+      
+      console.log('Calculated Balance:', balance); 
+      
+      setFetchedBalance(balance);
+      // Auto-fill the current balance field with fetched value
+      setForm(f => ({ ...f, currentBalance: balance.toString() }));
     } else {
-      setForm((f) => ({ ...f, [name]: value }));
+      console.error('Balance API response not OK:', response.status);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      setFetchedBalance(0);
+      setForm(f => ({ ...f, currentBalance: '' }));
+    }
+  } catch (error) {
+    console.error('Error fetching balance:', error);
+    setFetchedBalance(0);
+    setForm(f => ({ ...f, currentBalance: '' }));
+  } finally {
+    setBalanceLoading(false);
+  }
+};
+
+ const handleChange = (e) => {
+  const { name, value, type, files } = e.target;
+  setError('');
+  setSuccess('');
+  
+  if (type === 'file') {
+    const file = files[0];
+    setForm((f) => ({ ...f, file }));
+    
+    if (file && file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl('');
+    }
+  } else if (name === 'organizationId') {
+    const selectedOrg = organizations.find(org => String(org.id) === String(value));
+    const orgName = e.currentTarget.options[e.currentTarget.selectedIndex].text;
+    const updatedForm = { ...form, organizationId: value, organizationName: orgName };
+    setForm(updatedForm);
+    
+    // Fetch balance automatically when organization changes - Only for CASH-OUT
+    if (value && form.transactionDate && getExpenseType() === 'CASH-OUT') {
+      fetchCurrentBalance(value, form.transactionDate);
+    }
+  } else if (name === 'transactionDate') {
+    const updatedForm = { ...form, [name]: value };
+    setForm(updatedForm);
+    
+    // Fetch balance automatically when date changes - Only for CASH-OUT
+    if (form.organizationId && value && getExpenseType() === 'CASH-OUT') {
+      fetchCurrentBalance(form.organizationId, value);
+    }
+  } else if (name === 'amount') {
+    // Validate amount doesn't exceed current balance for CASH-OUT
+    const amountValue = Number(value);
+    const currentBalanceValue = Number(form.currentBalance) || fetchedBalance;
+    
+    if (getExpenseType() === 'CASH-OUT' && amountValue > currentBalanceValue) {
+      setError(`Amount cannot exceed current balance of ₹${currentBalanceValue.toLocaleString()}`);
+    } else {
+      setError('');
+    }
+    setForm((f) => ({ ...f, [name]: value }));
+  } else {
+    setForm((f) => ({ ...f, [name]: value }));
+  }
+};
+
+  // Add a button to fetch balance manually - Only for CASH-OUT
+  const handleFetchBalance = () => {
+    if (form.organizationId && form.transactionDate && getExpenseType() === 'CASH-OUT') {
+      fetchCurrentBalance(form.organizationId, form.transactionDate);
+    } else if (getExpenseType() !== 'CASH-OUT') {
+      setError('Current balance is only available for CASH-OUT transactions');
+    } else {
+      setError('Please select organization and transaction date first');
     }
   };
   
-useEffect(() => {
-  let mounted = true;
-  const expenseType = getExpenseType();
-  
-  // Automatically set the expense type based on the current page
-  setForm(f => ({ ...f, type: expenseType }));
-
-  fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`)
-    .then(res => {
-      if (!res.ok) throw new Error('no masters');
-      return res.json();
-    })
-    .then(json => {
-      const list = (json._embedded && json._embedded.expenseTypeMasters) || json._embedded || json || [];
-      // Filter subtypes based on the automatically determined expense type
-      const vals = list
-        .filter(m => m.type === expenseType) // Only get categories for current type
-        .map(m => (m.subtype || m.subType)).filter(Boolean);
-      const uniq = Array.from(new Set(vals));
-      if (mounted) setSubtypes(uniq);
-    })
-    .catch(() => {
-      // ignore failures — dropdown will be empty
-    });
-
-  // Fetch organizations for dropdown
-  fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
-    .then(res => res.json())
-    .then(data => {
-      const orgs = data._embedded ? data._embedded.organizations || [] : data;
-      if (mounted) setOrganizations(orgs);
-    })
-    .catch(() => {});
+  useEffect(() => {
+    let mounted = true;
+    const expenseType = getExpenseType();
     
-  return () => { mounted = false; };
-}, [location.pathname, location.search]);
+    setForm(f => ({ ...f, type: expenseType }));
+
+    fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`)
+      .then(res => {
+        if (!res.ok) throw new Error('no masters');
+        return res.json();
+      })
+      .then(json => {
+        const list = (json._embedded && json._embedded.expenseTypeMasters) || json._embedded || json || [];
+        const vals = list
+          .filter(m => m.type === expenseType)
+          .map(m => (m.subtype || m.subType)).filter(Boolean);
+        const uniq = Array.from(new Set(vals));
+        if (mounted) setSubtypes(uniq);
+      })
+      .catch(() => {
+        // ignore failures
+      });
+
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+      .then(res => res.json())
+      .then(data => {
+        const orgs = data._embedded ? data._embedded.organizations || [] : data;
+        if (mounted) setOrganizations(orgs);
+      })
+      .catch(() => {});
+      
+    return () => { mounted = false; };
+  }, [location.pathname, location.search]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -141,6 +236,22 @@ useEffect(() => {
       setError('Please enter a valid amount');
       return;
     }
+    
+    // Validate current balance field only for CASH-OUT
+    if (getExpenseType() === 'CASH-OUT') {
+      if (!form.currentBalance || Number(form.currentBalance) < 0) {
+        setError('Please enter a valid current balance');
+        return;
+      }
+      
+      // Validate amount doesn't exceed current balance for CASH-OUT
+      const currentBalanceValue = Number(form.currentBalance);
+      if (Number(form.amount) > currentBalanceValue) {
+        setError(`Amount cannot exceed current balance of ₹${currentBalanceValue.toLocaleString()}`);
+        return;
+      }
+    }
+    
     if (subtypes.length > 0 && !form.subtype) {
       setError('Please select an expense category');
       return;
@@ -171,7 +282,8 @@ useEffect(() => {
         createdByUser,
         createdDate,
         expenseDate: form.expenseDate || undefined,
-        referenceNumber: form.referenceNumber || undefined
+        referenceNumber: form.referenceNumber || undefined,
+        currentBalance: getExpenseType() === 'CASH-OUT' ? Number(form.currentBalance) : undefined // Only include for CASH-OUT
       };
 
       const formData = new FormData();
@@ -214,11 +326,13 @@ useEffect(() => {
       referenceNumber: '', 
       file: null,
       organizationId: '',
-      organizationName: ''
+      organizationName: '',
+      currentBalance: ''
     });
     setPreviewUrl('');
     setError('');
     setSuccess('');
+    setFetchedBalance(0);
   };
 
   const getCategoryIcon = (category) => {
@@ -235,6 +349,13 @@ useEffect(() => {
     return icons[category] || '💰';
   };
 
+  const formatBalance = (balance) => {
+    return `₹${Number(balance).toLocaleString()}`;
+  };
+
+  // Check if current balance section should be shown
+  const showCurrentBalanceSection = getExpenseType() === 'CASH-OUT';
+
   return (
     <div className="page-container">
       <Sidebar isOpen={true} />
@@ -243,18 +364,25 @@ useEffect(() => {
         {/* Enhanced Header Section */}
         <div className={`create-expense-header ${getHeaderColor()}-header`}>
           <div className="header-content">
-            
             <div className="header-icon">{getExpenseIcon()}</div>
-             <div className="header-stats">
-            <div className="stat-badge">
-              <span className="stat-number">{organizations.length}</span>
-              <span className="stat-label">Organizations</span>
+            <div className="header-stats">
+              <div className="stat-badge">
+                <span className="stat-number">{organizations.length}</span>
+                <span className="stat-label">Organizations</span>
+              </div>
+              <div className="stat-badge">
+                <span className="stat-number">{subtypes.length}</span>
+                <span className="stat-label">Categories</span>
+              </div>
+              {showCurrentBalanceSection && form.currentBalance && (
+                <div className="stat-badge balance-badge">
+                  <span className="stat-number">
+                    {formatBalance(form.currentBalance)}
+                  </span>
+                  <span className="stat-label">Current Balance</span>
+                </div>
+              )}
             </div>
-            <div className="stat-badge">
-              <span className="stat-number">{subtypes.length}</span>
-              <span className="stat-label">Categories</span>
-            </div>
-          </div>
             <div className="header-text">
               <h1>{getPageTitle()}</h1>
               <p>
@@ -267,7 +395,6 @@ useEffect(() => {
               </p>
             </div>
           </div>
-         
         </div>
 
         {/* Main Form */}
@@ -301,7 +428,7 @@ useEffect(() => {
                 </h3>
                 <div className="form-grid enhanced-grid">
                   <div className="form-group">
-                    <label className="form-label required">Organization</label>
+                    <label className="form-label required">Branch</label>
                     <select 
                       name="organizationId" 
                       value={form.organizationId} 
@@ -309,7 +436,7 @@ useEffect(() => {
                       className="form-select"
                       required
                     >
-                      <option value="">Select organization</option>
+                      <option value="">Select branch</option>
                       {organizations.map(org => (
                         <option 
                           key={org.id || org._links?.self?.href} 
@@ -335,6 +462,53 @@ useEffect(() => {
                       />
                     </div>
                   </div>
+
+                  {/* Current Balance Field - Only for CASH-OUT */}
+                  {showCurrentBalanceSection && (
+                    <div className="form-group">
+                      <label className="form-label required">Current Balance (₹)</label>
+                      <div className="balance-input-wrapper">
+                        <div className="balance-input-container">
+                          <span className="currency-symbol">₹</span>
+                          <input 
+                            name="currentBalance" 
+                            type="number" 
+                            value={form.currentBalance} 
+                            onChange={handleChange} 
+                            className="form-input balance-input"
+                            placeholder="0.00"
+                            min="0"
+                            step="0.01"
+                            required
+                            readOnly // Make it read-only since it's auto-fetched
+                          />
+<button 
+  type="button"
+  className="fetch-balance-btn"
+  onClick={handleFetchBalance}
+  disabled={!form.organizationId || !form.transactionDate || balanceLoading}
+  title="Refresh balance"
+>
+  {balanceLoading ? (
+    <div className="loading-spinner-tiny"></div>
+  ) : (
+    '🔄'
+  )}
+</button>
+                        </div>
+                      </div>
+                      <div className="balance-help">
+                        <small>
+                          {balanceLoading 
+                            ? 'Fetching balance...' 
+                            : form.organizationId && form.transactionDate 
+                              ? 'Balance automatically fetched' 
+                              : 'Select organization and date to fetch balance'
+                          }
+                        </small>
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="form-group">
                     <label className="form-label required">Amount (₹)</label>
@@ -352,31 +526,45 @@ useEffect(() => {
                         required
                       />
                     </div>
+                    {showCurrentBalanceSection && form.currentBalance && (
+                      <div className="balance-validation">
+                        {form.amount && Number(form.amount) > Number(form.currentBalance) ? (
+                          <div className="balance-error">
+                            ❌ Amount exceeds current balance by ₹{(Number(form.amount) - Number(form.currentBalance)).toLocaleString()}
+                          </div>
+                        ) : form.amount && Number(form.amount) <= Number(form.currentBalance) ? (
+                          <div className="balance-success">
+                            ✅ Available balance after expense: ₹{(Number(form.currentBalance) - Number(form.amount)).toLocaleString()}
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
 
-                 {subtypes.length > 0 && (
-  <div className="form-group">
-    <label className="form-label required">Expense Category</label>
-    <select 
-      name="subtype" 
-      value={form.subtype} 
-      onChange={handleChange} 
-      className="form-select"
-      required={subtypes.length > 0}
-    >
-      <option value="">Select category</option>
-      {subtypes.map((s, i) => (
-        <option key={i} value={s}>
-          <span className="category-option">
-            <span className="category-icon">{getCategoryIcon(s)}</span>
-            {s}
-          </span>
-        </option>
-      ))}
-    </select>
-  </div>
-)}
-                   <div className="form-group">
+                  {subtypes.length > 0 && (
+                    <div className="form-group">
+                      <label className="form-label required">Expense Category</label>
+                      <select 
+                        name="subtype" 
+                        value={form.subtype} 
+                        onChange={handleChange} 
+                        className="form-select"
+                        required={subtypes.length > 0}
+                      >
+                        <option value="">Select category</option>
+                        {subtypes.map((s, i) => (
+                          <option key={i} value={s}>
+                            <span className="category-option">
+                              <span className="category-icon">{getCategoryIcon(s)}</span>
+                              {s}
+                            </span>
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
+                  <div className="form-group">
                     <label className="form-label">Expense Date</label>
                     <div className="date-input-wrapper">
                       <span className="input-icon" style={{marginLeft:"-10px"}}>📅</span>
@@ -389,50 +577,8 @@ useEffect(() => {
                       />
                     </div>
                   </div>
-                  
                 </div>
               </div>
-
-              {/* <div className="form-section">
-                <h3 className="section-title">
-                  <span className="section-icon">📋</span>
-                  Additional Details
-                </h3>
-                <div className="form-grid enhanced-grid">
-                  <div className="form-group">
-                    <label className="form-label">Employee ID</label>
-                    <div className="employee-input-wrapper">
-                      <span className="input-icon">👤</span>
-                      <input 
-                        name="employeeId" 
-                        type="number" 
-                        value={form.employeeId} 
-                        onChange={handleChange} 
-                        className="form-input"
-                        placeholder="Enter employee ID"
-                      />
-                    </div>
-                  </div>
-
-                 
-                  <div className="form-group">
-                    <label className="form-label">Reference Number</label>
-                    <div className="reference-input-wrapper">
-                      <span className="input-icon">🔢</span>
-                      <input 
-                        name="referenceNumber" 
-                        type="text" 
-                        value={form.referenceNumber} 
-                        onChange={handleChange} 
-                        className="form-input"
-                        placeholder="Optional reference number"
-                        maxLength={50}
-                      />
-                    </div>
-                    <div className="char-count">{form.referenceNumber.length}/50</div>
-                  </div>
-                </div>
-              </div> */}
 
               {/* File Upload Section */}
               <div className="form-section">
@@ -461,11 +607,10 @@ useEffect(() => {
                         </>
                       ) : (
                         <>
-                          <div className="upload-icon">📁</div>
+                          <div className="upload-icon">📁<strong style={{fontSize:"20px"}}>Choose file</strong></div>
                           <div className="upload-text">
-                            <strong>Choose file</strong>
-                            <span>or drag and drop here</span>
-                            <small>Supports: JPG, PNG, PDF, DOC, XLSX (Max: 10MB)</small>
+                            {/* <span>or drag and drop here</span>
+                            <small>Supports: JPG, PNG, PDF, DOC, XLSX (Max: 10MB)</small> */}
                           </div>
                         </>
                       )}
@@ -519,48 +664,8 @@ useEffect(() => {
                   )}
                 </div>
               </div>
-
-              {/* <div className="form-section summary-section">
-                <h3 className="section-title">
-                  <span className="section-icon">📊</span>
-                  Expense Summary
-                </h3>
-                <div style={{display:"flex"}}>
-                  <div className="summary-item">
-                    <span className="summary-label">Organization:</span>
-                    <span className="summary-value">
-                      {form.organizationName || 'Not selected'}
-                    </span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">Transaction Date:</span>
-                    <span className="summary-value">
-                      {form.transactionDate || 'Not entered'}
-                    </span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">Amount:</span>
-                    <span className="summary-value amount">
-                      {form.amount ? `₹${Number(form.amount).toLocaleString()}` : 'Not entered'}
-                    </span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">Category:</span>
-                    <span className="summary-value">
-                      {form.subtype || 'Not selected'}
-                    </span>
-                  </div>
-                  <div className="summary-item">
-                    <span className="summary-label">Type:</span>
-                    <span className={`summary-value type-${getExpenseType().toLowerCase()}`}>
-                      {getExpenseType() || 'Not specified'}
-                    </span>
-                  </div>
-                </div>
-              </div> */}
             </div>
 
-        
             <div className="form-actions">
               <button 
                 type="button" 
@@ -586,7 +691,12 @@ useEffect(() => {
                 <button 
                   type="submit" 
                   className={`btn-primary submit-btn ${loading ? 'loading' : ''}`}
-                  disabled={loading}
+                  disabled={loading || 
+                    (showCurrentBalanceSection && 
+                     form.amount && 
+                     form.currentBalance && 
+                     Number(form.amount) > Number(form.currentBalance))
+                  }
                 >
                   {loading ? (
                     <>

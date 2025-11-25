@@ -531,7 +531,7 @@
 .file-upload-area {
   border: 2px dashed #d1d5db;
   border-radius: 8px;
-  padding: 40px 20px;
+  padding: 10px 10px;
   text-align: center;
   transition: all 0.3s ease;
   background: #fafafa;

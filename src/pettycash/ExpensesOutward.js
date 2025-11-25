@@ -123,6 +123,25 @@ function ExpensesOutward() {
     fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT`);
   }, [pageParam, sizeParam]);
 
+  // Helper function to check if date is today
+const isToday = (dateString) => {
+  if (!dateString) return false;
+  
+  try {
+    const itemDate = new Date(dateString);
+    const today = new Date();
+    
+    return (
+      itemDate.getDate() === today.getDate() &&
+      itemDate.getMonth() === today.getMonth() &&
+      itemDate.getFullYear() === today.getFullYear()
+    );
+  } catch (e) {
+    console.error('Invalid date:', dateString, e);
+    return false;
+  }
+};
+
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
@@ -408,24 +427,34 @@ function ExpensesOutward() {
                             <span className="no-receipt">No receipt</span>
                           )}
                         </td>
-                        <td className="actions-cell">
-                          <div className="action-buttons">
-                            <button 
-                              className="btn-outline edit-btn"
-                              onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
-                              title="Edit expense"
-                            >
-                              ✏️
-                            </button>
-                            <button 
-                              className="btn-outline view-btn"
-                              onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}`)}
-                              title="View details"
-                            >
-                              👁️
-                            </button>
-                          </div>
-                        </td>
+                       <td className="actions-cell">
+  <div className="action-buttons">
+    {isToday(item.createdDate) ? (
+      <button 
+        className="btn-outline edit-btn"
+        onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
+        title="Edit expense"
+      >
+        ✏️
+      </button>
+    ) : (
+      <button 
+        className="btn-outline edit-btn disabled"
+        disabled
+        title="Can only edit today's transactions"
+      >
+        🔒
+      </button>
+    )}
+    <button 
+      className="btn-outline view-btn"
+      onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}`)}
+      title="View details"
+    >
+      👁️
+    </button>
+  </div>
+</td>
                       </tr>
                     ))
                   )}

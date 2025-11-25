@@ -730,7 +730,7 @@ button:disabled {
 .details-card {
   background: white;
   border-radius: 12px;
-  padding: 24px;
+  padding: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
 }
@@ -832,6 +832,7 @@ button:disabled {
 
 .receipt-preview {
   max-width: 400px;
+  max-height: 50px;
   text-align: center;
 }
 
