@@ -327,12 +327,12 @@ const isToday = (dateString) => {
                     >
                       Amount {getSortIcon('amount')}
                     </th>
-                    <th 
+                    {/* <th 
                       onClick={() => handleSort('employeeId')}
                       className="sortable-header"
                     >
                       Employee {getSortIcon('employeeId')}
-                    </th>
+                    </th> */}
                     <th 
                       onClick={() => handleSort('expenseSubType')}
                       className="sortable-header"
@@ -399,11 +399,11 @@ const isToday = (dateString) => {
                             -₹{item.amount?.toLocaleString()}
                           </span>
                         </td>
-                        <td className="employee-cell">
+                        {/* <td className="employee-cell">
                           <div className="employee-info">
                             <span className="employee-id">{item.employeeId || 'N/A'}</span>
                           </div>
-                        </td>
+                        </td> */}
                         <td className="type-cell">
                           <span 
                             className="type-tag"

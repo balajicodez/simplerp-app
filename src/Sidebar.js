@@ -53,15 +53,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <span>👥 Employees</span>
           </NavLink>
         </li>
-        <li>
-          <NavLink 
-            to="/employee" 
-            className={({ isActive }) => isActive ? 'active' : ''}
-            data-icon="💰"
-          >
-            <span>💰 Payroll</span>
-          </NavLink>
-        </li>
+       <li>
+  <NavLink 
+    to="/employee"
+    className={({ isActive }) => `menu-item ${isActive ? 'active' : ''} disabled`}
+    data-icon="💰"
+    onClick={(e) => e.preventDefault()}
+  >
+    <span>💰 Payroll</span>
+  </NavLink>
+</li>
         
         <li className="group">
           <div 
@@ -78,7 +79,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 className={({ isActive }) => isActive ? 'active' : ''}
                 data-icon="📥"
               >
-                📥 Cash FLow - Inward
+                📥 Cash Flow - Inward
               </NavLink>
             </li>
             <li className="subitem">
@@ -87,7 +88,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 className={({ isActive }) => isActive ? 'active' : ''}
                 data-icon="📤"
               >
-                📤 Cash FLow  - Outward
+                📤 Cash Flow- Outward
               </NavLink>
             </li>
             <li className="subitem">
