@@ -143,7 +143,7 @@ function CreateOrganization({ onCreated }) {
 
   return (
     <div className="page-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Create Organization">
         
         {/* Header Section */}

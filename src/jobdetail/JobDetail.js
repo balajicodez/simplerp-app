@@ -141,7 +141,7 @@ function JobDetail() {
 
     return (
         <div>
-            <Sidebar isOpen={true} />
+            {/* <Sidebar isOpen={true} /> */}
             {loading ? <LoadSpinner /> :
                 <PageCard title="Job Detail">
                     <div>

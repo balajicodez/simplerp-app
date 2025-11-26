@@ -60,7 +60,7 @@ function ExpenseView() {
 
   return (
     <div className="page-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Expense Details">
         
         {/* Header Section */}

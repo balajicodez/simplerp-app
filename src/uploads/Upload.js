@@ -103,7 +103,7 @@ const Upload = () => {
   return (
     <div >
       <div>
-        <Sidebar isOpen={true} />
+        {/* <Sidebar isOpen={true} /> */}
       </div>
       {loading ? <LoadSpinner /> :
         <PageCard title={"MR Upload - Create a new Job"}>

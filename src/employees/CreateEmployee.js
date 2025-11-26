@@ -79,7 +79,7 @@ function CreateEmployee() {
 
   return (
     <div className="page-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Create Employee">
         
         {/* Enhanced Header Section */}

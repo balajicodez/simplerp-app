@@ -39,7 +39,7 @@ function CreateExpenseMaster() {
 
   return (
     <div>
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Create Expense Type Master">
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
         <form onSubmit={handleSubmit}>

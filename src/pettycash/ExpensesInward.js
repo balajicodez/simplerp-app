@@ -185,7 +185,7 @@ const isToday = (dateString) => {
 
   return (
     <div className="page-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Cash Inward Management">
         
         {/* Header Section with Stats */}

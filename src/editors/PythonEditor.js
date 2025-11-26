@@ -27,7 +27,7 @@ function PythonEditor() {
 
     return (
         <div>
-            <Sidebar isOpen={true} />
+            {/* <Sidebar isOpen={true} /> */}
             {loading ? <LoadSpinner /> : <PageCard title={"Python Editor"}>
                 <CodeiumEditor language="python" theme="vs-dark"  codeContent ={codeContent}/>
             </PageCard>}

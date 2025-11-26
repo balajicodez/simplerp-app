@@ -113,7 +113,7 @@ function DayClosing() {
 
   return (
     <div className="page-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Day Closing Management">
         
         {/* Header Section with Stats */}

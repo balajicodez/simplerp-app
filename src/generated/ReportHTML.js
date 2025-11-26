@@ -25,7 +25,7 @@ function ReportHTML() {
 
     return (
         <div>
-            <Sidebar isOpen={true} />
+            {/* <Sidebar isOpen={true} /> */}
             {loading ? <LoadSpinner /> : <div className={`content ${true ? 'shifted' : ''}`}>
                 <div>
                     < div dangerouslySetInnerHTML={{ __html: htmlContent }

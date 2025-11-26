@@ -24,7 +24,7 @@ function ExpenseMasters() {
 
   return (
     <div>
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Expense Category Masters">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:12 }}>
           <div className="small">Masters of expense categories</div>

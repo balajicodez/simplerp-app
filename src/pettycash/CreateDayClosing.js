@@ -245,7 +245,7 @@ function CreateDayClosing() {
 
   return (
     <div className="day-closing-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Create Day Closing Report">
        
 

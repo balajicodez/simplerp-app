@@ -9,7 +9,7 @@ function About() {
  
     return (
         <div>         
-         <Sidebar isOpen={true}  />
+         {/* <Sidebar isOpen={true}  /> */}
          <PageCard title="About SimplERP">
             <p>A next generation highly customisable and light weight ERP solution</p>
          </PageCard>

@@ -6,14 +6,20 @@
   margin-left: 40px;
   transition: margin-left 0.3s ease;
   padding: 20px;
+  margin-top: 10px;
 }
 
 .content.shifted {
   margin-left: 250px;
 }
-
 .content.not-shifted {
-  margin-left: 40px; 
+  margin-left: 50px;
+}
+
+@media (max-width:670px) {
+  .content.shifted {
+  margin-left: 50px;
+}
 }
 
 .table {
@@ -73,4 +79,60 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.app::-webkit-scrollbar {
+  display: none;
+}
+
+.content-wrapper {
+  scrollbar-width: none;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  margin-top: 30px; /* Height of header */
+  min-height: calc(100vh - 60px);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 0px; /* Width of sidebar */
+  transition: margin-left 0.3s ease;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 120px);
+  overflow: hidden;
+
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 20px;
+}
+
+.content-wrapper {
+  padding: 10px 5px ;
+  height: 100%;
+  max-width: 100%;
+}
+
+/* Responsive design */
+@media (max-width: 900px) {
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .main-content.sidebar-open {
+    margin-left: 50px;
+  }
+}
+
+/* Ensure content is properly spaced */
+.main-content > * {
+  height: 100%;
 }

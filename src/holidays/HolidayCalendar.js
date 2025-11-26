@@ -94,7 +94,7 @@ function HolidayCalendar() {
 
   return (
     <div>
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title={`Holiday Calendar — ${year} / ${month+1}`}>
         <div className="hc-controls">
           <button className="btn" onClick={() => { if (month === 0) { setYear(y => y-1); setMonth(11); } else setMonth(m => m-1); }}>Prev</button>

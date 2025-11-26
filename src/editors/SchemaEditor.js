@@ -28,7 +28,7 @@ function SchemaEditor() {
 
     return (
         <div>
-            <Sidebar isOpen={true} />
+            {/* <Sidebar isOpen={true} /> */}
             {loading ? <LoadSpinner /> : <PageCard title={"Schema Editor"}>
                 <Editor
                     value={jsonContent}

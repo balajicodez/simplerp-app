@@ -43,7 +43,7 @@ function ViewOrganization() {
 
   return (
     <div className="page-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Organizations Management">
         
         {/* Header Section */}

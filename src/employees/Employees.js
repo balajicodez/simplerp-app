@@ -116,7 +116,7 @@ function Employees() {
 
   return (
     <div className="page-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Employee Management">
         
         <div className="employees-header">

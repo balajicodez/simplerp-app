@@ -22,7 +22,7 @@
 }
 
 .sidebar-logo {
-  padding: 10px 6px;
+  padding: 5px 6px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -32,9 +32,9 @@
 }
 
 .sidebar-logo img {
-  max-width: 340px;
-  width: 180px;
-  height: 90px;
+  max-width: 300px;
+  width: 150px;
+  height: 70px;
   object-fit: fill;
   transition: all 0.3s ease;
   border-radius: 6px;
@@ -71,6 +71,34 @@
   margin: 2px 12px;
 }
 
+.sidebar {
+  width: 250px;
+  background: #34495e;
+  color: white;
+  position: fixed;
+  top: 60px; /* Height of header */
+  left: 0;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+  transition: transform 0.3s ease, width 0.3s ease;
+  z-index: 999;
+}
+
+/* Rest of your existing Sidebar.css remains the same */
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.sidebar-logo {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #2c3e50;
+}
+
+/* ... rest of your existing Sidebar.css ... */
+
 .sidebar ul li a {
   display: flex;
   align-items: center;
@@ -91,7 +119,7 @@
 }
 
 .sidebar ul li a.active {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  /* background: linear-gradient(135deg, #3b82f6, #1d4ed8); */
   color: #ffffff;
   border-color: #60a5fa;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
@@ -136,7 +164,7 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease;
-  background: rgba(0, 0, 0, 0.1);
+  /* background: rgba(0, 0, 0, 0.1); */
   list-style: none;
   padding: 0;
   margin: 0;
@@ -232,14 +260,14 @@
 
 .sidebar ul li:last-child a {
   background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
+  /* border-color: rgba(239, 68, 68, 0.3); */
   margin-top: 12px;
 }
 
-.sidebar ul li:last-child a:hover {
+/* .sidebar ul li:last-child a:hover {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.5);
-}
+} */
 
 .sidebar.open ul li {
   animation: none;
@@ -262,6 +290,7 @@
 
 .sidebar::-webkit-scrollbar {
   width: 4px;
+  display: none;
 }
 
 .sidebar::-webkit-scrollbar-track {

@@ -167,7 +167,7 @@ function EditExpense() {
 
   return (
     <div className="page-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title={`Edit Expense`}>
         
         <div className={`edit-expense-header ${getExpenseTypeColor()}-header`}>

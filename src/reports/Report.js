@@ -90,7 +90,7 @@ function Report() {
 
     return (
         <div>
-            <Sidebar isOpen={true} />
+            {/* <Sidebar isOpen={true} /> */}
             {loading ? <LoadSpinner /> :
                 <PageCard title="Job History">
                     <table >

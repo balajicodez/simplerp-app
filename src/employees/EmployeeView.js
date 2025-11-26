@@ -27,7 +27,7 @@ function EmployeeView() {
 
   return (
     <div>
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title={employee ? employee.name : 'Employee Details'}>
         {loading && <div className="small">Loading...</div>}
         {error && <div style={{ color: '#c53030' }}>{error}</div>}

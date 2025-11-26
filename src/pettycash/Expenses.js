@@ -35,7 +35,7 @@ function Expenses() {
 
   return (
     <div>
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Expenses">
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div className="small">Payroll expenses (paginated)</div>

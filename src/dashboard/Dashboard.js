@@ -8,7 +8,7 @@ function Dashboard() {
 
     return (
         <div className="dashboard-container">
-            <Sidebar isOpen={true} />
+            {/* <Sidebar isOpen={true} /> */}
             
             <PageCard title={"Welcome to Sri Divya Sarees - SimplERP Solution"}>
                 

@@ -358,7 +358,7 @@ const fetchCurrentBalance = async (organizationId, date) => {
 
   return (
     <div className="page-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title={getPageTitle()}>
         
         {/* Enhanced Header Section */}

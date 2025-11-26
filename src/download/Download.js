@@ -9,7 +9,7 @@ function Download() {
  
     return (
         <div>         
-         <Sidebar isOpen={true}  />
+         {/* <Sidebar isOpen={true}  /> */}
          <PageCard title="Download">
          </PageCard>
         </div>

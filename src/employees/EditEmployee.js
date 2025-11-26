@@ -136,7 +136,7 @@ function EditEmployee() {
   if (loading) {
     return (
       <div className="page-container">
-        <Sidebar isOpen={true} />
+        {/* <Sidebar isOpen={true} /> */}
         <PageCard title="Edit Employee">
           <div className="loading-state">
             <div className="loading-spinner"></div>
@@ -149,7 +149,7 @@ function EditEmployee() {
 
   return (
     <div className="page-container">
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title={`Edit Employee`}>
         
         {/* Enhanced Header Section */}

@@ -275,7 +275,8 @@ function DayClosingReport() {
   const styles = {
     container: {
       minHeight: '100vh',
-      backgroundColor: '#f8fafc'
+      backgroundColor: '#f8fafc',
+  
     },
     
     headerSection: {
@@ -482,7 +483,7 @@ function DayClosingReport() {
 
   return (
     <div style={styles.container}>
-      <Sidebar isOpen={true} />
+      {/* <Sidebar isOpen={true} /> */}
       <PageCard title="Day Closing Report">
         <div style={styles.headerSection}>
           <div style={styles.dateSelector}>
