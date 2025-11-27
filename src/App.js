@@ -12,10 +12,10 @@ import JobDetail from './jobdetail/JobDetail';
 import ReportHTML from './generated/ReportHTML';
 import SchemaEditor from './editors/SchemaEditor';
 import PythonEditor from './editors/PythonEditor';
-import Employees from './employees/Employees';
-import CreateEmployee from './employees/CreateEmployee';
-import EmployeeView from './employees/EmployeeView';
-import EditEmployee from './employees/EditEmployee';
+// import Employees from './employees/Employees';
+// import CreateEmployee from './employees/CreateEmployee';
+// import EmployeeView from './employees/EmployeeView';
+// import EditEmployee from './employees/EditEmployee';
 import Expenses from './pettycash/Expenses';
 import ExpensesInward from './pettycash/ExpensesInward';
 import ExpensesOutward from './pettycash/ExpensesOutward';
@@ -31,6 +31,13 @@ import HolidayCalendar from './holidays/HolidayCalendar';
 import Sidebar from './Sidebar';
 import Header from './Header/Header.js';
 import './App.css';
+import { 
+  EmployeeList, 
+  EmployeeDetails, 
+  CreateEmployee, 
+  EditEmployee 
+} from './employees/Employees.js';
+
 
 // Create a separate component for the main app layout
 const AppLayout = () => {
@@ -63,9 +70,9 @@ const AppLayout = () => {
               <Route path="/reportgen" element={<ReportHTML />} />
               <Route path="/schemaeditor" element={<SchemaEditor />} />
               <Route path="/pythoneditor" element={<PythonEditor />} />
-              <Route path="/employees" element={<Employees />} />
+              <Route path="/employees" element={<EmployeeList />} />
               <Route path="/employees/create" element={<CreateEmployee />} />
-              <Route path="/employees/:id" element={<EmployeeView />} />
+              <Route path="/employees/:id" element={<EmployeeDetails />} />
               <Route path="/employees/:id/edit" element={<EditEmployee />} />
               <Route path="/pettycash/expenses" element={<Expenses />} />
               <Route path="/pettycash/expenses-inward" element={<ExpensesInward />} />
