@@ -142,6 +142,15 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <span>🏢 Organization</span>
           </NavLink>
         </li>
+         <li>
+          <NavLink 
+            to="/handloans" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+            data-icon="🏢"
+          >
+            <span>🏢 Hand Loans</span>
+          </NavLink>
+        </li>
         <li>
           <NavLink 
             to="/holidays" 

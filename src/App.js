@@ -28,6 +28,7 @@ import ExpenseView from './pettycash/ExpenseView';
 import EditExpense from './pettycash/EditExpense';
 import CreateExpenseMaster from './pettycash/CreateExpenseMaster';
 import HolidayCalendar from './holidays/HolidayCalendar';
+import HandLoanManagement from './HandloanManagement/HandloanManagement';
 
 function App() {
   return (
@@ -61,6 +62,8 @@ function App() {
   <Route path="/organization" element={<ViewOrganization />} />
   <Route path="/organization/create" element={<CreateOrganization />} />
   <Route path="/holidays" element={<HolidayCalendar />} />
+  <Route path="handloans" element={<HandLoanManagement />} />
+  
         <Route path="/logout" element={<Login />} />
       </Routes>
     </Router>

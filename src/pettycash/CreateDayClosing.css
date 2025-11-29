@@ -746,3 +746,208 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* CreateDayClosing.css */
+.bank-denomination-container {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.denomination-header {
+  display: flex;
+  background: #2c5aa0;
+  color: white;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 2px solid #1e3d6f;
+}
+
+.denomination-body {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.denomination-row {
+  display: flex;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.denomination-row:hover {
+  background-color: #f8f9fa;
+}
+
+.denomination-row.even {
+  background-color: #fafafa;
+}
+
+.denomination-row.odd {
+  background-color: #ffffff;
+}
+
+.denom-column {
+  padding: 0 8px;
+  flex: 1;
+}
+
+.denom-value-col {
+  flex: 0.8;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.denom-type-col {
+  flex: 0.6;
+}
+
+.denom-count-col {
+  flex: 1;
+}
+
+.denom-amount-col {
+  flex: 1;
+  text-align: right;
+}
+
+.denom-symbol {
+  color: #2c5aa0;
+  font-weight: bold;
+}
+
+.type-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.type-badge.note {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #bbdefb;
+}
+
+.type-badge.coin {
+  background: #f3e5f5;
+  color: #7b1fa2;
+  border: 1px solid #e1bee7;
+}
+
+.denom-count-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+  transition: all 0.2s;
+  background: white;
+}
+
+.denom-count-input:focus {
+  outline: none;
+  border-color: #2c5aa0;
+  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.denom-count-input.good:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.denom-count-input.bad:focus {
+  border-color: #ff9800;
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+}
+
+.amount-display {
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #2c5aa0;
+  text-align: center;
+}
+
+.denomination-total-row {
+  display: flex;
+  padding: 16px;
+  background: #f8f9fa;
+  border-top: 2px solid #e9ecef;
+  font-size: 1.1em;
+  align-items: center;
+}
+
+.total-amount {
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.good-total {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.bad-total {
+  background: #fff3e0;
+  color: #ef6c00;
+  border: 1px solid #ffcc80;
+}
+
+.final-total {
+  background: #2c5aa0;
+  color: white;
+  border: 1px solid #1e3d6f;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bank-denomination-container {
+    font-size: 0.9rem;
+  }
+  
+  .denomination-header,
+  .denomination-row,
+  .denomination-total-row {
+    padding: 8px 12px;
+  }
+  
+  .denom-count-input {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+  
+  .type-badge {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+}
+
+/* Scrollbar styling */
+.denomination-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.denomination-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.denomination-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.denomination-body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

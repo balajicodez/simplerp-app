@@ -468,7 +468,7 @@
 }
 
 .btn-outline:hover:not(:disabled) {
-  background: #f9fafb;
+  background: #4586c8;
   border-color: #9ca3af;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

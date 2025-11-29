@@ -38,7 +38,7 @@ function ViewOrganization() {
   };
 
   const getStatusIcon = (status) => {
-    return status === 'Active' ? '🟢' : '🔴';
+    return status === 'Active' ? '🟢' : '';
   };
 
   return (
@@ -263,7 +263,7 @@ function ViewOrganization() {
                             <span className="status-icon">
                               {getStatusIcon(org.status)}
                             </span>
-                            {org.status || 'Unknown'}
+                            {org.status || 'Active'}
                           </span>
                         </td>
                       </tr>
