@@ -55,7 +55,7 @@
 
 .content.shifted {
 	margin-left: 220px; /* preserve existing sidebar shift */
-	padding: 24px;
+	padding: 12px;
 }
 
 @media (max-width: 800px) {

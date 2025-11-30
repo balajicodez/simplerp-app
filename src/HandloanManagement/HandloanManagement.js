@@ -182,7 +182,7 @@ const HandLoanManagement = () => {
         // For recovered loans view, we show all CLOSED loans
         url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByStatus?page=${currentPage}&size=${pageSize}&status=CLOSED`;
       } else {
-        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByStatus?page=${currentPage}&size=${pageSize}&status=${viewMode}`;
+        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByStatus?page=${currentPage}&size=${pageSize}`;
       }
       
       console.log('Fetching loans from:', url);
@@ -867,7 +867,7 @@ const LoanTableRow = ({
   );
 };
 
-// Create Hand Loan Form Component
+// FIXED: Create Hand Loan Form Component - Remove status field
 const CreateHandLoanForm = ({ 
   organizations, 
   fetchedBalance,
@@ -926,14 +926,19 @@ const CreateHandLoanForm = ({
 
     setLoading(true);
     try {
+      // FIXED: Remove status field from request data
       const requestData = {
-        ...form,
+        organizationId: parseInt(form.organizationId),
+        partyName: form.partyName,
         loanAmount: loanAmount,
         balanceAmount: loanAmount,
-        organizationId: parseInt(form.organizationId),
-        createdDate: form.createdDate || new Date().toISOString(),
-        status: 'ISSUED' // Set initial status as ISSUED
+        phoneNo: form.phoneNo || '',
+        narration: form.narration || '',
+        handLoanType: 'ISSUE',
+        createdDate: form.createdDate || new Date().toISOString()
       };
+
+      console.log('Creating loan with data:', requestData);
 
       const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans`, {
         method: 'POST',
@@ -944,10 +949,12 @@ const CreateHandLoanForm = ({
       });
 
       if (response.ok) {
+        const createdLoan = await response.json();
+        console.log('Loan created successfully:', createdLoan);
         onSuccess();
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create loan');
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to create loan');
       }
     } catch (err) {
       setError(err.message || 'Failed to create loan');
@@ -1103,7 +1110,7 @@ const CreateHandLoanForm = ({
   );
 };
 
-// Recover Hand Loan Form Component
+// FIXED: Recover Hand Loan Form Component - Remove status field
 const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
   const [form, setForm] = useState({
     organizationId: '',
@@ -1150,17 +1157,20 @@ const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
 
     setLoading(true);
     try {
+      // FIXED: Remove status field from request data
       const requestData = {
         organizationId: parseInt(form.organizationId),
         mainHandLoanId: loan.id,
         loanAmount: recoverAmount,
         balanceAmount: 0,
         partyName: loan.partyName,
-        phoneNo: loan.phoneNo,
+        phoneNo: loan.phoneNo || '',
         narration: form.narration || `Recovery for ${loan.handLoanNumber}`,
         handLoanType: 'RECOVER',
         createdDate: form.createdDate || new Date().toISOString()
       };
+
+      console.log('Recovering loan with data:', requestData);
 
       const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans`, {
         method: 'POST',
@@ -1171,10 +1181,12 @@ const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
       });
 
       if (response.ok) {
+        const recoveredLoan = await response.json();
+        console.log('Loan recovery recorded successfully:', recoveredLoan);
         onSuccess();
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to recover loan');
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to recover loan');
       }
     } catch (err) {
       setError(err.message || 'Failed to recover loan');

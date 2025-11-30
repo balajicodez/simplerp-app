@@ -1,8 +1,8 @@
 /* CreateDayClosing.css */
 .day-closing-container {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
   min-height: 100vh;
-  padding: 20px;
+  padding: 10px;
 }
 
 .report-header {
@@ -620,12 +620,12 @@
   letter-spacing: 0.5px;
 }
 
-.amount-badge {
+/* .amount-badge {
   padding: 8px 12px;
   border-radius: 8px;
   font-weight: 700;
   font-size: 14px;
-}
+} */
 
 .amount-in {
   background: #dcfce7;
@@ -747,207 +747,314 @@
   }
 }
 
-/* CreateDayClosing.css */
-.bank-denomination-container {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.denomination-header {
-  display: flex;
-  background: #2c5aa0;
-  color: white;
-  font-weight: 600;
-  padding: 12px 16px;
-  border-bottom: 2px solid #1e3d6f;
-}
-
-.denomination-body {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.denomination-row {
-  display: flex;
-  padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
-  align-items: center;
-  transition: background-color 0.2s;
-}
-
-.denomination-row:hover {
-  background-color: #f8f9fa;
-}
-
-.denomination-row.even {
-  background-color: #fafafa;
-}
-
-.denomination-row.odd {
-  background-color: #ffffff;
-}
-
-.denom-column {
-  padding: 0 8px;
-  flex: 1;
-}
-
-.denom-value-col {
-  flex: 0.8;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.denom-type-col {
-  flex: 0.6;
-}
-
-.denom-count-col {
-  flex: 1;
-}
-
-.denom-amount-col {
-  flex: 1;
-  text-align: right;
-}
-
-.denom-symbol {
-  color: #2c5aa0;
-  font-weight: bold;
-}
-
-.type-badge {
-  padding: 4px 8px;
+/* Denomination Table Styles - Bank Slip Style */
+.denomination-table-container {
+  background: white;
   border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 16px;
+  border: 2px solid #1e40af;
+  position: relative;
+  overflow: hidden;
 }
 
-.type-badge.note {
-  background: #e3f2fd;
-  color: #1565c0;
-  border: 1px solid #bbdefb;
-}
-
-.type-badge.coin {
-  background: #f3e5f5;
-  color: #7b1fa2;
-  border: 1px solid #e1bee7;
-}
-
-.denom-count-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
+.denomination-table-container::before {
+  content: "CASH DENOMINATION SLIP";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  color: white;
+  padding: 12px 20px;
+  font-weight: 700;
+  font-size: 1.1rem;
   text-align: center;
-  transition: all 0.2s;
+  letter-spacing: 1px;
+}
+
+.denomination-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 600px;
+  margin-top: 50px;
+}
+
+.denomination-table th {
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  color: white;
+  padding: 14px 10px;
+  text-align: center;
+  font-weight: 600;
+  border: none;
+  position: sticky;
+  top: 50px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.denomination-table td {
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 500;
+}
+
+.denomination-table tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.denomination-table tr:hover {
+  background-color: #f1f5f9;
+}
+
+.denom-value {
+  font-weight: 700;
+  color: #1e40af;
+  background: #f0f4ff !important;
+  font-size: 1rem;
+  border-right: 2px solid #e5e7eb;
+}
+
+.denom-type {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-right: 2px solid #e5e7eb;
+}
+
+.denom-input {
+  width: 80px;
+  padding: 8px;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
   background: white;
 }
 
-.denom-count-input:focus {
+.denom-input:focus {
   outline: none;
-  border-color: #2c5aa0;
-  box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: #f0f9ff;
 }
 
-.denom-count-input.good:focus {
-  border-color: #4caf50;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+.denom-input.good {
+  border-color: #10b981;
+  background: #f0fdf4;
 }
 
-.denom-count-input.bad:focus {
-  border-color: #ff9800;
-  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+.denom-input.good:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-.amount-display {
-  padding: 8px 12px;
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  font-weight: 600;
-  color: #2c5aa0;
-  text-align: center;
+.denom-input.bad {
+  border-color: #ef4444;
+  background: #fef2f2;
 }
 
-.denomination-total-row {
-  display: flex;
-  padding: 16px;
-  background: #f8f9fa;
-  border-top: 2px solid #e9ecef;
-  font-size: 1.1em;
-  align-items: center;
+.denom-input.bad:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .total-amount {
-  padding: 8px 12px;
-  border-radius: 6px;
+  font-weight: 700;
+  color: #059669;
+  background: #f0fff4 !important;
+  font-size: 1rem;
+  border-left: 2px solid #e5e7eb;
+}
+
+.denomination-total {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important;
+  font-weight: 700;
+  border-top: 3px solid #1e40af;
+}
+
+.denomination-total td {
+  padding: 16px 10px;
+  border-bottom: none;
+  color: white;
+  font-size: 1rem;
   text-align: center;
 }
 
-.good-total {
-  background: #e8f5e8;
-  color: #2e7d32;
-  border: 1px solid #c8e6c9;
-}
-
-.bad-total {
-  background: #fff3e0;
-  color: #ef6c00;
-  border: 1px solid #ffcc80;
-}
-
-.final-total {
-  background: #2c5aa0;
+.denomination-total strong {
   color: white;
-  border: 1px solid #1e3d6f;
+  font-size: 1rem;
 }
 
-/* Responsive Design */
+/* Bank Slip Header Info */
+.bank-slip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 60px 20px 10px 20px;
+  background: white;
+  border-bottom: 2px dashed #d1d5db;
+}
+
+.bank-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bank-name {
+  font-weight: 700;
+  color: #1e40af;
+  font-size: 1.1rem;
+}
+
+.bank-details {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.slip-number {
+  text-align: right;
+}
+
+.slip-label {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.slip-value {
+  font-weight: 600;
+  color: #1e40af;
+  font-size: 1rem;
+}
+.denomination-form {
+  margin-bottom: 20px;
+}
+
+.denomination-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 15px;
+  align-items: end;
+}
+
+.add-denomination-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 38px;
+}
+
+.add-denomination-btn:hover {
+  background: #0056b3;
+}
+
+.denomination-entries {
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.entries-title {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 16px;
+}
+
+.entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.entry-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #007bff;
+}
+
+.entry-label {
+  font-weight: bold;
+  min-width: 120px;
+}
+
+.entry-counts {
+  flex: 1;
+  text-align: center;
+}
+
+.remove-entry-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-entry-btn:hover {
+  background: #c82333;
+}
+
+.denomination-total-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+  padding-top: 15px;
+  border-top: 2px solid #dee2e6;
+}
+
+.total-item {
+  text-align: center;
+  padding: 10px;
+  background: #e9ecef;
+  border-radius: 4px;
+}
+
+.grand-total {
+  background: #007bff;
+  color: white;
+  font-size: 16px;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
-  .bank-denomination-container {
-    font-size: 0.9rem;
+  .denomination-inputs {
+    grid-template-columns: 1fr;
   }
   
-  .denomination-header,
-  .denomination-row,
-  .denomination-total-row {
-    padding: 8px 12px;
+  .denomination-total-summary {
+    grid-template-columns: 1fr;
   }
   
-  .denom-count-input {
-    padding: 6px 8px;
-    font-size: 0.85rem;
+  .entry-item {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
   }
   
-  .type-badge {
-    font-size: 0.7rem;
-    padding: 3px 6px;
+  .entry-label {
+    min-width: auto;
   }
-}
-
-/* Scrollbar styling */
-.denomination-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-.denomination-body::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.denomination-body::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.denomination-body::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
 }

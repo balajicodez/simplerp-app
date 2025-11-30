@@ -193,7 +193,7 @@ const isToday = (dateString) => {
           <div className="header-content">
             <div className="header-text">
               <h1>Cash Inward </h1>
-              <p>Manage and track all cash inflow expenses (CASH-IN)</p>
+              {/* <p>Manage and track all cash inflow expenses (CASH-IN)</p> */}
             </div>
             <button 
               className="btn-primary create-btn"
@@ -399,10 +399,13 @@ const isToday = (dateString) => {
                        <td className="actions-cell">
                         {isToday(item.createdDate) ? (
                           <button 
-                            className="btn-outline edit-btn"
-                            onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
+                            // className=" edit-disabled"
+                            // onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
                           >
-                            ✏️ Edit
+                            {/* ✏️ Edit */}
+                            <span className="edit-disabled" title="Can only edit today's transactions">
+                            🔒 Locked
+                          </span>
                           </button>
                         ) : (
                           <span className="edit-disabled" title="Can only edit today's transactions">

@@ -241,7 +241,7 @@ function ExpenseView() {
             <div className="action-buttons-container">
               <button 
                 className="btn-secondary"
-                onClick={() => navigate('/pettycash/expenses')}
+                onClick={() => navigate('/pettycash/expenses-outward')}
               >
                 <span className="btn-icon">←</span>
                 Back to List
@@ -258,10 +258,11 @@ function ExpenseView() {
                 
                 <button 
                   className="btn-primary"
-                  onClick={() => navigate(`/pettycash/expenses/${id}/edit`)}
+                  // onClick={() => navigate(`/pettycash/expenses/${id}/edit`)}
                 >
-                  <span className="btn-icon">✏️</span>
-                  Edit Expense
+                  🔒 Locked
+                  {/* <span className="btn-icon">✏️</span>
+                  Edit Expense */}
                 </button>
               </div>
             </div>
