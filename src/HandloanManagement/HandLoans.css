@@ -23,8 +23,8 @@
   color: #1e293b;
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  /* margin-bottom: 24px; */
+  padding-bottom: 6px;
   /* border-bottom: 2px solid #e2e8f0; */
 }
 
@@ -144,6 +144,7 @@
   background-color: #6b7280;
   color: white;
 }
+
 
 .btn-secondary:hover:not(:disabled) {
   background-color: #4b5563;
@@ -455,7 +456,7 @@
 }
 
 .loan-details-col {
-  min-width: 200px;
+  min-width: 120px;
 }
 
 .loan-main-info .loan-number {
@@ -491,11 +492,11 @@
 }
 
 .date-col {
-  min-width: 100px;
+  min-width: 80px;
 }
 
 .amount-col, .balance-col {
-  min-width: 120px;
+  min-width: 60px;
   text-align: right;
 }
 

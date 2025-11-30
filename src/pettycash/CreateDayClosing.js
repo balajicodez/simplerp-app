@@ -584,13 +584,11 @@ function CreateDayClosing() {
     const good = parseInt(goodCount) || 0;
     const bad = parseInt(badCount) || 0;
     
-    // Calculate value based on denomination type
     let denominationValue;
     if (denomination.type === 'Coin') {
-      // For coins, convert to rupees (20c = 0.20, 10c = 0.10, etc.)
-      denominationValue = parseInt(selectedDenomination) / 100;
+     
+      denominationValue = parseInt(selectedDenomination) ;
     } else {
-      // For notes, use the face value
       denominationValue = parseInt(selectedDenomination);
     }
     

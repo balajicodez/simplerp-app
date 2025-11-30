@@ -248,13 +248,13 @@ function ExpenseView() {
               </button>
               
               <div className="primary-actions">
-                <button 
+                {/* <button 
                   className="btn-outline"
                   onClick={() => navigate(-1)}
                 >
                   <span className="btn-icon">↶</span>
                   Go Back
-                </button>
+                </button> */}
                 
                 <button 
                   className="btn-primary"

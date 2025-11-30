@@ -447,7 +447,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
 }
 
 .day-closing-header .header-text h1 {

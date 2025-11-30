@@ -119,14 +119,10 @@ function DayClosing() {
         {/* Header Section with Stats */}
         <div className="dashboard-header day-closing-header">
           <div className="header-content">
-            <div className="header-text">
-              <h1>Daily Closing Summary</h1>
-              <p>Review and finalize all transactions for {today}</p>
-            </div>
             <div className="header-actions">
               <button 
-              style={{color:"white"}}
                 className="btn-outline"
+                style={{color:"white",display:"flex",justifyContent:"end"}}
                 onClick={() => navigate('/pettycash/day-closing/create')}
               >
                 <span className="btn-icon" style={{color:"white"}}>+</span>
