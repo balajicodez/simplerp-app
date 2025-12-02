@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import logo from './../assets/images/logo.jpg';
 import './Login.css';
 
@@ -30,17 +31,29 @@ function Login() {
             return;
         }
         setLoading(true);
-        try {
-            if (remember) localStorage.setItem('rememberedEmail', email);
-            else localStorage.removeItem('rememberedEmail');
 
-            await new Promise((r) => setTimeout(r, 700));
+        if (remember) localStorage.setItem('rememberedEmail', email);
+        else localStorage.removeItem('rememberedEmail');
+
+        await new Promise((r) => setTimeout(r, 700));
+
+        setLoading(true);
+        try {
+            const res = await fetch(APP_SERVER_URL_PREFIX + '/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: email, password: password }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error('Failed to create employee');
             navigate('/dashboard');
+            localStorage.setItem('token', data.token);
         } catch (err) {
             setError('Login failed. Please check your credentials and try again.');
         } finally {
             setLoading(false);
         }
+
     };
 
     React.useEffect(() => {
@@ -60,14 +73,14 @@ function Login() {
 
     return (
         <div className="login-page">
-            
+
             <div className="bubble"></div>
             <div className="bubble"></div>
             <div className="bubble"></div>
             <div className="bubble"></div>
             <div className="bubble"></div>
             <div className="bubble"></div>
-            
+
             <div className="login-card" role="main" aria-labelledby="loginHeading">
                 <div className="brand">
                     <img src={logo} alt="DataSynOps logo" />
@@ -75,7 +88,7 @@ function Login() {
                 </div>
 
                 <form className="login-form" onSubmit={handleSubmit} noValidate>
-                  
+
 
                     <label htmlFor="email">Email/Employee ID</label>
                     <input
@@ -137,7 +150,7 @@ function Login() {
 
                         <a className="forgot" href="#/forgot">Forgot Password?</a>
                     </div>
-                       {error && (
+                    {error && (
                         <div className="error" role="alert">
                             {error}
                         </div>
