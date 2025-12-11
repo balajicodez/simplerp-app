@@ -290,9 +290,11 @@ const fetchCurrentBalance = async (organizationId, date) => {
       formData.append('expense', new Blob([JSON.stringify(expensePayload)], { type: 'application/json' }));
       if (form.file) formData.append('file', form.file);
       
+      const bearerToken = localStorage.getItem('token');
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses`, {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
       
       if (!res.ok) throw new Error('Failed to create expense');

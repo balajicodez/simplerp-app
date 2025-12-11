@@ -13,8 +13,12 @@ function ViewOrganization() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const bearerToken = localStorage.getItem('token');
     setLoading(true);
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
       .then(res => res.json())
       .then(data => {
         setOrgs(data._embedded ? data._embedded.organizations || [] : data);
