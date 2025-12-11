@@ -94,7 +94,7 @@ function CreateOrganization({ onCreated }) {
       setSuccess('Organization created successfully!');
       setTimeout(() => {
         if (onCreated) onCreated();
-        navigate('/organizations');
+        navigate('/organization');
       }, 1500);
     } catch (err) {
       setError(err.message || 'Failed to create organization. Please try again.');
