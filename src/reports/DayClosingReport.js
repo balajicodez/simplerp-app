@@ -32,7 +32,10 @@ function DayClosingReport() {
       try {
         setLoading(true);
         setError('');
-        const response = await fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings`);
+        const bearerToken = localStorage.getItem('token');
+        const response = await fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings`, {
+          headers: { 'Authorization': `Bearer ${bearerToken}` }
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
@@ -68,7 +71,10 @@ function DayClosingReport() {
 
   useEffect(() => {
     // Fetch organizations for dropdown
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
       .then(res => res.json())
       .then(data => {
         const orgs = data._embedded ? data._embedded.organizations || [] : data;

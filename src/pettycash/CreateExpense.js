@@ -6,18 +6,18 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 
 function CreateExpense() {
-  const [form, setForm] = useState({ 
-    transactionDate: new Date().toISOString().slice(0, 10), 
-    amount: '', 
-    employeeId: '', 
-    subtype: '', 
-    type: '', 
-    expenseDate: new Date().toISOString().slice(0, 10), 
-    referenceNumber: '', 
-    file: null, 
-    organizationId: '', 
+  const [form, setForm] = useState({
+    transactionDate: new Date().toISOString().slice(0, 10),
+    amount: '',
+    employeeId: '',
+    subtype: '',
+    type: '',
+    expenseDate: new Date().toISOString().slice(0, 10),
+    referenceNumber: '',
+    file: null,
+    organizationId: '',
     organizationName: '',
-    currentBalance: '' 
+    currentBalance: ''
   });
   const [organizations, setOrganizations] = useState([]);
   const [subtypes, setSubtypes] = useState([]);
@@ -66,112 +66,116 @@ function CreateExpense() {
   };
 
   // Add this useEffect for debugging
-useEffect(() => {
-  console.log('Form state updated:', {
-    organizationId: form.organizationId,
-    transactionDate: form.transactionDate,
-    currentBalance: form.currentBalance,
-    fetchedBalance: fetchedBalance,
-    expenseType: getExpenseType()
-  });
-}, [form.organizationId, form.transactionDate, form.currentBalance, fetchedBalance]);
+  useEffect(() => {
+    console.log('Form state updated:', {
+      organizationId: form.organizationId,
+      transactionDate: form.transactionDate,
+      currentBalance: form.currentBalance,
+      fetchedBalance: fetchedBalance,
+      expenseType: getExpenseType()
+    });
+  }, [form.organizationId, form.transactionDate, form.currentBalance, fetchedBalance]);
 
-const fetchCurrentBalance = async (organizationId, date) => {
-  if (!organizationId || !date || getExpenseType() !== 'CASH-OUT') {
-    // setFetchedBalance(0);
-    setForm(f => ({ ...f, currentBalance: '' }));
-    return;
-  }
+  const fetchCurrentBalance = async (organizationId, date) => {
+    if (!organizationId || !date || getExpenseType() !== 'CASH-OUT') {
+      // setFetchedBalance(0);
+      setForm(f => ({ ...f, currentBalance: '' }));
+      return;
+    }
 
-  setBalanceLoading(true);
-  try {
-    const response = await fetch(
-      `${APP_SERVER_URL_PREFIX}/expenses/balance?organizationId=${organizationId}&createdDate=${date}`
-    );
-    
-    if (response.ok) {
-      const balanceData = await response.json();
-      console.log('Balance API Response:', balanceData); // Debug log
-      
-      let balance = 0;
-      
-      if (balanceData.totalBalance !== undefined && balanceData.totalBalance !== null) {
-        balance = balanceData.totalBalance;
-      } else if (balanceData.cashInAmt !== undefined && balanceData.cashOutAmt !== undefined) {
-        balance = (balanceData.cashInAmt || 0) - (balanceData.cashOutAmt || 0);
+    setBalanceLoading(true);
+    try {
+      const bearerToken = localStorage.getItem('token');
+      const response = await fetch(
+        `${APP_SERVER_URL_PREFIX}/expenses/balance?organizationId=${organizationId}&createdDate=${date}`,
+        {
+          headers: { 'Authorization': `Bearer ${bearerToken}` }
+        }
+      );
+
+      if (response.ok) {
+        const balanceData = await response.json();
+        console.log('Balance API Response:', balanceData); // Debug log
+
+        let balance = 0;
+
+        if (balanceData.totalBalance !== undefined && balanceData.totalBalance !== null) {
+          balance = balanceData.totalBalance;
+        } else if (balanceData.cashInAmt !== undefined && balanceData.cashOutAmt !== undefined) {
+          balance = (balanceData.cashInAmt || 0) - (balanceData.cashOutAmt || 0);
+        }
+
+        balance = Number(balance) || 0;
+
+        console.log('Calculated Balance:', balance);
+
+        setFetchedBalance(balance);
+        // Auto-fill the current balance field with fetched value
+        setForm(f => ({ ...f, currentBalance: balance.toString() }));
+      } else {
+        console.error('Balance API response not OK:', response.status);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        setFetchedBalance(0);
+        setForm(f => ({ ...f, currentBalance: '' }));
       }
-      
-      balance = Number(balance) || 0;
-      
-      console.log('Calculated Balance:', balance); 
-      
-      setFetchedBalance(balance);
-      // Auto-fill the current balance field with fetched value
-      setForm(f => ({ ...f, currentBalance: balance.toString() }));
-    } else {
-      console.error('Balance API response not OK:', response.status);
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
+    } catch (error) {
+      console.error('Error fetching balance:', error);
       setFetchedBalance(0);
       setForm(f => ({ ...f, currentBalance: '' }));
+    } finally {
+      setBalanceLoading(false);
     }
-  } catch (error) {
-    console.error('Error fetching balance:', error);
-    setFetchedBalance(0);
-    setForm(f => ({ ...f, currentBalance: '' }));
-  } finally {
-    setBalanceLoading(false);
-  }
-};
+  };
 
- const handleChange = (e) => {
-  const { name, value, type, files } = e.target;
-  setError('');
-  setSuccess('');
-  
-  if (type === 'file') {
-    const file = files[0];
-    setForm((f) => ({ ...f, file }));
-    
-    if (file && file.type.startsWith('image/')) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    setError('');
+    setSuccess('');
+
+    if (type === 'file') {
+      const file = files[0];
+      setForm((f) => ({ ...f, file }));
+
+      if (file && file.type.startsWith('image/')) {
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+      } else {
+        setPreviewUrl('');
+      }
+    } else if (name === 'organizationId') {
+      const selectedOrg = organizations.find(org => String(org.id) === String(value));
+      const orgName = e.currentTarget.options[e.currentTarget.selectedIndex].text;
+      const updatedForm = { ...form, organizationId: value, organizationName: orgName };
+      setForm(updatedForm);
+
+      // Fetch balance automatically when organization changes - Only for CASH-OUT
+      if (value && form.transactionDate && getExpenseType() === 'CASH-OUT') {
+        fetchCurrentBalance(value, form.transactionDate);
+      }
+    } else if (name === 'transactionDate') {
+      const updatedForm = { ...form, [name]: value };
+      setForm(updatedForm);
+
+      // Fetch balance automatically when date changes - Only for CASH-OUT
+      if (form.organizationId && value && getExpenseType() === 'CASH-OUT') {
+        fetchCurrentBalance(form.organizationId, value);
+      }
+    } else if (name === 'amount') {
+      // Validate amount doesn't exceed current balance for CASH-OUT
+      const amountValue = Number(value);
+      const currentBalanceValue = Number(form.currentBalance) || fetchedBalance;
+
+      if (getExpenseType() === 'CASH-OUT' && amountValue > currentBalanceValue) {
+        setError(`Amount cannot exceed current balance of ₹${currentBalanceValue.toLocaleString()}`);
+      } else {
+        setError('');
+      }
+      setForm((f) => ({ ...f, [name]: value }));
     } else {
-      setPreviewUrl('');
+      setForm((f) => ({ ...f, [name]: value }));
     }
-  } else if (name === 'organizationId') {
-    const selectedOrg = organizations.find(org => String(org.id) === String(value));
-    const orgName = e.currentTarget.options[e.currentTarget.selectedIndex].text;
-    const updatedForm = { ...form, organizationId: value, organizationName: orgName };
-    setForm(updatedForm);
-    
-    // Fetch balance automatically when organization changes - Only for CASH-OUT
-    if (value && form.transactionDate && getExpenseType() === 'CASH-OUT') {
-      fetchCurrentBalance(value, form.transactionDate);
-    }
-  } else if (name === 'transactionDate') {
-    const updatedForm = { ...form, [name]: value };
-    setForm(updatedForm);
-    
-    // Fetch balance automatically when date changes - Only for CASH-OUT
-    if (form.organizationId && value && getExpenseType() === 'CASH-OUT') {
-      fetchCurrentBalance(form.organizationId, value);
-    }
-  } else if (name === 'amount') {
-    // Validate amount doesn't exceed current balance for CASH-OUT
-    const amountValue = Number(value);
-    const currentBalanceValue = Number(form.currentBalance) || fetchedBalance;
-    
-    if (getExpenseType() === 'CASH-OUT' && amountValue > currentBalanceValue) {
-      setError(`Amount cannot exceed current balance of ₹${currentBalanceValue.toLocaleString()}`);
-    } else {
-      setError('');
-    }
-    setForm((f) => ({ ...f, [name]: value }));
-  } else {
-    setForm((f) => ({ ...f, [name]: value }));
-  }
-};
+  };
 
   // Add a button to fetch balance manually - Only for CASH-OUT
   const handleFetchBalance = () => {
@@ -183,14 +187,16 @@ const fetchCurrentBalance = async (organizationId, date) => {
       setError('Please select organization and transaction date first');
     }
   };
-  
+
   useEffect(() => {
     let mounted = true;
     const expenseType = getExpenseType();
-    
-    setForm(f => ({ ...f, type: expenseType }));
 
-    fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`)
+    setForm(f => ({ ...f, type: expenseType }));
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
       .then(res => {
         if (!res.ok) throw new Error('no masters');
         return res.json();
@@ -207,14 +213,21 @@ const fetchCurrentBalance = async (organizationId, date) => {
         // ignore failures
       });
 
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+    const token = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+      method: "GET", // or POST, PUT, DELETE, etc.
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    })
       .then(res => res.json())
       .then(data => {
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         if (mounted) setOrganizations(orgs);
       })
-      .catch(() => {});
-      
+      .catch(() => { });
+
     return () => { mounted = false; };
   }, [location.pathname, location.search]);
 
@@ -222,7 +235,7 @@ const fetchCurrentBalance = async (organizationId, date) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    
+
     // Enhanced validation
     if (!form.organizationId) {
       setError('Please select an organization');
@@ -236,14 +249,14 @@ const fetchCurrentBalance = async (organizationId, date) => {
       setError('Please enter a valid amount');
       return;
     }
-    
+
     // Validate current balance field only for CASH-OUT
     if (getExpenseType() === 'CASH-OUT') {
       if (!form.currentBalance || Number(form.currentBalance) < 0) {
         setError('Please enter a valid current balance');
         return;
       }
-      
+
       // Validate amount doesn't exceed current balance for CASH-OUT
       const currentBalanceValue = Number(form.currentBalance);
       if (Number(form.amount) > currentBalanceValue) {
@@ -251,7 +264,7 @@ const fetchCurrentBalance = async (organizationId, date) => {
         return;
       }
     }
-    
+
     if (subtypes.length > 0 && !form.subtype) {
       setError('Please select an expense category');
       return;
@@ -260,15 +273,15 @@ const fetchCurrentBalance = async (organizationId, date) => {
     setLoading(true);
     try {
       let storedUser = null;
-      try { 
-        storedUser = JSON.parse(localStorage.getItem('currentUser') || 'null'); 
-      } catch (e) { 
-        storedUser = null; 
+      try {
+        storedUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      } catch (e) {
+        storedUser = null;
       }
-      
+
       const createdByUserId = storedUser && (storedUser.id || storedUser.userId) ? (storedUser.id || storedUser.userId) : null;
       const createdByUser = storedUser && (storedUser.name || storedUser.username || storedUser.email) ? (storedUser.name || storedUser.username || storedUser.email) : (localStorage.getItem('rememberedEmail') || '');
-      const createdDate = new Date().toISOString().slice(0,10);
+      const createdDate = new Date().toISOString().slice(0, 10);
 
       const expensePayload = {
         transactionDate: form.transactionDate,
@@ -289,16 +302,16 @@ const fetchCurrentBalance = async (organizationId, date) => {
       const formData = new FormData();
       formData.append('expense', new Blob([JSON.stringify(expensePayload)], { type: 'application/json' }));
       if (form.file) formData.append('file', form.file);
-      
+
       const bearerToken = localStorage.getItem('token');
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses`, {
         method: 'POST',
         body: formData,
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
-      
+
       if (!res.ok) throw new Error('Failed to create expense');
-      
+
       setSuccess('Expense created successfully! Redirecting...');
       setTimeout(() => {
         if (form.type === 'CASH-IN') {
@@ -309,23 +322,23 @@ const fetchCurrentBalance = async (organizationId, date) => {
           navigate('/pettycash/expenses');
         }
       }, 2000);
-      
-    } catch (err) { 
-      setError('Failed to create expense. Please try again.'); 
-    } finally { 
-      setLoading(false); 
+
+    } catch (err) {
+      setError('Failed to create expense. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const clearForm = () => {
-    setForm({ 
-      transactionDate: new Date().toISOString().slice(0, 10), 
-      amount: '', 
-      employeeId: '', 
-      subtype: '', 
-      type: getExpenseType(), 
-      expenseDate: new Date().toISOString().slice(0, 10), 
-      referenceNumber: '', 
+    setForm({
+      transactionDate: new Date().toISOString().slice(0, 10),
+      amount: '',
+      employeeId: '',
+      subtype: '',
+      type: getExpenseType(),
+      expenseDate: new Date().toISOString().slice(0, 10),
+      referenceNumber: '',
       file: null,
       organizationId: '',
       organizationName: '',
@@ -362,7 +375,7 @@ const fetchCurrentBalance = async (organizationId, date) => {
     <div className="page-container">
       <Sidebar isOpen={true} />
       <PageCard title={getPageTitle()}>
-        
+
         {/* Enhanced Header Section */}
         <div className={`create-expense-header ${getHeaderColor()}-header`}>
           <div className="header-content">
@@ -388,11 +401,11 @@ const fetchCurrentBalance = async (organizationId, date) => {
             <div className="header-text">
               <h1>{getPageTitle()}</h1>
               <p>
-                {getExpenseType() === 'CASH-IN' 
-                  ? 'Record incoming cash transactions and receipts' 
+                {getExpenseType() === 'CASH-IN'
+                  ? 'Record incoming cash transactions and receipts'
                   : getExpenseType() === 'CASH-OUT'
-                  ? 'Record outgoing cash expenses and payments'
-                  : 'Create new expense record'
+                    ? 'Record outgoing cash expenses and payments'
+                    : 'Create new expense record'
                 }
               </p>
             </div>
@@ -421,7 +434,7 @@ const fetchCurrentBalance = async (organizationId, date) => {
 
           <form onSubmit={handleSubmit} encType="multipart/form-data">
             <div className="form-sections">
-              
+
               {/* Organization & Basic Info Section */}
               <div className="form-section">
                 <h3 className="section-title">
@@ -431,17 +444,17 @@ const fetchCurrentBalance = async (organizationId, date) => {
                 <div className="form-grid enhanced-grid">
                   <div className="form-group">
                     <label className="form-label required">Branch</label>
-                    <select 
-                      name="organizationId" 
-                      value={form.organizationId} 
-                      onChange={handleChange} 
+                    <select
+                      name="organizationId"
+                      value={form.organizationId}
+                      onChange={handleChange}
                       className="form-select"
                       required
                     >
                       <option value="">Select branch</option>
                       {organizations.map(org => (
-                        <option 
-                          key={org.id || org._links?.self?.href} 
+                        <option
+                          key={org.id || org._links?.self?.href}
                           value={org.id || (org._links?.self?.href.split('/').pop())}
                         >
                           {org.name}
@@ -453,12 +466,12 @@ const fetchCurrentBalance = async (organizationId, date) => {
                   <div className="form-group">
                     <label className="form-label required">Transaction Date</label>
                     <div className="date-input-wrapper">
-                      <span className="input-icon" style={{marginLeft:"-10px"}}>📅</span>
-                      <input 
-                        name="transactionDate" 
-                        type="date" 
-                        value={form.transactionDate} 
-                        onChange={handleChange} 
+                      <span className="input-icon" style={{ marginLeft: "-10px" }}>📅</span>
+                      <input
+                        name="transactionDate"
+                        type="date"
+                        value={form.transactionDate}
+                        onChange={handleChange}
                         className="form-input"
                         required
                       />
@@ -472,11 +485,11 @@ const fetchCurrentBalance = async (organizationId, date) => {
                       <div className="balance-input-wrapper">
                         <div className="balance-input-container">
                           <span className="currency-symbol">₹</span>
-                          <input 
-                            name="currentBalance" 
-                            type="number" 
-                            value={form.currentBalance} 
-                            onChange={handleChange} 
+                          <input
+                            name="currentBalance"
+                            type="number"
+                            value={form.currentBalance}
+                            onChange={handleChange}
                             className="form-input balance-input"
                             placeholder="0.00"
                             min="0"
@@ -484,43 +497,43 @@ const fetchCurrentBalance = async (organizationId, date) => {
                             required
                             readOnly // Make it read-only since it's auto-fetched
                           />
-<button 
-  type="button"
-  className="fetch-balance-btn"
-  onClick={handleFetchBalance}
-  disabled={!form.organizationId || !form.transactionDate || balanceLoading}
-  title="Refresh balance"
->
-  {balanceLoading ? (
-    <div className="loading-spinner-tiny"></div>
-  ) : (
-    '🔄'
-  )}
-</button>
+                          <button
+                            type="button"
+                            className="fetch-balance-btn"
+                            onClick={handleFetchBalance}
+                            disabled={!form.organizationId || !form.transactionDate || balanceLoading}
+                            title="Refresh balance"
+                          >
+                            {balanceLoading ? (
+                              <div className="loading-spinner-tiny"></div>
+                            ) : (
+                              '🔄'
+                            )}
+                          </button>
                         </div>
                       </div>
                       <div className="balance-help">
                         <small>
-                          {balanceLoading 
-                            ? 'Fetching balance...' 
-                            : form.organizationId && form.transactionDate 
-                              ? 'Balance automatically fetched' 
+                          {balanceLoading
+                            ? 'Fetching balance...'
+                            : form.organizationId && form.transactionDate
+                              ? 'Balance automatically fetched'
                               : 'Select organization and date to fetch balance'
                           }
                         </small>
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="form-group">
                     <label className="form-label required">Amount (₹)</label>
                     <div className="amount-input-wrapper">
                       <span className="currency-symbol">₹</span>
-                      <input 
-                        name="amount" 
-                        type="number" 
-                        value={form.amount} 
-                        onChange={handleChange} 
+                      <input
+                        name="amount"
+                        type="number"
+                        value={form.amount}
+                        onChange={handleChange}
                         className="form-input amount-input"
                         placeholder="0.00"
                         min="0"
@@ -546,10 +559,10 @@ const fetchCurrentBalance = async (organizationId, date) => {
                   {subtypes.length > 0 && (
                     <div className="form-group">
                       <label className="form-label required">Expense Category</label>
-                      <select 
-                        name="subtype" 
-                        value={form.subtype} 
-                        onChange={handleChange} 
+                      <select
+                        name="subtype"
+                        value={form.subtype}
+                        onChange={handleChange}
                         className="form-select"
                         required={subtypes.length > 0}
                       >
@@ -565,16 +578,16 @@ const fetchCurrentBalance = async (organizationId, date) => {
                       </select>
                     </div>
                   )}
-                  
+
                   <div className="form-group">
                     <label className="form-label">Expense Date</label>
                     <div className="date-input-wrapper">
-                      <span className="input-icon" style={{marginLeft:"-10px"}}>📅</span>
-                      <input 
-                        name="expenseDate" 
-                        type="date" 
-                        value={form.expenseDate} 
-                        onChange={handleChange} 
+                      <span className="input-icon" style={{ marginLeft: "-10px" }}>📅</span>
+                      <input
+                        name="expenseDate"
+                        type="date"
+                        value={form.expenseDate}
+                        onChange={handleChange}
                         className="form-input"
                       />
                     </div>
@@ -590,10 +603,10 @@ const fetchCurrentBalance = async (organizationId, date) => {
                 </h3>
                 <div className="file-upload-section">
                   <div className={`file-upload-area ${form.file ? 'has-file' : ''}`}>
-                    <input 
-                      name="file" 
-                      type="file" 
-                      onChange={handleChange} 
+                    <input
+                      name="file"
+                      type="file"
+                      onChange={handleChange}
                       className="file-input"
                       id="file-upload"
                       accept="image/*,.pdf,.doc,.docx,.xlsx"
@@ -609,7 +622,7 @@ const fetchCurrentBalance = async (organizationId, date) => {
                         </>
                       ) : (
                         <>
-                          <div className="upload-icon">📁<strong style={{fontSize:"20px"}}>Choose file</strong></div>
+                          <div className="upload-icon">📁<strong style={{ fontSize: "20px" }}>Choose file</strong></div>
                           <div className="upload-text">
                             {/* <span>or drag and drop here</span>
                             <small>Supports: JPG, PNG, PDF, DOC, XLSX (Max: 10MB)</small> */}
@@ -618,7 +631,7 @@ const fetchCurrentBalance = async (organizationId, date) => {
                       )}
                     </label>
                   </div>
-                  
+
                   {form.file && (
                     <div className="file-preview">
                       <div className="file-info">
@@ -634,8 +647,8 @@ const fetchCurrentBalance = async (organizationId, date) => {
                             <span className="file-type">{form.file.type}</span>
                           </div>
                         </div>
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           className="remove-file"
                           onClick={() => {
                             setForm(f => ({ ...f, file: null }));
@@ -646,12 +659,12 @@ const fetchCurrentBalance = async (organizationId, date) => {
                           ×
                         </button>
                       </div>
-                      
+
                       {previewUrl && (
                         <div className="image-preview">
                           <div className="preview-header">
                             <span>Preview</span>
-                            <button 
+                            <button
                               type="button"
                               className="preview-close"
                               onClick={() => setPreviewUrl('')}
@@ -669,8 +682,8 @@ const fetchCurrentBalance = async (organizationId, date) => {
             </div>
 
             <div className="form-actions">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn-secondary"
                 onClick={clearForm}
                 disabled={loading}
@@ -678,10 +691,10 @@ const fetchCurrentBalance = async (organizationId, date) => {
                 <span className="btn-icon">🗑️</span>
                 Clear Form
               </button>
-              
+
               <div className="action-buttons">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn-outline"
                   onClick={() => navigate(-1)}
                   disabled={loading}
@@ -689,15 +702,15 @@ const fetchCurrentBalance = async (organizationId, date) => {
                   <span className="btn-icon">←</span>
                   Cancel
                 </button>
-                
-                <button 
-                  type="submit" 
+
+                <button
+                  type="submit"
                   className={`btn-primary submit-btn ${loading ? 'loading' : ''}`}
-                  disabled={loading || 
-                    (showCurrentBalanceSection && 
-                     form.amount && 
-                     form.currentBalance && 
-                     Number(form.amount) > Number(form.currentBalance))
+                  disabled={loading ||
+                    (showCurrentBalanceSection &&
+                      form.amount &&
+                      form.currentBalance &&
+                      Number(form.amount) > Number(form.currentBalance))
                   }
                 >
                   {loading ? (

@@ -28,7 +28,10 @@ function ExpensesOutward() {
   const fetchUrl = async (url) => {
     setLoading(true);
     try {
-      const res = await fetch(url);
+      const bearerToken = localStorage.getItem('token');
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       const json = await res.json();
       let list = json.content || json._embedded?.expenses || [];
       list = list.filter(e => e.expenseType === 'CASH-OUT');
@@ -145,7 +148,10 @@ const isToday = (dateString) => {
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
-        const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`);
+        const bearerToken = localStorage.getItem('token');
+        const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+          headers: { 'Authorization': `Bearer ${bearerToken}` }
+        });
         const data = await response.json();
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         setOrganizations(orgs);

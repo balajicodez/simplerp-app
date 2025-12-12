@@ -30,7 +30,10 @@ function Expenses() {
   };
 
   useEffect(() => {
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`);
+    const bearerToken = localStorage.getItem('token');
+    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    });
   }, [pageParam, sizeParam]);
 
   return (

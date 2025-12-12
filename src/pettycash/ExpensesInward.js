@@ -27,7 +27,10 @@ function ExpensesInward() {
   const fetchUrl = async (url) => {
     setLoading(true);
     try {
-      const res = await fetch(url);
+      const bearerToken = localStorage.getItem('token');
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       const json = await res.json();
       const list = json.content || json._embedded?.expenses || [];
       setItems(list.filter(e => e.expenseType === 'CASH-IN'));
@@ -42,16 +45,19 @@ function ExpensesInward() {
   const handleOrganizationChange = (e) => {
     const value = e.target.value;
     setSelectedOrgId(value);
-    
-    if (value) {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`);
+    const bearerToken = localStorage.getItem('token');
+    if (value) {      
+      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       setSearchParams({ page: 0, size: sizeParam });
     } else {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN`);
+      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }});
       setSearchParams({ page: 0, size: sizeParam });
     }
   };
-
+  
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -167,7 +173,10 @@ const isToday = (dateString) => {
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
-        const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`);
+        const bearerToken = localStorage.getItem('token');
+        const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+          headers: { 'Authorization': `Bearer ${bearerToken}` }
+        });
         const data = await response.json();
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         setOrganizations(orgs);

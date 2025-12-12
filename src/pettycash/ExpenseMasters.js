@@ -13,11 +13,11 @@ function ExpenseMasters() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`)
-      .then((res) => res.json())
-      .then((json) => {
-        const list = (json._embedded && json._embedded.expenseTypeMasters) || json._embedded || [];
-        setItems(list);
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`, {
+      headers: {'Authorization': `Bearer ${bearerToken}` }
+    })
+      .then(res => {
         setLoading(false);
       }).catch(() => setLoading(false));
   }, []);
