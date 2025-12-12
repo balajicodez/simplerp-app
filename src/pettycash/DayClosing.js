@@ -32,7 +32,10 @@ function DayClosing() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(url);
+       const bearerToken = localStorage.getItem('token');
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       const json = await res.json();
       let list = (json.content) || json.content || [];
       list = list.filter(e => e.createdDate === today);
@@ -48,7 +51,10 @@ function DayClosing() {
   };
 
   useEffect(() => {
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`);
+    const bearerToken = localStorage.getItem('token');
+    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`,{
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    });
   }, [pageParam, sizeParam, selectedOrgId]);
 
   useEffect(() => {
@@ -70,6 +76,7 @@ function DayClosing() {
     setSelectedOrgId(value);
     
     if (value) {
+      const bearerToken = localStorage.getItem('token');
       fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&organizationId=${value}`);
       setSearchParams({ page: 0, size: sizeParam });
     } else {
