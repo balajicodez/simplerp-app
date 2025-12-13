@@ -12,7 +12,7 @@ function CreateExpense() {
     employeeId: '',
     subtype: '',
     type: '',
-    expenseDate: new Date().toISOString().slice(0, 10),
+    expenseDate: '',
     referenceNumber: '',
     file: null,
     organizationId: '',
@@ -106,9 +106,6 @@ function CreateExpense() {
         }
 
         balance = Number(balance) || 0;
-
-        console.log('Calculated Balance:', balance);
-
         setFetchedBalance(balance);
         // Auto-fill the current balance field with fetched value
         setForm(f => ({ ...f, currentBalance: balance.toString() }));
@@ -281,7 +278,7 @@ function CreateExpense() {
 
       const createdByUserId = storedUser && (storedUser.id || storedUser.userId) ? (storedUser.id || storedUser.userId) : null;
       const createdByUser = storedUser && (storedUser.name || storedUser.username || storedUser.email) ? (storedUser.name || storedUser.username || storedUser.email) : (localStorage.getItem('rememberedEmail') || '');
-      const createdDate = new Date().toISOString().slice(0, 10);
+      const createdDate = '';
 
       const expensePayload = {
         transactionDate: form.transactionDate,
@@ -293,8 +290,7 @@ function CreateExpense() {
         organizationName: form.organizationName || undefined,
         createdByUserId,
         createdByUser,
-        createdDate,
-        expenseDate: form.expenseDate || undefined,
+        createdDate: form.expenseDate,        
         referenceNumber: form.referenceNumber || undefined,
         currentBalance: getExpenseType() === 'CASH-OUT' ? Number(form.currentBalance) : undefined // Only include for CASH-OUT
       };
@@ -337,7 +333,7 @@ function CreateExpense() {
       employeeId: '',
       subtype: '',
       type: getExpenseType(),
-      expenseDate: new Date().toISOString().slice(0, 10),
+      expenseDate: '',
       referenceNumber: '',
       file: null,
       organizationId: '',
@@ -461,22 +457,7 @@ function CreateExpense() {
                         </option>
                       ))}
                     </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label required">Transaction Date</label>
-                    <div className="date-input-wrapper">
-                      <span className="input-icon" style={{ marginLeft: "-10px" }}>📅</span>
-                      <input
-                        name="transactionDate"
-                        type="date"
-                        value={form.transactionDate}
-                        onChange={handleChange}
-                        className="form-input"
-                        required
-                      />
-                    </div>
-                  </div>
+                  </div>                 
 
                   {/* Current Balance Field - Only for CASH-OUT */}
                   {showCurrentBalanceSection && (
@@ -586,9 +567,10 @@ function CreateExpense() {
                       <input
                         name="expenseDate"
                         type="date"
-                        value={form.expenseDate}
+                        value={form.createdDate}
                         onChange={handleChange}
                         className="form-input"
+                        required
                       />
                     </div>
                   </div>
