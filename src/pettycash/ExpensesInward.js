@@ -342,7 +342,6 @@ const isToday = (dateString) => {
                       Created Date {getSortIcon('createdDate')}
                     </th>
                     <th>Receipt</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -402,19 +401,9 @@ const isToday = (dateString) => {
                               👁️ View
                             </button>
                           ) : (
-                            <span className="no-receipt">No receipt</span>
+                            <span className="no-receipt">(No receipt)</span>
                           )}
                         </td>
-                       <td className="actions-cell">
-                        
-                          <button 
-                            className="btn-outline edit-btn"
-                            onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
-                          >
-                            ✏️ Edit
-                          </button>
-                       
-                      </td>
                       </tr>
                     ))
                   )}
