@@ -406,18 +406,14 @@ const isToday = (dateString) => {
                           )}
                         </td>
                        <td className="actions-cell">
-                        {isToday(item.createdDate) ? (
+                        
                           <button 
                             className="btn-outline edit-btn"
                             onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
                           >
                             ✏️ Edit
                           </button>
-                        ) : (
-                          <span className="edit-disabled" title="Can only edit today's transactions">
-                            🔒 Locked
-                          </span>
-                        )}
+                       
                       </td>
                       </tr>
                     ))
