@@ -13,6 +13,7 @@ function DayClosingReport() {
   const [totals, setTotals] = useState({ cashIn: 0, cashOut: 0, startingBalance: 0 });
   const [pdfUrl, setPdfUrl] = useState('');
   const [organizations, setOrganizations] = useState([]);
+  const [organizationId, setOrganizationId] = useState('');
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
 
@@ -25,9 +26,21 @@ function DayClosingReport() {
   };
 
   useEffect(() => {
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const orgs = data._embedded ? data._embedded.organizations || [] : data;
+        setOrganizations(orgs);
+      })
+      .catch(() => { });
+  }, []);
+
+  useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     setSelectedDate(today);
-    
     const fetchDayClosingData = async () => {
       try {
         setLoading(true);
@@ -40,25 +53,7 @@ function DayClosingReport() {
           throw new Error('Failed to fetch data');
         }
         const data = await response.json();
-        const list = data._embedded ? data._embedded.pettyCashDayClosings || [] : data;
-        setRecords(list);
-        
-        // Safe calculation of totals
-        const cashInTotal = list.reduce((sum, rec) => sum + (Number(rec.cashIn) || 0), 0);
-        const cashOutTotal = list.reduce((sum, rec) => sum + (Number(rec.cashOut) || 0), 0);
-        
-        // Safe starting balance calculation
-        let startingBalance = 0;
-        if (list.length > 0 && list[0].startingBalance) {
-          startingBalance = Number(list[0].startingBalance) || 0;
-        }
-        
-        setTotals({ 
-          cashIn: cashInTotal, 
-          cashOut: cashOutTotal, 
-          startingBalance: startingBalance 
-        });
-        
+        setRecords(data);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch day closing records');
@@ -83,24 +78,66 @@ function DayClosingReport() {
       .catch(() => { });
   }, []);
 
+  const handleChange = async (e) => {
+    const { name, value, type } = e.target;
+    if (type === 'select-one') {
+      const selectedOrgId = e.target.value;
+      setOrganizationId(selectedOrgId);
+      if (selectedOrgId && selectedDate) {
+        await fetchDayClosing(selectedDate, selectedOrgId);
+      }
+    } else if (type === 'date') {
+      const selectedDate = e.target.value;
+      setSelectedDate(selectedDate);
+      if (organizationId && selectedDate) {
+        await fetchDayClosing(selectedDate, organizationId);
+      }
+    }
+
+  };
+
+  const fetchDayClosing = async (closingDate, orgId) => {
+    try {
+      setLoading(true);
+      setError('');
+      const bearerToken = localStorage.getItem('token');
+      const response = await fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings/search/findByClosingDateAndOrganizationId?closingDate=${closingDate}&organizationId=${orgId}`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      const data = await response.json();
+
+      setRecords(data);
+    } catch (err) {
+      console.log(err);
+      setError('No records found for the selected date and organization');
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGenerateReport = () => {
     try {
-      const filteredRecords = records.filter(rec => rec.closingDate === selectedDate);
-      
-      if (filteredRecords.length === 0) {
-        setReportMsg('No records found for the selected date');
-        return;
-      }
+      // const filteredRecords = records.filter(rec => records.closingDate === selectedDate);
+
+      // if (filteredRecords.length === 0) {
+      //   setReportMsg('No records found for the selected date');
+      //   return;
+      // }
 
       const doc = new jsPDF();
-      
-      const selectedRecord = filteredRecords[0];
+
+      const filteredRecords = [records]; // Wrap records in an array for consistent processing
+      const selectedRecord = records
       const startingBalance = Number(selectedRecord.startingBalance) || 0;
 
       doc.setFontSize(16);
       doc.text('Sri Divya Sarees', 105, 18, { align: 'center' });
       doc.setFontSize(12);
-      doc.text('Old Temple Road, Gulzar House, Hyderabad 500066', 105, 26, { align: 'center' });   
+      doc.text('Old Temple Road, Gulzar House, Hyderabad 500066', 105, 26, { align: 'center' });
       doc.setFontSize(11);
       doc.setLineWidth(0.5);
       doc.line(20, 32, 190, 32);
@@ -108,7 +145,7 @@ function DayClosingReport() {
       doc.text(`Day Closing Report - ${selectedDate}`, 14, 40, { align: "left" });
       doc.setFontSize(13);
       doc.text(`Opening Balance:  ${safeToLocaleString(startingBalance)}`, 158, 40, { align: 'right', marginTop: "20px" });
-      
+
       const mainTableColumn = [
         'Closing Date',
         'Description',
@@ -117,14 +154,14 @@ function DayClosingReport() {
         'Total Cash-In',
         'Total Cash-Out'
       ];
-      
+
       const mainTableRows = filteredRecords.map(rec => [
-        rec.closingDate || '',
-        rec.description || '',
-        rec.createdBy || '',
-        rec.createdTime || '',
-        rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : '-',
-        rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : '-'
+        records.closingDate || '',
+        records.description || '',
+        records.createdBy || '',
+        records.createdTime || '',
+        records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : '-',
+        records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : '-'
       ]);
 
       autoTable(doc, {
@@ -145,17 +182,17 @@ function DayClosingReport() {
         }
 
         doc.setFontSize(12);
-        doc.text(`Day Closing Details - ${rec.closingDate}`, 20, currentY);
+        doc.text(`Day Closing Details - ${records.closingDate}`, 20, currentY);
         currentY += 10;
 
         const infoTableData = [
-          ['Description:', rec.description || ''],
-          ['Created By:', rec.createdBy || ''],
-          ['Created Time:', rec.createdTime || ''],
-          ['Starting Balance:', rec.startingBalance ? ` ${safeToLocaleString(rec.startingBalance)}` : ' 0'],
-          ['Cash In:', rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : ' 0'],
-          ['Cash Out:', rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : ' 0'],
-          ['Closing Balance:', rec.closingBalance ? ` ${safeToLocaleString(rec.closingBalance)}` : ' 0']
+          ['Description:', records.description || ''],
+          ['Created By:', records.createdBy || ''],
+          ['Created Time:', records.createdTime || ''],
+          ['Starting Balance:', records.startingBalance ? ` ${safeToLocaleString(records.startingBalance)}` : ' 0'],
+          ['Cash In:', records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : ' 0'],
+          ['Cash Out:', records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : ' 0'],
+          ['Closing Balance:', records.closingBalance ? ` ${safeToLocaleString(records.closingBalance)}` : ' 0']
         ];
 
         autoTable(doc, {
@@ -177,10 +214,10 @@ function DayClosingReport() {
         const coinsData = [
           ['1  Coin', '5  Coin', '10  Coin', '20  Coin'],
           [
-            rec._1CoinCount || 0,
-            rec._5CoinCount || 0,
-            rec._10CoinCount || 0,
-            rec._20CoinCount || 0
+            records._1CoinCount || 0,
+            records._5CoinCount || 0,
+            records._10CoinCount || 0,
+            records._20CoinCount || 0
           ]
         ];
 
@@ -201,12 +238,12 @@ function DayClosingReport() {
 
         const notesHead = ['10  Note', '20  Note', '50  Note', '100  Note', '200  Note', '500  Note'];
         const notesData = [
-          rec._10NoteCount || 0,
-          rec._20NoteCount || 0,
-          rec._50NoteCount || 0,
-          rec._100NoteCount || 0,
-          rec._200NoteCount || 0,
-          rec._500NoteCount || 0
+          records._10NoteCount || 0,
+          records._20NoteCount || 0,
+          records._50NoteCount || 0,
+          records._100NoteCount || 0,
+          records._200NoteCount || 0,
+          records._500NoteCount || 0
         ];
 
         autoTable(doc, {
@@ -226,12 +263,12 @@ function DayClosingReport() {
 
         const soiledNotesHead = ['10  Soiled', '20  Soiled', '50  Soiled', '100  Soiled', '200  Soiled', '500  Soiled'];
         const soiledNotesData = [
-          rec._10SoiledNoteCount || 0,
-          rec._20SoiledNoteCount || 0,
-          rec._50SoiledNoteCount || 0,
-          rec._100SoiledNoteCount || 0,
-          rec._200SoiledNoteCount || 0,
-          rec._500SoiledNoteCount || 0
+          records._10SoiledNoteCount || 0,
+          records._20SoiledNoteCount || 0,
+          records._50SoiledNoteCount || 0,
+          records._100SoiledNoteCount || 0,
+          records._200SoiledNoteCount || 0,
+          records._500SoiledNoteCount || 0
         ];
 
         autoTable(doc, {
@@ -239,18 +276,18 @@ function DayClosingReport() {
           head: [soiledNotesHead],
           body: [soiledNotesData],
           theme: 'grid',
-          headStyles: { fillColor: [139, 0, 0] }, 
+          headStyles: { fillColor: [139, 0, 0] },
           styles: { fontSize: 10, halign: 'center' }
         });
       });
 
-      const dateCashInTotal = filteredRecords.reduce((sum, rec) => sum + (Number(rec.cashIn) || 0), 0);
-      const dateCashOutTotal = filteredRecords.reduce((sum, rec) => sum + (Number(rec.cashOut) || 0), 0);
+      const dateCashInTotal = filteredRecords.reduce((sum, rec) => sum + (Number(records.cashIn) || 0), 0);
+      const dateCashOutTotal = filteredRecords.reduce((sum, rec) => sum + (Number(records.cashOut) || 0), 0);
 
       doc.addPage();
       doc.setFontSize(14);
       doc.text(`Grand Summary - ${selectedDate}`, 105, 20, { align: 'center' });
-      
+
       const summaryData = [
         ['Starting Balance:', ` ${safeToLocaleString(startingBalance)}`],
         ['Total Cash In:', ` ${safeToLocaleString(dateCashInTotal)}`],
@@ -271,7 +308,7 @@ function DayClosingReport() {
       const url = doc.output('bloburl');
       setPdfUrl(url);
       setReportMsg(`PDF generated successfully for ${selectedDate}!`);
-      
+
     } catch (e) {
       console.error('PDF generation error:', e);
       setReportMsg('Failed to generate PDF');
@@ -283,7 +320,7 @@ function DayClosingReport() {
       minHeight: '100vh',
       backgroundColor: '#f8fafc'
     },
-    
+
     headerSection: {
       display: 'flex',
       flexDirection: 'row',
@@ -294,19 +331,19 @@ function DayClosingReport() {
       borderBottom: '1px solid #e2e8f0',
       gap: '20px',
     },
-    
+
     dateSelector: {
       display: 'flex',
       alignItems: 'center',
       gap: '12px',
     },
-    
+
     dateLabel: {
       fontWeight: '600',
       color: '#374151',
       fontSize: '14px',
     },
-    
+
     dateInput: {
       padding: '8px 12px',
       border: '1px solid #d1d5db',
@@ -315,7 +352,7 @@ function DayClosingReport() {
       backgroundColor: 'white',
       boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
     },
-    
+
     generateButton: {
       background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
       color: 'white',
@@ -329,7 +366,7 @@ function DayClosingReport() {
       boxShadow: '0 2px 4px rgba(30, 58, 138, 0.3)',
       whiteSpace: 'nowrap',
     },
-    
+
     summaryContainer: {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -337,7 +374,7 @@ function DayClosingReport() {
       marginBottom: '24px',
       padding: '0 16px',
     },
-    
+
     summaryCard: {
       background: 'white',
       padding: '20px',
@@ -363,7 +400,7 @@ function DayClosingReport() {
       fontWeight: '700',
       marginTop: '8px'
     },
-    
+
     tableContainer: {
       background: 'white',
       borderRadius: '12px',
@@ -395,7 +432,7 @@ function DayClosingReport() {
     tableRow: {
       transition: 'background-color 0.2s ease',
     },
-    
+
     notesSection: {
       marginTop: '32px'
     },
@@ -414,7 +451,7 @@ function DayClosingReport() {
       background: 'white',
       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     },
-    
+
     successMessage: {
       color: '#059669',
       backgroundColor: '#f0fdf4',
@@ -433,7 +470,7 @@ function DayClosingReport() {
       marginBottom: '16px',
       fontWeight: '500'
     },
-    
+
     pdfModal: {
       position: 'fixed',
       top: 0,
@@ -475,7 +512,7 @@ function DayClosingReport() {
       backgroundColor: '#eef1f4',
       boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
     },
-    
+
     loadingContainer: {
       display: 'flex',
       justifyContent: 'center',
@@ -496,11 +533,30 @@ function DayClosingReport() {
             <input
               type="date"
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
+              onChange={handleChange}
               style={styles.dateInput}
             />
           </div>
-          <button 
+          <div className="form-group">
+            <label className="form-label">Organization</label>
+            <select
+              value={organizationId}
+              onChange={handleChange}
+              className="form-select"
+              required
+            >
+              <option value="">Select organization</option>
+              {organizations.map(org => (
+                <option
+                  key={org.id || (org._links && org._links.self && org._links.self.href)}
+                  value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}
+                >
+                  {org.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
             style={styles.generateButton}
             onClick={handleGenerateReport}
           >
@@ -511,26 +567,26 @@ function DayClosingReport() {
         {pdfUrl && (
           <div style={styles.pdfModal}>
             <div style={styles.pdfContainer}>
-              <button 
+              <button
                 style={styles.closeButton}
                 onClick={() => { setPdfUrl(''); }}
               >
                 ×
               </button>
-              <iframe 
-                src={pdfUrl} 
-                title="Day Closing PDF Report" 
-                style={{ 
-                  width: '70vw', 
-                  height: '75vh', 
+              <iframe
+                src={pdfUrl}
+                title="Day Closing PDF Report"
+                style={{
+                  width: '70vw',
+                  height: '75vh',
                   border: 'none',
                   borderRadius: '8px'
-                }} 
+                }}
               />
               <div style={{ textAlign: 'right', marginTop: '16px' }}>
-                <a 
-                  href={pdfUrl} 
-                  download={`DayClosingReport_${selectedDate}.pdf`} 
+                <a
+                  href={pdfUrl}
+                  download={`DayClosingReport_${selectedDate}.pdf`}
                   style={{
                     ...styles.generateButton,
                     textDecoration: 'none',
@@ -543,37 +599,16 @@ function DayClosingReport() {
             </div>
           </div>
         )}
-        
+
         {reportMsg && <div style={styles.successMessage}>✅ {reportMsg}</div>}
         {error && <div style={styles.errorMessage}>❌ {error}</div>}
-        
+
         {loading ? (
           <div style={styles.loadingContainer}>
             <div>Loading day closing records...</div>
           </div>
         ) : (
           <>
-            <div style={styles.summaryContainer}>
-              <div style={{...styles.summaryCard, ...styles.cashInCard}}>
-                <div style={{color: '#2563eb', fontWeight: '600', fontSize: '14px'}}>Total Cash-In</div>
-                <div style={{...styles.summaryAmount, color: '#2563eb'}}>
-                  {safeToLocaleString(totals.cashIn)}
-                </div>
-              </div>
-              <div style={{...styles.summaryCard, ...styles.cashOutCard}}>
-                <div style={{color: '#dc2626', fontWeight: '600', fontSize: '14px'}}>Total Cash-Out</div>
-                <div style={{...styles.summaryAmount, color: '#dc2626'}}>
-                  {safeToLocaleString(totals.cashOut)}
-                </div>
-              </div>
-              <div style={{...styles.summaryCard, ...styles.netBalanceCard}}>
-                <div style={{color: '#059669', fontWeight: '600', fontSize: '14px'}}>Net Balance</div>
-                <div style={{...styles.summaryAmount, color: '#059669'}}>
-                  {safeToLocaleString(totals.cashIn - totals.cashOut)}
-                </div>
-              </div>
-            </div>
-            
             <div style={styles.tableContainer}>
               <table className="payroll-table" style={styles.table}>
                 <thead style={styles.tableHeader}>
@@ -589,32 +624,32 @@ function DayClosingReport() {
                   </tr>
                 </thead>
                 <tbody>
-                  {records.map((rec, idx) => (
-                    <tr key={idx} style={styles.tableRow}>
-                      <td style={styles.tableCell}>{rec.closingDate}</td>
-                      <td style={styles.tableCell}>{rec.description}</td>
-                      <td style={styles.tableCell}>{rec.createdBy}</td>
-                      <td style={styles.tableCell}>{rec.createdTime}</td>
-                      <td style={styles.tableCell}>{safeToLocaleString(rec.startingBalance)}</td>
-                      <td style={{...styles.tableCell, color: '#059669', fontWeight: '500'}}>
-                        {rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : '-'}
-                      </td>
-                      <td style={{...styles.tableCell, color: '#dc2626', fontWeight: '500'}}>
-                        {rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : '-'}
-                      </td>
-                      <td style={{...styles.tableCell, color: '#1e3a8a', fontWeight: '600'}}>
-                        {safeToLocaleString(rec.closingBalance)}
-                      </td>
-                    </tr>
-                  ))}
+
+                  <tr key={records.id} style={styles.tableRow}>
+                    <td style={styles.tableCell}>{records.closingDate}</td>
+                    <td style={styles.tableCell}>{records.description}</td>
+                    <td style={styles.tableCell}>{records.createdBy}</td>
+                    <td style={styles.tableCell}>{records.createdTime}</td>
+                    <td style={styles.tableCell}>{safeToLocaleString(records.startingBalance)}</td>
+                    <td style={{ ...styles.tableCell, color: '#059669', fontWeight: '500' }}>
+                      {records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : '-'}
+                    </td>
+                    <td style={{ ...styles.tableCell, color: '#dc2626', fontWeight: '500' }}>
+                      {records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : '-'}
+                    </td>
+                    <td style={{ ...styles.tableCell, color: '#1e3a8a', fontWeight: '600' }}>
+                      {safeToLocaleString(records.closingBalance)}
+                    </td>
+                  </tr>
+
                 </tbody>
               </table>
             </div>
-            
+
             <div style={styles.notesSection}>
               <h3 style={styles.notesHeader}>Notes & Coin Summary</h3>
               <div style={styles.scrollableContainer}>
-                <table className="payroll-table" style={{...styles.table, minWidth: '100%'}}>
+                <table className="payroll-table" style={{ ...styles.table, minWidth: '100%' }}>
                   <thead style={styles.tableHeader}>
                     <tr>
                       <th style={styles.tableHeaderCell}>Date</th>
@@ -637,27 +672,27 @@ function DayClosingReport() {
                     </tr>
                   </thead>
                   <tbody>
-                    {records.map((rec, idx) => (
-                      <tr key={idx} style={styles.tableRow}>
-                        <td style={styles.tableCell}>{rec.closingDate}</td>
-                        <td style={styles.tableCell}>{rec._1CoinCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._5CoinCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._10CoinCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._20CoinCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._10NoteCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._20NoteCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._50NoteCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._100NoteCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._200NoteCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._500NoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._10SoiledNoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._20SoiledNoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._50SoiledNoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._100SoiledNoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._200SoiledNoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._500SoiledNoteCount || 0}</td>
-                      </tr>
-                    ))}
+
+                    <tr key={records.id} style={styles.tableRow}>
+                      <td style={styles.tableCell}>{records.closingDate}</td>
+                      <td style={styles.tableCell}>{records._1CoinCount || 0}</td>
+                      <td style={styles.tableCell}>{records._5CoinCount || 0}</td>
+                      <td style={styles.tableCell}>{records._10CoinCount || 0}</td>
+                      <td style={styles.tableCell}>{records._20CoinCount || 0}</td>
+                      <td style={styles.tableCell}>{records._10NoteCount || 0}</td>
+                      <td style={styles.tableCell}>{records._20NoteCount || 0}</td>
+                      <td style={styles.tableCell}>{records._50NoteCount || 0}</td>
+                      <td style={styles.tableCell}>{records._100NoteCount || 0}</td>
+                      <td style={styles.tableCell}>{records._200NoteCount || 0}</td>
+                      <td style={styles.tableCell}>{records._500NoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._10SoiledNoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._20SoiledNoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._50SoiledNoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._100SoiledNoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._200SoiledNoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._500SoiledNoteCount || 0}</td>
+                    </tr>
+
                   </tbody>
                 </table>
               </div>
