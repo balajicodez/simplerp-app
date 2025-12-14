@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from '../Sidebar';
-import PageCard from '../components/PageCard';
-import "./pettyCashCreateExpense.css"
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import Sidebar from "../Sidebar";
+import PageCard from "../components/PageCard";
+import "./pettyCashCreateExpense.css";
+import { useNavigate, useLocation } from "react-router-dom";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 
 function CreateExpense() {
   const [form, setForm] = useState({
     transactionDate: new Date().toISOString().slice(0, 10),
-    amount: '',
-    employeeId: '',
-    subtype: '',
-    type: '',
-    expenseDate: '',
-    referenceNumber: '',
+    amount: "",
+    employeeId: "",
+    subtype: "",
+    type: "",
+    expenseDate: "",
+    referenceNumber: "",
     file: null,
-    organizationId: '',
-    organizationName: '',
-    currentBalance: ''
+    organizationId: "",
+    organizationName: "",
+    currentBalance: "",
   });
   const [organizations, setOrganizations] = useState([]);
   const [subtypes, setSubtypes] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [previewUrl, setPreviewUrl] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
   const [fetchedBalance, setFetchedBalance] = useState(0);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const navigate = useNavigate();
@@ -32,156 +32,207 @@ function CreateExpense() {
 
   const getExpenseType = () => {
     const params = new URLSearchParams(location.search);
-    let filterType = params.get('type');
+    let filterType = params.get("type");
     if (!filterType) {
-      if (location.pathname.includes('expenses-inward') || location.pathname.includes('create') && location.search.includes('CASH-IN')) {
-        filterType = 'CASH-IN';
+      if (
+        location.pathname.includes("expenses-inward") ||
+        (location.pathname.includes("create") &&
+          location.search.includes("CASH-IN"))
+      ) {
+        filterType = "CASH-IN";
       }
-      if (location.pathname.includes('expenses-outward') || location.pathname.includes('create') && location.search.includes('CASH-OUT')) {
-        filterType = 'CASH-OUT';
+      if (
+        location.pathname.includes("expenses-outward") ||
+        (location.pathname.includes("create") &&
+          location.search.includes("CASH-OUT"))
+      ) {
+        filterType = "CASH-OUT";
       }
     }
-    return filterType || '';
+    return filterType || "";
   };
 
   const getPageTitle = () => {
     const type = getExpenseType();
-    if (type === 'CASH-IN') return 'Create Inward ';
-    if (type === 'CASH-OUT') return 'Create Outward ';
-    return 'Create Expense';
+    if (type === "CASH-IN") return "Create Inward ";
+    if (type === "CASH-OUT") return "Create Outward ";
+    return "Create Expense";
   };
 
   const getHeaderColor = () => {
     const type = getExpenseType();
-    if (type === 'CASH-IN') return 'inward';
-    if (type === 'CASH-OUT') return 'outward';
-    return 'default';
+    if (type === "CASH-IN") return "inward";
+    if (type === "CASH-OUT") return "outward";
+    return "default";
   };
 
   const getExpenseIcon = () => {
     const type = getExpenseType();
-    if (type === 'CASH-IN') return '💰';
-    if (type === 'CASH-OUT') return '💸';
-    return '📝';
+    if (type === "CASH-IN") return "💰";
+    if (type === "CASH-OUT") return "💸";
+    return "📝";
   };
 
-  // Add this useEffect for debugging
+  // Debug useEffect
   useEffect(() => {
-    console.log('Form state updated:', {
+    console.log("Form state updated:", {
       organizationId: form.organizationId,
       transactionDate: form.transactionDate,
       currentBalance: form.currentBalance,
       fetchedBalance: fetchedBalance,
-      expenseType: getExpenseType()
+      expenseType: getExpenseType(),
     });
-  }, [form.organizationId, form.transactionDate, form.currentBalance, fetchedBalance]);
+  }, [
+    form.organizationId,
+    form.transactionDate,
+    form.currentBalance,
+    fetchedBalance,
+  ]);
 
-  const fetchCurrentBalance = async (organizationId, date) => {
-    if (!organizationId || !date || getExpenseType() !== 'CASH-OUT') {
-      // setFetchedBalance(0);
-      setForm(f => ({ ...f, currentBalance: '' }));
-      return;
-    }
+  // Auto-fetch balance when both organization and date are selected for CASH-OUT
+  // Fetch balance ONLY when organizationId + expenseDate are selected
+  useEffect(() => {
+    if (
+      getExpenseType() === "CASH-OUT" &&
+      form.organizationId &&
+      form.expenseDate
+    ) {
+      console.log("Fetching balance (org + expenseDate):", {
+        orgId: form.organizationId,
+        expenseDate: form.expenseDate,
+      });
 
-    setBalanceLoading(true);
-    try {
-      const bearerToken = localStorage.getItem('token');
-      const response = await fetch(
-        `${APP_SERVER_URL_PREFIX}/expenses/current_balance?organizationId=${organizationId}&createdDate=${date}`,
-        {
-          headers: { 'Authorization': `Bearer ${bearerToken}` }
-        }
-      );
-
-      if (response.ok) {
-        const balanceData = await response.json();
-        console.log('Balance API Response:', balanceData); // Debug log
-
-        let balance = 0;
-
-        if (balanceData.totalBalance !== undefined && balanceData.totalBalance !== null) {
-          balance = balanceData.totalBalance;
-        } else if (balanceData.cashInAmt !== undefined && balanceData.cashOutAmt !== undefined) {
-          balance = (balanceData.cashInAmt || 0) - (balanceData.cashOutAmt || 0);
-        }
-
-        balance = Number(balance) || 0;
-        setFetchedBalance(balance);
-        // Auto-fill the current balance field with fetched value
-        setForm(f => ({ ...f, currentBalance: balance.toString() }));
-      } else {
-        console.error('Balance API response not OK:', response.status);
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        setFetchedBalance(0);
-        setForm(f => ({ ...f, currentBalance: '' }));
-      }
-    } catch (error) {
-      console.error('Error fetching balance:', error);
+      fetchCurrentBalance(form.organizationId, form.expenseDate);
+    } else {
+      // Clear balance if either field is missing
+      setForm((f) => ({ ...f, currentBalance: "" }));
       setFetchedBalance(0);
-      setForm(f => ({ ...f, currentBalance: '' }));
-    } finally {
-      setBalanceLoading(false);
     }
-  };
+  }, [form.organizationId, form.expenseDate]);
+
+ const fetchCurrentBalance = async (organizationId, expenseDate) => {
+   if (!organizationId || !expenseDate || getExpenseType() !== "CASH-OUT") {
+     setForm((f) => ({ ...f, currentBalance: "" }));
+     setFetchedBalance(0);
+     return;
+   }
+
+   setBalanceLoading(true);
+
+   try {
+     const bearerToken = localStorage.getItem("token");
+
+     const response = await fetch(
+       `${APP_SERVER_URL_PREFIX}/expenses/current_balance?organizationId=${organizationId}&createdDate=${expenseDate}`,
+       {
+         headers: {
+           Authorization: `Bearer ${bearerToken}`,
+           "Content-Type": "application/json",
+         },
+       }
+     );
+
+     if (!response.ok) throw new Error("Balance fetch failed");
+
+     const balanceData = await response.json();
+
+     let balance = 0;
+     if (balanceData.totalBalance != null) {
+       balance = balanceData.totalBalance;
+     } else if (
+       balanceData.cashInAmt != null &&
+       balanceData.cashOutAmt != null
+     ) {
+       balance = balanceData.cashInAmt - balanceData.cashOutAmt;
+     } else if (balanceData.balance != null) {
+       balance = balanceData.balance;
+     }
+
+     balance = Number(balance) || 0;
+
+     setFetchedBalance(balance);
+     setForm((f) => ({
+       ...f,
+       currentBalance: balance.toString(),
+     }));
+   } catch (err) {
+     setFetchedBalance(0);
+     setForm((f) => ({ ...f, currentBalance: "" }));
+     setError("Failed to fetch current balance");
+   } finally {
+     setBalanceLoading(false);
+   }
+ };
+
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
-    if (type === 'file') {
+    if (type === "file") {
       const file = files[0];
       setForm((f) => ({ ...f, file }));
-
-      if (file && file.type.startsWith('image/')) {
-        const url = URL.createObjectURL(file);
-        setPreviewUrl(url);
-      } else {
-        setPreviewUrl('');
-      }
-    } else if (name === 'organizationId') {
-      const selectedOrg = organizations.find(org => String(org.id) === String(value));
-      const orgName = e.currentTarget.options[e.currentTarget.selectedIndex].text;
-      const updatedForm = { ...form, organizationId: value, organizationName: orgName };
-      setForm(updatedForm);
-
-      // Fetch balance automatically when organization changes - Only for CASH-OUT
-      if (value && form.transactionDate && getExpenseType() === 'CASH-OUT') {
-        fetchCurrentBalance(value, form.transactionDate);
-      }
-    } else if (name === 'transactionDate') {
-      const updatedForm = { ...form, [name]: value };
-      setForm(updatedForm);
-
-      // Fetch balance automatically when date changes - Only for CASH-OUT
-      if (form.organizationId && value && getExpenseType() === 'CASH-OUT') {
-        fetchCurrentBalance(form.organizationId, value);
-      }
-    } else if (name === 'amount') {
-      // Validate amount doesn't exceed current balance for CASH-OUT
-      const amountValue = Number(value);
-      const currentBalanceValue = Number(form.currentBalance) || fetchedBalance;
-
-      if (getExpenseType() === 'CASH-OUT' && amountValue > currentBalanceValue) {
-        setError(`Amount cannot exceed current balance of ₹${currentBalanceValue.toLocaleString()}`);
-      } else {
-        setError('');
-      }
-      setForm((f) => ({ ...f, [name]: value }));
-    } else {
-      setForm((f) => ({ ...f, [name]: value }));
+      return;
     }
+
+    // Organization change
+    if (name === "organizationId") {
+      const orgName =
+        e.currentTarget.options[e.currentTarget.selectedIndex].text;
+
+      setForm((f) => ({
+        ...f,
+        organizationId: value,
+        organizationName: orgName,
+        currentBalance: "",
+      }));
+      return;
+    }
+
+    // Expense Date change (THIS is used for balance)
+    if (name === "expenseDate") {
+      setForm((f) => ({
+        ...f,
+        expenseDate: value,
+        currentBalance: "",
+      }));
+      return;
+    }
+
+    // Amount validation
+    if (name === "amount") {
+      const amountValue = Number(value);
+      const balanceValue = Number(form.currentBalance) || fetchedBalance;
+
+      if (getExpenseType() === "CASH-OUT" && amountValue > balanceValue) {
+        setError(
+          `Amount cannot exceed current balance of ₹${balanceValue.toLocaleString()}`
+        );
+      }
+
+      setForm((f) => ({ ...f, amount: value }));
+      return;
+    }
+
+    setForm((f) => ({ ...f, [name]: value }));
   };
 
-  // Add a button to fetch balance manually - Only for CASH-OUT
+
   const handleFetchBalance = () => {
-    if (form.organizationId && form.transactionDate && getExpenseType() === 'CASH-OUT') {
-      fetchCurrentBalance(form.organizationId, form.transactionDate);
-    } else if (getExpenseType() !== 'CASH-OUT') {
-      setError('Current balance is only available for CASH-OUT transactions');
+    if (getExpenseType() !== "CASH-OUT") {
+      setError("Current balance is only available for CASH-OUT transactions");
+      return;
+    }
+
+    if (!form.organizationId && !form.transactionDate) {
+      setError("Please select organization and transaction date first");
+    } else if (!form.organizationId) {
+      setError("Please select organization first");
+    } else if (!form.transactionDate) {
+      setError("Please select transaction date first");
     } else {
-      setError('Please select organization and transaction date first');
+      fetchCurrentBalance(form.organizationId, form.transactionDate);
     }
   };
 
@@ -189,20 +240,25 @@ function CreateExpense() {
     let mounted = true;
     const expenseType = getExpenseType();
 
-    setForm(f => ({ ...f, type: expenseType }));
-    const bearerToken = localStorage.getItem('token');
+    setForm((f) => ({ ...f, type: expenseType }));
+    const bearerToken = localStorage.getItem("token");
     fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`, {
-      headers: { 'Authorization': `Bearer ${bearerToken}` }
+      headers: { Authorization: `Bearer ${bearerToken}` },
     })
-      .then(res => {
-        if (!res.ok) throw new Error('no masters');
+      .then((res) => {
+        if (!res.ok) throw new Error("no masters");
         return res.json();
       })
-      .then(json => {
-        const list = (json._embedded && json._embedded.expenseTypeMasters) || json._embedded || json || [];
+      .then((json) => {
+        const list =
+          (json._embedded && json._embedded.expenseTypeMasters) ||
+          json._embedded ||
+          json ||
+          [];
         const vals = list
-          .filter(m => m.type === expenseType)
-          .map(m => (m.subtype || m.subType)).filter(Boolean);
+          .filter((m) => m.type === expenseType)
+          .map((m) => m.subtype || m.subType)
+          .filter(Boolean);
         const uniq = Array.from(new Set(vals));
         if (mounted) setSubtypes(uniq);
       })
@@ -210,60 +266,64 @@ function CreateExpense() {
         // ignore failures
       });
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-      method: "GET", // or POST, PUT, DELETE, etc.
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         if (mounted) setOrganizations(orgs);
       })
-      .catch(() => { });
+      .catch(() => {});
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [location.pathname, location.search]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     // Enhanced validation
     if (!form.organizationId) {
-      setError('Please select an organization');
+      setError("Please select an organization");
       return;
     }
     if (!form.transactionDate) {
-      setError('Please enter a transaction date');
+      setError("Please enter a transaction date");
       return;
     }
     if (!form.amount || Number(form.amount) <= 0) {
-      setError('Please enter a valid amount');
+      setError("Please enter a valid amount");
       return;
     }
 
     // Validate current balance field only for CASH-OUT
-    if (getExpenseType() === 'CASH-OUT') {
+    if (getExpenseType() === "CASH-OUT") {
       if (!form.currentBalance || Number(form.currentBalance) < 0) {
-        setError('Please enter a valid current balance');
+        setError("Please enter a valid current balance");
         return;
       }
 
       // Validate amount doesn't exceed current balance for CASH-OUT
       const currentBalanceValue = Number(form.currentBalance);
       if (Number(form.amount) > currentBalanceValue) {
-        setError(`Amount cannot exceed current balance of ₹${currentBalanceValue.toLocaleString()}`);
+        setError(
+          `Amount cannot exceed current balance of ₹${currentBalanceValue.toLocaleString()}`
+        );
         return;
       }
     }
 
     if (subtypes.length > 0 && !form.subtype) {
-      setError('Please select an expense category');
+      setError("Please select an expense category");
       return;
     }
 
@@ -271,14 +331,21 @@ function CreateExpense() {
     try {
       let storedUser = null;
       try {
-        storedUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        storedUser = JSON.parse(localStorage.getItem("currentUser") || "null");
       } catch (e) {
         storedUser = null;
       }
 
-      const createdByUserId = storedUser && (storedUser.id || storedUser.userId) ? (storedUser.id || storedUser.userId) : null;
-      const createdByUser = storedUser && (storedUser.name || storedUser.username || storedUser.email) ? (storedUser.name || storedUser.username || storedUser.email) : (localStorage.getItem('rememberedEmail') || '');
-      const createdDate = '';
+      const createdByUserId =
+        storedUser && (storedUser.id || storedUser.userId)
+          ? storedUser.id || storedUser.userId
+          : null;
+      const createdByUser =
+        storedUser &&
+        (storedUser.name || storedUser.username || storedUser.email)
+          ? storedUser.name || storedUser.username || storedUser.email
+          : localStorage.getItem("rememberedEmail") || "";
+      const createdDate = "";
 
       const expensePayload = {
         transactionDate: form.transactionDate,
@@ -290,38 +357,42 @@ function CreateExpense() {
         organizationName: form.organizationName || undefined,
         createdByUserId,
         createdByUser,
-        createdDate: form.expenseDate,        
+        createdDate: form.expenseDate,
         referenceNumber: form.referenceNumber || undefined,
-        currentBalance: getExpenseType() === 'CASH-OUT' ? Number(form.currentBalance) : undefined // Only include for CASH-OUT
+        currentBalance:
+          getExpenseType() === "CASH-OUT"
+            ? Number(form.currentBalance)
+            : undefined, // Only include for CASH-OUT
       };
 
       const formData = new FormData();
-      formData.append('expense', new Blob([JSON.stringify(expensePayload)], { type: 'application/json' }));
-      if (form.file) formData.append('file', form.file);
+      formData.append(
+        "expense",
+        new Blob([JSON.stringify(expensePayload)], { type: "application/json" })
+      );
+      if (form.file) formData.append("file", form.file);
 
-      const bearerToken = localStorage.getItem('token');
+      const bearerToken = localStorage.getItem("token");
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
+        headers: { Authorization: `Bearer ${bearerToken}` },
       });
-      if (!res.ok) {
-        const data = await res.text();
-        setError(data);
-      } else {
-         setSuccess('Expense created successfully! Redirecting...');
-          setTimeout(() => {
-        if (form.type === 'CASH-IN') {
-          navigate('/pettycash/expenses-inward');
-        } else if (form.type === 'CASH-OUT') {
-          navigate('/pettycash/expenses-outward');
+
+      if (!res.ok) throw new Error("Failed to create expense");
+
+      setSuccess("Expense created successfully! Redirecting...");
+      setTimeout(() => {
+        if (form.type === "CASH-IN") {
+          navigate("/pettycash/expenses-inward");
+        } else if (form.type === "CASH-OUT") {
+          navigate("/pettycash/expenses-outward");
         } else {
-          navigate('/pettycash/expenses');
+          navigate("/pettycash/expenses");
         }
       }, 2000);
-      }
     } catch (err) {
-      setError('Failed to create expense. Please try again.');
+      setError("Failed to create expense. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -330,35 +401,35 @@ function CreateExpense() {
   const clearForm = () => {
     setForm({
       transactionDate: new Date().toISOString().slice(0, 10),
-      amount: '',
-      employeeId: '',
-      subtype: '',
+      amount: "",
+      employeeId: "",
+      subtype: "",
       type: getExpenseType(),
-      expenseDate: '',
-      referenceNumber: '',
+      expenseDate: "",
+      referenceNumber: "",
       file: null,
-      organizationId: '',
-      organizationName: '',
-      currentBalance: ''
+      organizationId: "",
+      organizationName: "",
+      currentBalance: "",
     });
-    setPreviewUrl('');
-    setError('');
-    setSuccess('');
+    setPreviewUrl("");
+    setError("");
+    setSuccess("");
     setFetchedBalance(0);
   };
 
   const getCategoryIcon = (category) => {
     const icons = {
-      'SALARY': '💼',
-      'TRAVEL': '✈️',
-      'OFFICE_SUPPLIES': '📦',
-      'UTILITIES': '💡',
-      'MAINTENANCE': '🔧',
-      'MEALS': '🍽️',
-      'TRANSPORT': '🚗',
-      'OTHER': '📝'
+      SALARY: "💼",
+      TRAVEL: "✈️",
+      OFFICE_SUPPLIES: "📦",
+      UTILITIES: "💡",
+      MAINTENANCE: "🔧",
+      MEALS: "🍽️",
+      TRANSPORT: "🚗",
+      OTHER: "📝",
     };
-    return icons[category] || '💰';
+    return icons[category] || "💰";
   };
 
   const formatBalance = (balance) => {
@@ -366,7 +437,7 @@ function CreateExpense() {
   };
 
   // Check if current balance section should be shown
-  const showCurrentBalanceSection = getExpenseType() === 'CASH-OUT';
+  const showCurrentBalanceSection = getExpenseType() === "CASH-OUT";
 
   return (
     <div className="page-container">
@@ -441,6 +512,23 @@ function CreateExpense() {
                     </select>
                   </div>
 
+                  <div className="form-group">
+                    <label className="form-label required">
+                      Transaction Date
+                    </label>
+                    <div className="date-input-wrapper">
+                      <input
+                        name="transactionDate"
+                        type="date"
+                        value={form.transactionDate}
+                        onChange={handleChange}
+                        className="form-input"
+                        required
+                        readOnly
+                      />
+                    </div>
+                  </div>
+
                   {/* Current Balance Field - Only for CASH-OUT */}
                   {showCurrentBalanceSection && (
                     <div className="form-group">
@@ -480,6 +568,11 @@ function CreateExpense() {
                             )}
                           </button>
                         </div>
+                        {balanceLoading && (
+                          <div className="balance-loading-text">
+                            Fetching balance...
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -551,19 +644,40 @@ function CreateExpense() {
                   )}
 
                   <div className="form-group">
-                    <label className="form-label">Expense Date</label>
-                    <div className="date-input-wrapper">
-                      {/* <span className="input-icon" style={{ marginLeft: "-10px" }}>📅</span> */}
-                      <input
-                        name="expenseDate"
-                        type="date"
-                        value={form.createdDate}
-                        onChange={handleChange}
-                        className="form-input"
-                        required
-                      />
-                    </div>
+                    <label className="form-label required">Expense Date</label>
+                    <input
+                      name="expenseDate"
+                      type="date"
+                      value={form.expenseDate}
+                      onChange={handleChange}
+                      className="form-input"
+                      required
+                    />
                   </div>
+
+                  {/* <div className="form-group">
+                    <label className="form-label">Reference Number</label>
+                    <input
+                      name="referenceNumber"
+                      type="text"
+                      value={form.referenceNumber}
+                      onChange={handleChange}
+                      className="form-input"
+                      placeholder="Enter reference number"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Employee ID</label>
+                    <input
+                      name="employeeId"
+                      type="text"
+                      value={form.employeeId}
+                      onChange={handleChange}
+                      className="form-input"
+                      placeholder="Enter employee ID"
+                    />
+                  </div> */}
                 </div>
               </div>
 
@@ -653,23 +767,14 @@ function CreateExpense() {
             </div>
 
             <div className="form-actions1">
-              {/* <button
+              <button
                 type="button"
-                className="btn-secondary1"
+                className="btn-secondary"
                 onClick={clearForm}
                 disabled={loading}
               >
                 <span className="btn-icon">🗑️</span>
                 Clear Form
-              </button> */}
-              <button
-                type="button"
-                className="btn-outline"
-                onClick={() => navigate(-1)}
-                disabled={loading}
-              >
-                <span className="btn-icon">←</span>
-                Cancel
               </button>
 
               <button
