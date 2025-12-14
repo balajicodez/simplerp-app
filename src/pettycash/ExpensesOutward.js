@@ -427,30 +427,14 @@ const isToday = (dateString) => {
                         </td>
                        <td className="actions-cell">
   <div className="action-buttons">
-    {isToday(item.createdDate) ? (
-      // <button 
-      //   className="btn-outline edit-btn"
-      //   onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
-      //   title="Edit expense"
-      // >
-      //   ✏️
-      // </button>
-      <button 
-        className="btn-outline edit-btn disabled"
-        disabled
-        title="Can only edit today's transactions"
-      >
-        🔒
-      </button>
-    ) : (
-      <button 
-        className="btn-outline edit-btn disabled"
-        disabled
-        title="Can only edit today's transactions"
-      >
-        🔒
-      </button>
-    )}
+   
+       <button 
+         className="btn-outline edit-btn"
+         onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
+         title="Edit expense"   >
+         ✏️
+       </button>
+     
     <button 
       className="btn-outline view-btn"
       onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}`)}
