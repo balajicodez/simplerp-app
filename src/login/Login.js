@@ -16,8 +16,6 @@ function Login() {
 
     const validate = () => {
         if (!email) return 'Email is required';
-        const re = /\S+@\S+\.\S+/;
-        if (!re.test(email)) return 'Please enter a valid email address';
         if (!password) return 'Password is required';
         return null;
     };
