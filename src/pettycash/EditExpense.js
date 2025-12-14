@@ -263,23 +263,7 @@ function EditExpense() {
                           );
                         })}
                       </select>
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label required">Transaction Date</label>
-                      <div className="date-input-wrapper">
-                        <span className="input-icon" style={{marginLeft:"-10px"}}>📅</span>
-                        <input 
-                          name="transactionDate" 
-                          type="date" 
-                          value={form.transactionDate} 
-                          onChange={handleChange} 
-                          className="form-input"
-                          required
-                          disabled={loading}
-                        />
-                      </div>
-                    </div>
+                    </div>           
                     
                     <div className="form-group">
                       <label className="form-label required">Amount (₹)</label>
@@ -362,13 +346,7 @@ function EditExpense() {
                       <span className="summary-value">
                         {form.organizationName || 'Not selected'}
                       </span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">Transaction Date:</span>
-                      <span className="summary-value">
-                        {form.transactionDate || 'Not entered'}
-                      </span>
-                    </div>
+                    </div>                    
                     <div className="summary-item">
                       <span className="summary-label">Amount:</span>
                       <span className="summary-value amount">

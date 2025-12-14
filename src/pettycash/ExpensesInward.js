@@ -335,7 +335,6 @@ const isToday = (dateString) => {
                       Created Date 
                     </th>
                     <th>Receipt</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -388,26 +387,9 @@ const isToday = (dateString) => {
                               👁️ View
                             </button>
                           ) : (
-                            <span className="no-receipt">No receipt</span>
+                            <span className="no-receipt">(No receipt)</span>
                           )}
                         </td>
-                       <td className="actions-cell">
-                        {isToday(item.createdDate) ? (
-                          <button 
-                            // className=" edit-disabled"
-                            // onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
-                          >
-                            {/* ✏️ Edit */}
-                            <span className="edit-disabled" title="Can only edit today's transactions">
-                            🔒 Locked
-                          </span>
-                          </button>
-                        ) : (
-                          <span className="edit-disabled" title="Can only edit today's transactions">
-                            🔒 Locked
-                          </span>
-                        )}
-                      </td>
                       </tr>
                     ))
                   )}
