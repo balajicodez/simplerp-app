@@ -1622,7 +1622,7 @@ function DayClosingReport() {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: '24px',
+      // marginBottom: '24px',
       padding: '6px 0',
       borderBottom: '1px solid #e2e8f0',
       gap: '20px',
@@ -1667,7 +1667,7 @@ function DayClosingReport() {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
       gap: '20px',
-      marginBottom: '24px',
+      marginBottom: '14px',
       padding: '0 16px',
     },
 
@@ -1675,7 +1675,7 @@ function DayClosingReport() {
       background: 'white',
       padding: '5px',
       borderRadius: '12px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      // boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
       textAlign: 'center',
       border: '1px solid #e2e8f0'
     },
@@ -1701,20 +1701,21 @@ function DayClosingReport() {
       background: 'white',
       borderRadius: '12px',
       overflow: 'auto',
-      height: '400px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      height: '200px',
+      // boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
       marginBottom: '24px',
+      overflowY:"auto"
     },
     table: {
       width: '100%',
       borderCollapse: 'collapse',
     },
     tableHeader: {
-      background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
+      background: "#3c93c1",
       color: 'white'
     },
     tableHeaderCell: {
-      padding: '16px 12px',
+      padding: '6px 8px',
       textAlign: 'left',
       fontWeight: '600',
       fontSize: '14px',
@@ -1745,7 +1746,7 @@ function DayClosingReport() {
       border: '1px solid #e2e8f0',
       borderRadius: '12px',
       background: 'white',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      // boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     },
 
     successMessage: {
@@ -1903,7 +1904,7 @@ function DayClosingReport() {
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Organization</label>
+            {/* <label className="form-label">Organization</label> */}
             <select
               value={organizationId}
               // onChange={handleChange}
@@ -1922,7 +1923,8 @@ function DayClosingReport() {
             </select>
           </div>
           <button
-            style={styles.generateButton}
+          className='btn-primary1'
+            // style={styles.generateButton}
             onClick={handleGenerateReport}
             onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
             onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
@@ -1981,31 +1983,32 @@ function DayClosingReport() {
         ) : (
           <>
             <div style={styles.summaryContainer}>
-              <div style={{...styles.summaryCard, ...styles.cashInCard}}>
+              <div style={{...styles.summaryCard,}}>
                 <div style={{color: '#2563eb', fontWeight: '600', fontSize: '14px'}}>Total Cash-In</div>
                 <div style={{...styles.summaryAmount, color: '#2563eb'}}>
                   {safeToLocaleString(totals.cashIn + totals.expenseCashIn + totals.handloanCashIn)}
                 </div>
-                <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
+                
+                {/* <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
                   Petty Cash: {safeToLocaleString(totals.cashIn)}
                 </div>
                 <div style={{fontSize: '12px', color: '#64748b'}}>
                   Expenses: {safeToLocaleString(totals.expenseCashIn)}
-                </div>
+                </div> */}
               </div>
-              <div style={{...styles.summaryCard, ...styles.cashOutCard}}>
+              <div style={{...styles.summaryCard, }}>
                 <div style={{color: '#dc2626', fontWeight: '600', fontSize: '14px'}}>Total Cash-Out</div>
                 <div style={{...styles.summaryAmount, color: '#dc2626'}}>
                   {safeToLocaleString(totals.cashOut + totals.expenseCashOut + totals.handloanCashOut)}
                 </div>
-                <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
+                {/* <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
                   Petty Cash: {safeToLocaleString(totals.cashOut)}
                 </div>
                 <div style={{fontSize: '12px', color: '#64748b'}}>
                   Expenses: {safeToLocaleString(totals.expenseCashOut)}
-                </div>
+                </div> */}
               </div>
-              <div style={{...styles.summaryCard, ...styles.netBalanceCard}}>
+              <div style={{...styles.summaryCard, }}>
                 <div style={{color: '#059669', fontWeight: '600', fontSize: '14px'}}>Net Balance</div>
                 <div style={{...styles.summaryAmount, color: '#059669'}}>
                   {safeToLocaleString(
@@ -2013,9 +2016,9 @@ function DayClosingReport() {
                     (totals.cashOut + totals.expenseCashOut + totals.handloanCashOut)
                   )}
                 </div>
-                <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
+                {/* <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
                   Including Petty Cash, Expenses & Handloans
-                </div>
+                </div> */}
               </div>
             </div>
 

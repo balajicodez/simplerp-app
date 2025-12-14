@@ -87,7 +87,7 @@ function CreateExpense() {
     try {
       const bearerToken = localStorage.getItem('token');
       const response = await fetch(
-        `${APP_SERVER_URL_PREFIX}/expenses/balance?organizationId=${organizationId}&createdDate=${date}`,
+        `${APP_SERVER_URL_PREFIX}/expenses/current_balance?organizationId=${organizationId}&createdDate=${date}`,
         {
           headers: { 'Authorization': `Bearer ${bearerToken}` }
         }
@@ -371,31 +371,29 @@ function CreateExpense() {
     <div className="page-container">
       <Sidebar isOpen={true} />
       <PageCard title={getPageTitle()}>
-
         {/* Enhanced Header Section */}
-      
-          <div className="dashboard-header1"> 
-            <div style={{display:"flex",justifyContent:"space-around"}}>
-              <div className="stat-card">
-                <span className="stat-number">{organizations.length}</span>
-                <span className="stat-label">Organizations</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-number">{subtypes.length}</span>
-                <span className="stat-label">Categories</span>
-              </div>
-              {showCurrentBalanceSection && form.currentBalance && (
-                <div className="stat-badge balance-badge">
-                  <span className="stat-number">
-                    {formatBalance(form.currentBalance)}
-                  </span>
-                  <span className="stat-label">Current Balance</span>
-                </div>
-              )}
+
+        <div className="dashboard-header1">
+          <div style={{ display: "flex", justifyContent: "space-around" }}>
+            <div className="stat-card">
+              <span className="stat-number">{organizations.length}</span>
+              <span className="stat-label">Organizations</span>
             </div>
+            <div className="stat-card">
+              <span className="stat-number">{subtypes.length}</span>
+              <span className="stat-label">Categories</span>
+            </div>
+            {showCurrentBalanceSection && form.currentBalance && (
+              <div className="stat-badge balance-badge">
+                <span className="stat-number">
+                  {formatBalance(form.currentBalance)}
+                </span>
+                <span className="stat-label">Current Balance</span>
+              </div>
+            )}
+          </div>
         </div>
 
-       
         <div className="create-expense-form">
           {error && (
             <div className="alert alert-error">
@@ -417,13 +415,7 @@ function CreateExpense() {
 
           <form onSubmit={handleSubmit} encType="multipart/form-data">
             <div className="form-sections">
-
-            
-              <div className="form-section">
-                <h3 className="section-title">
-                  <span className="section-icon">🏢</span>
-                  Organization & Basic Information
-                </h3>
+              <div className="form-section1">
                 <div className=" enhanced-grid1">
                   <div className="form-group">
                     <label className="form-label required">Branch</label>
@@ -435,21 +427,25 @@ function CreateExpense() {
                       required
                     >
                       <option value="">Select branch</option>
-                      {organizations.map(org => (
+                      {organizations.map((org) => (
                         <option
                           key={org.id || org._links?.self?.href}
-                          value={org.id || (org._links?.self?.href.split('/').pop())}
+                          value={
+                            org.id || org._links?.self?.href.split("/").pop()
+                          }
                         >
                           {org.name}
                         </option>
                       ))}
                     </select>
-                  </div>                 
+                  </div>
 
                   {/* Current Balance Field - Only for CASH-OUT */}
                   {showCurrentBalanceSection && (
                     <div className="form-group">
-                      <label className="form-label required">Current Balance (₹)</label>
+                      <label className="form-label required">
+                        Current Balance (₹)
+                      </label>
                       <div className="balance-input-wrapper">
                         <div className="balance-input-container">
                           <span className="currency-symbol">₹</span>
@@ -469,18 +465,21 @@ function CreateExpense() {
                             type="button"
                             className="fetch-balance-btn"
                             onClick={handleFetchBalance}
-                            disabled={!form.organizationId || !form.transactionDate || balanceLoading}
+                            disabled={
+                              !form.organizationId ||
+                              !form.transactionDate ||
+                              balanceLoading
+                            }
                             title="Refresh balance"
                           >
                             {balanceLoading ? (
                               <div className="loading-spinner-tiny"></div>
                             ) : (
-                              '🔄'
+                              "🔄"
                             )}
                           </button>
                         </div>
                       </div>
-                      
                     </div>
                   )}
 
@@ -502,13 +501,21 @@ function CreateExpense() {
                     </div>
                     {showCurrentBalanceSection && form.currentBalance && (
                       <div className="balance-validation">
-                        {form.amount && Number(form.amount) > Number(form.currentBalance) ? (
+                        {form.amount &&
+                        Number(form.amount) > Number(form.currentBalance) ? (
                           <div className="balance-error">
-                            ❌ Amount exceeds current balance by ₹{(Number(form.amount) - Number(form.currentBalance)).toLocaleString()}
+                            ❌ Amount exceeds current balance by ₹
+                            {(
+                              Number(form.amount) - Number(form.currentBalance)
+                            ).toLocaleString()}
                           </div>
-                        ) : form.amount && Number(form.amount) <= Number(form.currentBalance) ? (
+                        ) : form.amount &&
+                          Number(form.amount) <= Number(form.currentBalance) ? (
                           <div className="balance-success">
-                            ✅ Available balance after expense: ₹{(Number(form.currentBalance) - Number(form.amount)).toLocaleString()}
+                            ✅ Available balance after expense: ₹
+                            {(
+                              Number(form.currentBalance) - Number(form.amount)
+                            ).toLocaleString()}
                           </div>
                         ) : null}
                       </div>
@@ -517,7 +524,9 @@ function CreateExpense() {
 
                   {subtypes.length > 0 && (
                     <div className="form-group">
-                      <label className="form-label required">Expense Category</label>
+                      <label className="form-label required">
+                        Expense Category
+                      </label>
                       <select
                         name="subtype"
                         value={form.subtype}
@@ -529,7 +538,9 @@ function CreateExpense() {
                         {subtypes.map((s, i) => (
                           <option key={i} value={s}>
                             <span className="category-option">
-                              <span className="category-icon">{getCategoryIcon(s)}</span>
+                              <span className="category-icon">
+                                {getCategoryIcon(s)}
+                              </span>
                               {s}
                             </span>
                           </option>
@@ -541,7 +552,7 @@ function CreateExpense() {
                   <div className="form-group">
                     <label className="form-label">Expense Date</label>
                     <div className="date-input-wrapper">
-                      <span className="input-icon" style={{ marginLeft: "-10px" }}>📅</span>
+                      {/* <span className="input-icon" style={{ marginLeft: "-10px" }}>📅</span> */}
                       <input
                         name="expenseDate"
                         type="date"
@@ -556,13 +567,13 @@ function CreateExpense() {
               </div>
 
               {/* File Upload Section */}
-              <div className="form-section">
+              <div className="form-section1">
                 <h3 className="section-title">
                   <span className="section-icon">📎</span>
                   Receipt Attachment
                 </h3>
                 <div className="file-upload-section">
-                  <div className={`file-upload-area ${form.file ? 'has-file' : ''}`}>
+                  <div className={`file-upload-area `}>
                     <input
                       name="file"
                       type="file"
@@ -571,24 +582,19 @@ function CreateExpense() {
                       id="file-upload"
                       accept="image/*,.pdf,.doc,.docx,.xlsx"
                     />
-                    <label htmlFor="file-upload" className="file-upload-label">
-                      {form.file ? (
-                        <>
-                          <div className="upload-icon">✅</div>
-                          <div className="upload-text">
-                            <strong>File Selected</strong>
-                            <span>Click to change file</span>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="upload-icon">📁<strong style={{ fontSize: "20px" }}>Choose file</strong></div>
-                          <div className="upload-text">
-                            {/* <span>or drag and drop here</span>
+                    <label htmlFor="file-upload">
+                      <>
+                        <div className="upload-icon">
+                          📁
+                          <strong style={{ fontSize: "20px" }}>
+                            Choose file
+                          </strong>
+                        </div>
+                        <div className="upload-text">
+                          {/* <span>or drag and drop here</span>
                             <small>Supports: JPG, PNG, PDF, DOC, XLSX (Max: 10MB)</small> */}
-                          </div>
-                        </>
-                      )}
+                        </div>
+                      </>
                     </label>
                   </div>
 
@@ -596,7 +602,7 @@ function CreateExpense() {
                     <div className="file-preview">
                       <div className="file-info">
                         <div className="file-icon">
-                          {form.file.type.startsWith('image/') ? '🖼️' : '📄'}
+                          {form.file.type.startsWith("image/") ? "🖼️" : "📄"}
                         </div>
                         <div className="file-details">
                           <div className="file-name">{form.file.name}</div>
@@ -611,8 +617,8 @@ function CreateExpense() {
                           type="button"
                           className="remove-file"
                           onClick={() => {
-                            setForm(f => ({ ...f, file: null }));
-                            setPreviewUrl('');
+                            setForm((f) => ({ ...f, file: null }));
+                            setPreviewUrl("");
                           }}
                           title="Remove file"
                         >
@@ -627,12 +633,16 @@ function CreateExpense() {
                             <button
                               type="button"
                               className="preview-close"
-                              onClick={() => setPreviewUrl('')}
+                              onClick={() => setPreviewUrl("")}
                             >
                               ×
                             </button>
                           </div>
-                          <img src={previewUrl} alt="Preview" className="preview-image" />
+                          <img
+                            src={previewUrl}
+                            alt="Preview"
+                            className="preview-image"
+                          />
                         </div>
                       )}
                     </div>
@@ -651,38 +661,39 @@ function CreateExpense() {
                 <span className="btn-icon">🗑️</span>
                 Clear Form
               </button> */}
-                <button
-                  type="button"
-                  className="btn-outline"
-                  onClick={() => navigate(-1)}
-                  disabled={loading}
-                >
-                  <span className="btn-icon">←</span>
-                  Cancel
-                </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => navigate(-1)}
+                disabled={loading}
+              >
+                <span className="btn-icon">←</span>
+                Cancel
+              </button>
 
-                <button
-                  type="submit"
-                  className={`btn-primary2 `}
-                  disabled={loading ||
-                    (showCurrentBalanceSection &&
-                      form.amount &&
-                      form.currentBalance &&
-                      Number(form.amount) > Number(form.currentBalance))
-                  }
-                >
-                  {loading ? (
-                    <>
-                      <div className="loading-spinner-small"></div>
-                      Creating Expense...
-                    </>
-                  ) : (
-                    <>
-                     Save Inward
-                    </>
-                  )}
-                </button>
-             
+              <button
+                type="submit"
+                className={`btn-primary1 `}
+                disabled={
+                  loading ||
+                  (showCurrentBalanceSection &&
+                    form.amount &&
+                    form.currentBalance &&
+                    Number(form.amount) > Number(form.currentBalance))
+                }
+              >
+                {loading ? (
+                  <>
+                    <div className="loading-spinner-small"></div>
+                    Creating Expense...
+                  </>
+                ) : (
+                  <>
+                    <span className="btn-icon">💾</span>
+                    Save
+                  </>
+                )}
+              </button>
             </div>
           </form>
         </div>

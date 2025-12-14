@@ -195,9 +195,9 @@
 /* ===== CREATE EMPLOYEE FORM STYLES ===== */
 .create-employee-form {
   background: white;
-  border-radius: 20px;
+  border-radius: 5px;
   padding: 0;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  /* box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); */
   overflow: hidden;
 }
 
@@ -207,12 +207,12 @@
   gap: 24px;
 }
 
-.form-section {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 28px;
-  margin: 0;
+.form-section1 {
+  background-color:"#f8fafc";
+  border: 1px solid #e2e8f0;   
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 7px;
   position: relative;
   transition: all 0.3s ease;
 }

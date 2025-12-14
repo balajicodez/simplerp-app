@@ -53,8 +53,8 @@
   font-size: 1.25rem;
   font-weight: 600;
   color: #2d3748;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
+  margin-bottom: 10px;
+  padding-bottom: 2px;
   border-bottom: 2px solid #667eea;
   display: inline-block;
 }
@@ -130,7 +130,7 @@
 
 .balance-card {
   background: white;
-  padding: 20px;
+  padding: 10px;
   border-radius: 8px;
   border: 2px solid #e2e8f0;
   text-align: center;
@@ -179,8 +179,8 @@
 }
 
 .denomination-table th {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background-color:#fff ;
+  color: #3c93c1;
   padding: 12px 8px;
   text-align: center;
   font-weight: 600;
@@ -222,7 +222,7 @@
 
 .denom-input:focus {
   outline: none;
-  border-color: #667eea;
+  /* border-color: #667eea; */
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
 }
 
@@ -251,14 +251,14 @@
 }
 
 .denomination-total {
-  background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+  /* background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%); */
   font-weight: 700;
 }
 
 .denomination-total td {
-  padding: 12px 8px;
+  padding: 2px 8px;
   border-bottom: none;
-  border-top: 2px solid #667eea;
+  /* border-top: 2px solid #667eea; */
 }
 
 .denomination-total strong {
@@ -274,10 +274,10 @@
   border-top: 1px solid #e2e8f0;
 }
 
-.submit-btn {
+.submit-btn1 {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 16px 32px;
+  padding: 10px 12px;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
@@ -881,7 +881,7 @@
 }
 
 .denomination-total td {
-  padding: 16px 10px;
+  padding: 6px 10px;
   border-bottom: none;
   color: white;
   font-size: 1rem;
@@ -1021,7 +1021,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 15px;
-  padding-top: 15px;
+  padding-top: 5px;
   border-top: 2px solid #dee2e6;
 }
 

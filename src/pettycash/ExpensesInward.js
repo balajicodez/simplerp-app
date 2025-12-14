@@ -32,6 +32,7 @@ function ExpensesInward() {
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
       const json = await res.json();
+      console.log(json);
       const list = json.content || json._embedded?.expenses || [];
       setItems(list.filter(e => e.expenseType === 'CASH-IN'));
       setLinks(json._links || {});
@@ -198,20 +199,26 @@ const isToday = (dateString) => {
       <PageCard title="Cash Inward Management">
         <div className="dashboard-header1">
           <div className="header-content">
-          <div></div>
-            <button 
-              className="btn-primary1 "
-              onClick={() => navigate('/pettycash/expenses/create?type=CASH-IN')}
+            <div></div>
+            <button
+              className="btn-primary1"
+              onClick={() =>
+                navigate("/pettycash/expenses/create?type=CASH-IN")
+              }
             >
-              + Create New Inward
+              {" "}
+              <span className="btn-icon">+</span>
+              Create New Inward
             </button>
           </div>
-          
+
           <div className="stats-grid1">
             <div className="stat-card">
               {/* <div className="stat-icon">💰</div> */}
               <div className="stat-content">
-                <div className="stat-value">₹{totalAmount.toLocaleString()}</div>
+                <div className="stat-value">
+                  ₹{totalAmount.toLocaleString()}
+                </div>
                 <div className="stat-label">Total Inward</div>
               </div>
             </div>
@@ -244,28 +251,27 @@ const isToday = (dateString) => {
                 className="search-input"
               />
               {searchTerm && (
-                <button 
+                <button
                   className="clear-search"
-                  onClick={() => setSearchTerm('')}
+                  onClick={() => setSearchTerm("")}
                   title="Clear search"
                 >
                   ×
                 </button>
               )}
             </div>
-            
+
             <div className="filter-group">
-             
-              <select 
-                value={selectedOrgId} 
+              <select
+                value={selectedOrgId}
                 onChange={handleOrganizationChange}
                 className="filter-select"
               >
                 <option value="">All Organizations</option>
-                {organizations.map(org => (
-                  <option 
-                    key={org.id || org._links?.self?.href} 
-                    value={org.id || (org._links?.self?.href.split('/').pop())}
+                {organizations.map((org) => (
+                  <option
+                    key={org.id || org._links?.self?.href}
+                    value={org.id || org._links?.self?.href.split("/").pop()}
                   >
                     {org.name}
                   </option>
@@ -275,9 +281,11 @@ const isToday = (dateString) => {
 
             <div className="filter-group">
               {/* <label>Items per page</label> */}
-              <select 
+              <select
                 value={sizeParam}
-                onChange={(e) => setSearchParams({ page: 0, size: e.target.value })}
+                onChange={(e) =>
+                  setSearchParams({ page: 0, size: e.target.value })
+                }
                 className="filter-select"
               >
                 <option value={10}>10</option>
@@ -293,9 +301,9 @@ const isToday = (dateString) => {
         {searchTerm && (
           <div className="search-results-info">
             Found {filteredItems.length} transactions matching "{searchTerm}"
-            <button 
+            <button
               className="clear-search-btn"
-              onClick={() => setSearchTerm('')}
+              onClick={() => setSearchTerm("")}
             >
               Clear search
             </button>
@@ -314,26 +322,25 @@ const isToday = (dateString) => {
               <table className="modern-table">
                 <thead>
                   <tr>
-                   
-                    <th 
-                      // onClick={() => handleSort('amount')}
-                      // className="sortable-header"
+                    <th
+                    // onClick={() => handleSort('amount')}
+                    // className="sortable-header"
                     >
                       Amount
                     </th>
-                    
-                    <th 
-                      // onClick={() => handleSort('expenseSubType')}
-                      // className="sortable-header"
+                    <th
+                    // onClick={() => handleSort('expenseSubType')}
+                    // className="sortable-header"
                     >
                       Type
                     </th>
-                    <th 
-                      // onClick={() => handleSort('createdDate')}
-                      // className="sortable-header"
+                    <th
+                    // onClick={() => handleSort('createdDate')}
+                    // className="sortable-header"
                     >
-                      Created Date 
+                      Expense Date
                     </th>
+                    <th>TransactionDate</th>
                     <th>Receipt</th>
                   </tr>
                 </thead>
@@ -344,16 +351,15 @@ const isToday = (dateString) => {
                         <div className="no-data-content">
                           <div className="no-data-icon">📝</div>
                           <p>
-                            {searchTerm 
+                            {searchTerm
                               ? `No transactions found for "${searchTerm}"`
-                              : 'No inward transactions found'
-                            }
+                              : "No inward transactions found"}
                           </p>
-                         
+
                           {searchTerm && (
-                            <button 
+                            <button
                               className="btn-secondary"
-                              onClick={() => setSearchTerm('')}
+                              onClick={() => setSearchTerm("")}
                             >
                               Clear Search
                             </button>
@@ -364,25 +370,37 @@ const isToday = (dateString) => {
                   ) : (
                     sortedItems.map((item, idx) => (
                       <tr key={idx} className="table-row">
-                        
                         <td className="amount-cell">
-                          <span className="amount-badge">₹{item.amount?.toLocaleString()}</span>
+                          <span className="amount-badge">
+                            ₹{item.amount?.toLocaleString()}
+                          </span>
                         </td>
-                        
+
                         <td className="type-cell">
-                          <span className="type-tag">{item.expenseSubType || 'General'}</span>
+                          <span className="type-tag">
+                            {item.expenseSubType || "General"}
+                          </span>
                         </td>
-                        
+
                         <td className="date-cell">
                           <div className="date-display">
                             {formatDate(item.createdDate)}
                           </div>
                         </td>
+                        <td className="date-cell">
+                          <div className="date-display">
+                            {formatDate(item.transactionDate)}
+                          </div>
+                        </td>
                         <td className="receipt-cell">
                           {item.imageData || item.fileUrl || item.file ? (
-                            <button 
+                            <button
                               className="btn-outline view-btn"
-                              onClick={() => setModalFile(item.imageData || item.fileUrl || item.file)}
+                              onClick={() =>
+                                setModalFile(
+                                  item.imageData || item.fileUrl || item.file
+                                )
+                              }
                             >
                               👁️ View
                             </button>
@@ -401,10 +419,11 @@ const isToday = (dateString) => {
             {sortedItems.length > 0 && (
               <div className="pagination-section">
                 <div className="pagination-info">
-                  Showing {sortedItems.length} of many results • Page {pageParam + 1}
+                  Showing {sortedItems.length} of many results • Page{" "}
+                  {pageParam + 1}
                 </div>
                 <div className="pagination-controls">
-                  <button 
+                  <button
                     className="btn-outline"
                     disabled={!(links.prev || pageParam > 0)}
                     onClick={() => {
@@ -415,7 +434,7 @@ const isToday = (dateString) => {
                   >
                     ← Previous
                   </button>
-                  <button 
+                  <button
                     className="btn-outline"
                     disabled={!(links.next || items.length >= sizeParam)}
                     onClick={() => {
@@ -435,10 +454,10 @@ const isToday = (dateString) => {
         {/* Receipt Modal */}
         {modalFile && (
           <div className="modal-overlay" onClick={() => setModalFile(null)}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Receipt Preview</h3>
-                <button 
+                <button
                   className="modal-close"
                   onClick={() => setModalFile(null)}
                 >
@@ -446,14 +465,22 @@ const isToday = (dateString) => {
                 </button>
               </div>
               <div className="modal-body">
-                {modalFile.startsWith('data:image') ? (
-                  <img src={modalFile} alt="Expense Receipt" className="receipt-image" />
+                {modalFile.startsWith("data:image") ? (
+                  <img
+                    src={modalFile}
+                    alt="Expense Receipt"
+                    className="receipt-image"
+                  />
                 ) : (
-                  <img src={`data:image/png;base64,${modalFile}`} alt="Expense Receipt" className="receipt-image" />
+                  <img
+                    src={`data:image/png;base64,${modalFile}`}
+                    alt="Expense Receipt"
+                    className="receipt-image"
+                  />
                 )}
               </div>
               <div className="modal-footer">
-                <button 
+                <button
                   className="btn-primary"
                   onClick={() => setModalFile(null)}
                 >

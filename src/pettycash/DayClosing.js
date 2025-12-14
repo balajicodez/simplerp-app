@@ -125,17 +125,23 @@ function DayClosing() {
     <div className="page-container">
       <Sidebar isOpen={true} />
       <PageCard title="Day Closing Management">
-        
         {/* Header Section with Stats */}
-        <div className="dashboard-header day-closing-header">
-          <div className="header-content">
-            <div className="header-actions">
-              <button 
-                className="btn-outline"
-                style={{color:"white",display:"flex",justifyContent:"end"}}
-                onClick={() => navigate('/pettycash/day-closing/create')}
+        <div className="dashboard-header1">
+          <div className="header-content" style={{display:"flex",justifyContent:"space-between"}}>
+            <div></div>
+            <div >
+              <button
+                className="btn-primary1"
+                style={{
+                  color: "#c393c1",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                }}
+                onClick={() => navigate("/pettycash/day-closing/create")}
               >
-                <span className="btn-icon" style={{color:"white"}}>+</span>
+                <span className="btn-icon" style={{ color: "#c392c1" }}>
+                  +
+                </span>
                 Perform Day Closing
               </button>
               {/* <button 
@@ -157,32 +163,32 @@ function DayClosing() {
               </button> */}
             </div>
           </div>
-          
+
           {/* Statistics Cards */}
-          <div className="stats-grid">
+          <div className="stats-grid1">
             <div className="stat-card">
-              <div className="stat-icon">📊</div>
+              {/* <div className="stat-icon">📊</div> */}
               <div className="stat-content">
                 <div className="stat-value">{totalTransactions}</div>
                 <div className="stat-label">Total Transactions</div>
               </div>
             </div>
-            <div className="stat-card income-stat">
-              <div className="stat-icon">💰</div>
+            <div className="stat-card ">
+              {/* <div className="stat-icon">💰</div> */}
               <div className="stat-content">
                 <div className="stat-value">{formatCurrency(totalInward)}</div>
                 <div className="stat-label">Total Inward</div>
               </div>
             </div>
-            <div className="stat-card expense-stat">
-              <div className="stat-icon">💸</div>
+            <div className="stat-card ">
+              {/* <div className="stat-icon">💸</div> */}
               <div className="stat-content">
                 <div className="stat-value">{formatCurrency(totalOutward)}</div>
                 <div className="stat-label">Total Outward</div>
               </div>
             </div>
-            <div className="stat-card balance-stat">
-              <div className="stat-icon">⚖️</div>
+            <div className="stat-card ">
+              {/* <div className="stat-icon">⚖️</div> */}
               <div className="stat-content">
                 <div className="stat-value">{formatCurrency(netBalance)}</div>
                 <div className="stat-label">Net Balance</div>
@@ -192,20 +198,20 @@ function DayClosing() {
         </div>
 
         {/* Filters Section */}
-        <div className="filters-section">
+        <div className="filters-section1">
           <div className="filters-grid">
             <div className="filter-group">
-              <label className="filter-label">Organization Filter</label>
-              <select 
-                value={selectedOrgId} 
+              {/* <label className="filter-label">Organization Filter</label> */}
+              <select
+                value={selectedOrgId}
                 onChange={handleOrganizationChange}
                 className="filter-select"
               >
                 <option value="">All Organizations</option>
-                {organizations.map(org => (
-                  <option 
-                    key={org.id || org._links?.self?.href} 
-                    value={org.id || (org._links?.self?.href.split('/').pop())}
+                {organizations.map((org) => (
+                  <option
+                    key={org.id || org._links?.self?.href}
+                    value={org.id || org._links?.self?.href.split("/").pop()}
                   >
                     {org.name}
                   </option>
@@ -214,10 +220,12 @@ function DayClosing() {
             </div>
 
             <div className="filter-group">
-              <label className="filter-label">Items per page</label>
-              <select 
+              {/* <label className="filter-label">Items per page</label> */}
+              <select
                 value={sizeParam}
-                onChange={(e) => setSearchParams({ page: 0, size: e.target.value })}
+                onChange={(e) =>
+                  setSearchParams({ page: 0, size: e.target.value })
+                }
                 className="filter-select"
               >
                 <option value={10}>10</option>
@@ -263,16 +271,16 @@ function DayClosing() {
         ) : (
           <>
             <div className="table-container">
-              <table className="modern-table day-closing-table">
+              <table className="modern-table ">
                 <thead>
                   <tr>
                     <th>Type</th>
                     <th>Branch</th>
                     <th>Amount</th>
-                    
+
                     <th>Category</th>
                     <th>Created By</th>
-                  
+
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -282,15 +290,6 @@ function DayClosing() {
                       <td colSpan="8" className="no-data">
                         <div className="no-data-content">
                           <div className="no-data-icon">📝</div>
-                          <h3>No Transactions Today</h3>
-                          <p>No transactions found for {today}. Start by creating a new transaction.</p>
-                          <button 
-                            className="btn-primary1"
-                            onClick={() => navigate('/pettycash/expenses/create')}
-                          >
-                            <span className="btn-icon">+</span>
-                            Create First Transaction
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -298,57 +297,78 @@ function DayClosing() {
                     items.map((item, idx) => (
                       <tr key={idx} className="table-row">
                         <td className="type-cell">
-                          <span 
+                          <span
                             className="type-badge"
-                            style={{ 
-                              backgroundColor: getExpenseTypeColor(item.expenseType),
-                              color: 'white'
+                            style={{
+                              backgroundColor: getExpenseTypeColor(
+                                item.expenseType
+                              ),
+                              color: "white",
                             }}
                           >
                             <span className="type-icon">
                               {getExpenseTypeIcon(item.expenseType)}
                             </span>
-                            {item.expenseType || 'N/A'}
+                            {item.expenseType || "N/A"}
                           </span>
                         </td>
                         <td className="branch-cell">
                           <div className="branch-info">
-                            <div className="branch-name">{item.branchName || '-'}</div>
+                            <div className="branch-name">
+                              {item.branchName || "-"}
+                            </div>
                             <div className="organization-name">
-                              {organizations.find(org => 
-                                String(org.id) === String(item.organizationId) || 
-                                String(org._links?.self?.href.split('/').pop()) === String(item.organizationId)
-                              )?.name || 'Organization'}
+                              {organizations.find(
+                                (org) =>
+                                  String(org.id) ===
+                                    String(item.organizationId) ||
+                                  String(
+                                    org._links?.self?.href.split("/").pop()
+                                  ) === String(item.organizationId)
+                              )?.name || "Organization"}
                             </div>
                           </div>
                         </td>
                         <td className="amount-cell">
-                          <span 
+                          <span
                             className={`amount-badge ${
-                              item.expenseType === 'CASH-IN' ? 'amount-in' : 'amount-out'
+                              item.expenseType === "CASH-IN"
+                                ? "amount-in"
+                                : "amount-out"
                             }`}
                           >
-                            {item.expenseType === 'CASH-IN' ? '+' : '-'}
+                            {item.expenseType === "CASH-IN" ? "+" : "-"}
                             {formatCurrency(item.amount)}
                           </span>
                         </td>
-                        
+
                         <td className="category-cell">
                           <span className="category-tag">
-                            {item.expenseSubType || 'General'}
+                            {item.expenseSubType || "General"}
                           </span>
                         </td>
                         <td className="creator-cell">
                           <div className="creator-info">
-                            <div className="creator-name">{item.createdByUser || 'System'}</div>
-                            <div className="created-date">{item.createdDate}</div>
+                            <div className="creator-name">
+                              {item.createdByUser || "System"}
+                            </div>
+                            <div className="created-date">
+                              {item.createdDate}
+                            </div>
                           </div>
                         </td>
-                        
+
                         <td className="actions-cell">
-                          <button 
+                          <button
                             className="btn-outline view-btn"
-                            onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}`)}
+                            onClick={() =>
+                              navigate(
+                                `/pettycash/expenses/${
+                                  item.id ||
+                                  item._links?.self?.href.split("/").pop()
+                                }`
+                              )
+                            }
                             title="View Details"
                           >
                             👁️ View
@@ -368,7 +388,7 @@ function DayClosing() {
                   Showing {items.length} transactions • Page {pageParam + 1}
                 </div>
                 <div className="pagination-controls">
-                  <button 
+                  <button
                     className="btn-outline"
                     disabled={!(links.prev || pageParam > 0)}
                     onClick={() => {
@@ -379,10 +399,8 @@ function DayClosing() {
                   >
                     ← Previous
                   </button>
-                  <span className="page-indicator">
-                    Page {pageParam + 1}
-                  </span>
-                  <button 
+                  <span className="page-indicator">Page {pageParam + 1}</span>
+                  <button
                     className="btn-outline"
                     disabled={!(links.next || items.length >= sizeParam)}
                     onClick={() => {
@@ -405,23 +423,31 @@ function DayClosing() {
                   <div className="summary-grid">
                     <div className="summary-item">
                       <span className="summary-label">Total Inward:</span>
-                      <span className="summary-value income">{formatCurrency(totalInward)}</span>
+                      <span className="summary-value income">
+                        {formatCurrency(totalInward)}
+                      </span>
                     </div>
                     <div className="summary-item">
                       <span className="summary-label">Total Outward:</span>
-                      <span className="summary-value expense">{formatCurrency(totalOutward)}</span>
+                      <span className="summary-value expense">
+                        {formatCurrency(totalOutward)}
+                      </span>
                     </div>
                     <div className="summary-item">
                       <span className="summary-label">Net Balance:</span>
-                      <span className={`summary-value balance ${
-                        netBalance >= 0 ? 'positive' : 'negative'
-                      }`}>
+                      <span
+                        className={`summary-value balance ${
+                          netBalance >= 0 ? "positive" : "negative"
+                        }`}
+                      >
                         {formatCurrency(netBalance)}
                       </span>
                     </div>
                     <div className="summary-item">
                       <span className="summary-label">Transaction Count:</span>
-                      <span className="summary-value count">{totalTransactions}</span>
+                      <span className="summary-value count">
+                        {totalTransactions}
+                      </span>
                     </div>
                   </div>
                 </div>

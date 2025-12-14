@@ -44,7 +44,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <span>🏠 Home</span>
           </NavLink>
         </li>
-        <li>
+        {/* <li>
           <NavLink 
             to="/employees" 
             className={({ isActive }) => isActive ? 'active' : ''}
@@ -62,7 +62,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   >
     <span>💰 Payroll</span>
   </NavLink>
-</li>
+       </li> */}
         
         <li className="group1">
           <div 
@@ -152,7 +152,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </NavLink>
         </li>
          
-        <li>
+        {/* <li>
           <NavLink 
             to="/holidays" 
             className={({ isActive }) => isActive ? 'active' : ''}
@@ -160,7 +160,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           >
             <span>📅 Holiday Calendar</span>
           </NavLink>
-        </li>
+        </li> */}
         <li>
           <NavLink 
             to="/download" 
