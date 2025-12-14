@@ -473,7 +473,7 @@ function CreateDayClosing() {
   const [comment, setComment] = useState('');
   const [organizations, setOrganizations] = useState([]);
   const [organizationId, setOrganizationId] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  // const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [inward, setInward] = useState('');
   const [outward, setOutward] = useState('');
   const [closingBalance, setClosingBalance] = useState('');
@@ -492,6 +492,16 @@ function CreateDayClosing() {
 
   const currentUser = localStorage.getItem('username') || localStorage.getItem('user') || '';
   const createdTime = new Date().toISOString();
+  const getLocalDate = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+
+  const [date, setDate] = useState(getLocalDate());
 
   // Complete denomination options matching your original structure
   const denominationOptions = [
@@ -1041,7 +1051,7 @@ function CreateDayClosing() {
               </button>
             </div>
             <button
-              className={`btn-primary1 ${loading ? "loading" : ""} ${
+              className={`btn-primary ${loading ? "loading" : ""} ${
                 balanceError ? "disabled" : ""
               }`}
               type="submit"
@@ -1055,7 +1065,7 @@ function CreateDayClosing() {
                   Saving...
                 </>
               ) : (
-                "Save Day Closing "
+                " 💾 Save  "
               )}
             </button>
           </div>

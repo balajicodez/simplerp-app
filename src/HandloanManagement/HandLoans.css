@@ -124,10 +124,10 @@
   text-decoration: none;
 }
 
-.btn-primary {
+/* .btn-primary {
   background-color: #3b82f6;
   color: white;
-}
+} */
 
 .btn-primary:hover:not(:disabled) {
   background-color: #2563eb;

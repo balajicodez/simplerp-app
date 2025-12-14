@@ -52,6 +52,16 @@ function CreateExpense() {
     return () => { mounted = false; };
   }, [location.pathname, location.search]);
 
+  const getLocalDate = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const [date, setDate] = useState(getLocalDate());
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -62,7 +72,7 @@ function CreateExpense() {
       try { storedUser = JSON.parse(localStorage.getItem('currentUser') || 'null'); } catch (e) { storedUser = null; }
       const createdByUserId = storedUser && (storedUser.id || storedUser.userId) ? (storedUser.id || storedUser.userId) : null;
       const createdByUser = storedUser && (storedUser.name || storedUser.username || storedUser.email) ? (storedUser.name || storedUser.username || storedUser.email) : (localStorage.getItem('rememberedEmail') || '');
-      const createdDate = new Date().toISOString().slice(0,10);
+      const createdDate = getLocalDate();
 
       const expensePayload = {
         description: form.description,

@@ -1,124 +1,188 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from '../Sidebar';
-import PageCard from '../components/PageCard';
-import './CreateDayClosing.css';
-import { APP_SERVER_URL_PREFIX } from '../constants.js';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import Sidebar from "../Sidebar";
+import PageCard from "../components/PageCard";
+import "./CreateDayClosing.css";
+import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 function DayClosing() {
   const [items, setItems] = useState([]);
   const [links, setLinks] = useState({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [closing, setClosing] = useState(false);
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useState("");
   const [organizations, setOrganizations] = useState([]);
-  const [selectedOrgId, setSelectedOrgId] = useState('');
+  const [selectedOrgId, setSelectedOrgId] = useState("");
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().slice(0, 10)
+  ); // Default to today
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const pageParam = Number(searchParams.get('page') || 0);
-  const sizeParam = Number(searchParams.get('size') || 20);
-  const today = new Date().toISOString().slice(0, 10);
+  const pageParam = Number(searchParams.get("page") || 0);
+  const sizeParam = Number(searchParams.get("size") || 20);
+  const dateParam =
+    searchParams.get("date") || new Date().toISOString().slice(0, 10);
+
+  // Initialize selectedDate from URL params
+  useEffect(() => {
+    if (dateParam) {
+      setSelectedDate(dateParam);
+    }
+  }, [dateParam]);
 
   // Calculate statistics
-  const totalInward = items.filter(item => item.expenseType === 'CASH-IN')
+  const filteredItems = items.filter(
+    (item) => item.createdDate === selectedDate
+  );
+  const totalInward = filteredItems
+    .filter((item) => item.expenseType === "CASH-IN")
     .reduce((sum, item) => sum + (item.amount || 0), 0);
-  const totalOutward = items.filter(item => item.expenseType === 'CASH-OUT')
+  const totalOutward = filteredItems
+    .filter((item) => item.expenseType === "CASH-OUT")
     .reduce((sum, item) => sum + (item.amount || 0), 0);
   const netBalance = totalInward - totalOutward;
-  const totalTransactions = items.length;
+  const totalTransactions = filteredItems.length;
 
   const fetchUrl = async (url) => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
-      const bearerToken = localStorage.getItem('token');
+      const bearerToken = localStorage.getItem("token");
       const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
+        headers: { Authorization: `Bearer ${bearerToken}` },
       });
       const json = await res.json();
-      let list = (json.content) || json.content || [];
-      list = list.filter(e => e.createdDate === today);
+      let list = json.content || json._embedded?.expenses || [];
+
+      // Filter by organization if selected
       if (selectedOrgId) {
-        list = list.filter(e => String(e.organizationId) === String(selectedOrgId));
+        list = list.filter(
+          (e) => String(e.organizationId) === String(selectedOrgId)
+        );
       }
+
       setItems(list);
       setLinks(json._links || {});
-    } catch (e) { 
-      setError('Failed to fetch expenses'); 
+    } catch (e) {
+      setError("Failed to fetch expenses");
+      console.error("Fetch error:", e);
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    const bearerToken = localStorage.getItem('token');
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`,{
-      headers: { 'Authorization': `Bearer ${bearerToken}` }
-    });
+    const bearerToken = localStorage.getItem("token");
+    let url = `${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`;
+
+    // Add organization filter if selected
+    if (selectedOrgId) {
+      url += `&organizationId=${selectedOrgId}`;
+    }
+
+    fetchUrl(url);
   }, [pageParam, sizeParam, selectedOrgId]);
 
   useEffect(() => {
     // Fetch organizations for dropdown
-    const bearerToken = localStorage.getItem('token');
+    const bearerToken = localStorage.getItem("token");
     fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-      headers: { 'Authorization': `Bearer ${bearerToken}` }
+      headers: { Authorization: `Bearer ${bearerToken}` },
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         setOrganizations(orgs);
       })
-      .catch(() => { });
+      .catch(() => {});
   }, []);
 
   const handleOrganizationChange = (e) => {
     const value = e.target.value;
     setSelectedOrgId(value);
-    
-    if (value) {
-      const bearerToken = localStorage.getItem('token');
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&organizationId=${value}`);
-      setSearchParams({ page: 0, size: sizeParam });
-    } else {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}`);
-      setSearchParams({ page: 0, size: sizeParam });
+
+    const params = { page: 0, size: sizeParam };
+    if (selectedDate !== new Date().toISOString().slice(0, 10)) {
+      params.date = selectedDate;
     }
+
+    if (value) {
+      params.organizationId = value;
+    }
+
+    setSearchParams(params);
+  };
+
+  const handleDateChange = (e) => {
+    const newDate = e.target.value;
+    setSelectedDate(newDate);
+
+    const params = { page: 0, size: sizeParam };
+    if (newDate !== new Date().toISOString().slice(0, 10)) {
+      params.date = newDate;
+    }
+    if (selectedOrgId) {
+      params.organizationId = selectedOrgId;
+    }
+
+    setSearchParams(params);
   };
 
   const handleDayClosing = async () => {
     setClosing(true);
-    setSuccess('');
-    setError('');
+    setSuccess("");
+    setError("");
     try {
-      const res = await fetch(`${APP_SERVER_URL_PREFIX}/petty-cash/day-closing`, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' } 
-      });
-      if (!res.ok) throw new Error('Failed to process day closing');
-      setSuccess('Day closing completed successfully! All transactions have been finalized.');
-      setTimeout(() => setSuccess(''), 5000);
+      const res = await fetch(
+        `${APP_SERVER_URL_PREFIX}/petty-cash/day-closing`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to process day closing");
+      setSuccess(
+        "Day closing completed successfully! All transactions have been finalized."
+      );
+      setTimeout(() => setSuccess(""), 5000);
     } catch (e) {
-      setError('Day closing failed. Please try again.');
+      setError("Day closing failed. Please try again.");
     } finally {
       setClosing(false);
     }
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   const getExpenseTypeColor = (type) => {
-    return type === 'CASH-IN' ? '#10b981' : '#ef4444';
+    return type === "CASH-IN" ? "#10b981" : "#ef4444";
   };
 
   const getExpenseTypeIcon = (type) => {
-    return type === 'CASH-IN' ? '💰' : '💸';
+    return type === "CASH-IN" ? "💰" : "💸";
+  };
+
+  const resetFilters = () => {
+    setSelectedDate(new Date().toISOString().slice(0, 10));
+    setSelectedOrgId("");
+    setSearchParams({ page: 0, size: sizeParam });
   };
 
   return (
@@ -127,9 +191,12 @@ function DayClosing() {
       <PageCard title="Day Closing Management">
         {/* Header Section with Stats */}
         <div className="dashboard-header1">
-          <div className="header-content" style={{display:"flex",justifyContent:"space-between"}}>
+          <div
+            className="header-content"
+            style={{ display: "flex", justifyContent: "space-between" }}
+          >
             <div></div>
-            <div >
+            <div>
               <button
                 className="btn-primary1"
                 style={{
@@ -144,54 +211,37 @@ function DayClosing() {
                 </span>
                 Perform Day Closing
               </button>
-              {/* <button 
-                className={`btn-primary day-closing-btn ${closing ? 'loading' : ''}`}
-                onClick={handleDayClosing}
-                disabled={closing || items.length === 0}
-              >
-                {closing ? (
-                  <>
-                    <div className="loading-spinner-small"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <span className="btn-icon">🔒</span>
-                    Finalize Day Closing
-                  </>
-                )}
-              </button> */}
             </div>
           </div>
 
           {/* Statistics Cards */}
           <div className="stats-grid1">
             <div className="stat-card">
-              {/* <div className="stat-icon">📊</div> */}
               <div className="stat-content">
                 <div className="stat-value">{totalTransactions}</div>
                 <div className="stat-label">Total Transactions</div>
+                {/* <div className="stat-date">{formatDate(selectedDate)}</div> */}
               </div>
             </div>
             <div className="stat-card ">
-              {/* <div className="stat-icon">💰</div> */}
               <div className="stat-content">
                 <div className="stat-value">{formatCurrency(totalInward)}</div>
                 <div className="stat-label">Total Inward</div>
+                {/* <div className="stat-date">{formatDate(selectedDate)}</div> */}
               </div>
             </div>
             <div className="stat-card ">
-              {/* <div className="stat-icon">💸</div> */}
               <div className="stat-content">
                 <div className="stat-value">{formatCurrency(totalOutward)}</div>
                 <div className="stat-label">Total Outward</div>
+                {/* <div className="stat-date">{formatDate(selectedDate)}</div> */}
               </div>
             </div>
             <div className="stat-card ">
-              {/* <div className="stat-icon">⚖️</div> */}
               <div className="stat-content">
                 <div className="stat-value">{formatCurrency(netBalance)}</div>
                 <div className="stat-label">Net Balance</div>
+                {/* <div className="stat-date">{formatDate(selectedDate)}</div> */}
               </div>
             </div>
           </div>
@@ -201,7 +251,18 @@ function DayClosing() {
         <div className="filters-section1">
           <div className="filters-grid">
             <div className="filter-group">
-              {/* <label className="filter-label">Organization Filter</label> */}
+              {/* <label className="filter-label">Date</label> */}
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={handleDateChange}
+                className="filter-select date-input"
+                max={new Date().toISOString().slice(0, 10)}
+              />
+            </div>
+
+            <div className="filter-group">
+              {/* <label className="filter-label">Organization</label> */}
               <select
                 value={selectedOrgId}
                 onChange={handleOrganizationChange}
@@ -223,9 +284,16 @@ function DayClosing() {
               {/* <label className="filter-label">Items per page</label> */}
               <select
                 value={sizeParam}
-                onChange={(e) =>
-                  setSearchParams({ page: 0, size: e.target.value })
-                }
+                onChange={(e) => {
+                  const params = { page: 0, size: e.target.value };
+                  if (selectedDate !== new Date().toISOString().slice(0, 10)) {
+                    params.date = selectedDate;
+                  }
+                  if (selectedOrgId) {
+                    params.organizationId = selectedOrgId;
+                  }
+                  setSearchParams(params);
+                }}
                 className="filter-select"
               >
                 <option value={10}>10</option>
@@ -235,11 +303,7 @@ function DayClosing() {
               </select>
             </div>
 
-            <div className="summary-badge">
-              <div className="summary-text">
-                Showing {items.length} transactions for {today}
-              </div>
-            </div>
+            
           </div>
         </div>
 
@@ -266,7 +330,7 @@ function DayClosing() {
         {loading ? (
           <div className="loading-state">
             <div className="loading-spinner"></div>
-            <p>Loading today's transactions...</p>
+            <p>Loading transactions...</p>
           </div>
         ) : (
           <>
@@ -275,26 +339,29 @@ function DayClosing() {
                 <thead>
                   <tr>
                     <th>Type</th>
+                    <th>Date</th>
                     <th>Branch</th>
                     <th>Amount</th>
-
                     <th>Category</th>
                     <th>Created By</th>
-
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.length === 0 ? (
+                  {filteredItems.length === 0 ? (
                     <tr>
                       <td colSpan="8" className="no-data">
                         <div className="no-data-content">
                           <div className="no-data-icon">📝</div>
+                          <div className="no-data-text">
+                            No transactions found for {formatDate(selectedDate)}
+                            {selectedOrgId && ` in the selected organization`}
+                          </div>
                         </div>
                       </td>
                     </tr>
                   ) : (
-                    items.map((item, idx) => (
+                    filteredItems.map((item, idx) => (
                       <tr key={idx} className="table-row">
                         <td className="type-cell">
                           <span
@@ -312,11 +379,23 @@ function DayClosing() {
                             {item.expenseType || "N/A"}
                           </span>
                         </td>
+                        <td className="date-cell">
+                          <div className="date-info">
+                            <div className="date-display">
+                              {formatDate(item.createdDate)}
+                            </div>
+                            {/* <div className="time-display">
+                              {item.createdTime ||
+                                item.createdAt?.split("T")[1]?.slice(0, 5) ||
+                                "N/A"}
+                            </div> */}
+                          </div>
+                        </td>
                         <td className="branch-cell">
                           <div className="branch-info">
-                            <div className="branch-name">
+                            {/* <div className="branch-name">
                               {item.branchName || "-"}
-                            </div>
+                            </div> */}
                             <div className="organization-name">
                               {organizations.find(
                                 (org) =>
@@ -352,9 +431,6 @@ function DayClosing() {
                             <div className="creator-name">
                               {item.createdByUser || "System"}
                             </div>
-                            <div className="created-date">
-                              {item.createdDate}
-                            </div>
                           </div>
                         </td>
 
@@ -382,19 +458,30 @@ function DayClosing() {
             </div>
 
             {/* Pagination */}
-            {items.length > 0 && (
+            {filteredItems.length > 0 && (
               <div className="pagination-section">
                 <div className="pagination-info">
-                  Showing {items.length} transactions • Page {pageParam + 1}
+                  Showing {filteredItems.length} transactions • Page{" "}
+                  {pageParam + 1}
                 </div>
                 <div className="pagination-controls">
                   <button
                     className="btn-outline"
                     disabled={!(links.prev || pageParam > 0)}
                     onClick={() => {
-                      if (links.prev) return fetchUrl(links.prev.href);
-                      const prev = Math.max(0, pageParam - 1);
-                      setSearchParams({ page: prev, size: sizeParam });
+                      const params = {
+                        page: Math.max(0, pageParam - 1),
+                        size: sizeParam,
+                      };
+                      if (
+                        selectedDate !== new Date().toISOString().slice(0, 10)
+                      ) {
+                        params.date = selectedDate;
+                      }
+                      if (selectedOrgId) {
+                        params.organizationId = selectedOrgId;
+                      }
+                      setSearchParams(params);
                     }}
                   >
                     ← Previous
@@ -402,11 +489,23 @@ function DayClosing() {
                   <span className="page-indicator">Page {pageParam + 1}</span>
                   <button
                     className="btn-outline"
-                    disabled={!(links.next || items.length >= sizeParam)}
+                    disabled={
+                      !(links.next || filteredItems.length >= sizeParam)
+                    }
                     onClick={() => {
-                      if (links.next) return fetchUrl(links.next.href);
-                      const next = pageParam + 1;
-                      setSearchParams({ page: next, size: sizeParam });
+                      const params = {
+                        page: pageParam + 1,
+                        size: sizeParam,
+                      };
+                      if (
+                        selectedDate !== new Date().toISOString().slice(0, 10)
+                      ) {
+                        params.date = selectedDate;
+                      }
+                      if (selectedOrgId) {
+                        params.organizationId = selectedOrgId;
+                      }
+                      setSearchParams(params);
                     }}
                   >
                     Next →
@@ -416,10 +515,10 @@ function DayClosing() {
             )}
 
             {/* Final Summary */}
-            {items.length > 0 && (
+            {filteredItems.length > 0 && (
               <div className="final-summary">
                 <div className="summary-card">
-                  <h3>Daily Summary</h3>
+                  <h3>Daily Summary for {formatDate(selectedDate)}</h3>
                   <div className="summary-grid">
                     <div className="summary-item">
                       <span className="summary-label">Total Inward:</span>
@@ -444,7 +543,7 @@ function DayClosing() {
                       </span>
                     </div>
                     <div className="summary-item">
-                      <span className="summary-label">Transaction Count:</span>
+                      <span className="summary-label1">Transaction Count:</span>
                       <span className="summary-value count">
                         {totalTransactions}
                       </span>

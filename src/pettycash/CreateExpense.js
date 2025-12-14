@@ -5,9 +5,17 @@ import "./pettyCashCreateExpense.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 
+const getLocalDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 function CreateExpense() {
   const [form, setForm] = useState({
-    transactionDate: new Date().toISOString().slice(0, 10),
+    transactionDate: getLocalDate(),
     amount: "",
     employeeId: "",
     subtype: "",
@@ -416,6 +424,7 @@ function CreateExpense() {
     setError("");
     setSuccess("");
     setFetchedBalance(0);
+    navigate("/pettycash/expenses-inward");
   };
 
   const getCategoryIcon = (category) => {
@@ -779,7 +788,7 @@ function CreateExpense() {
 
               <button
                 type="submit"
-                className={`btn-primary1 `}
+                className={`btn-primary `}
                 disabled={
                   loading ||
                   (showCurrentBalanceSection &&

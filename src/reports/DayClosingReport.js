@@ -1695,6 +1695,7 @@ function DayClosingReport() {
       justifyContent: 'space-between',
       alignItems: 'center',
       // marginBottom: '24px',
+      marginTop:"10px",
       padding: '6px 0',
       borderBottom: '1px solid #e2e8f0',
       gap: '20px',
@@ -1739,8 +1740,9 @@ function DayClosingReport() {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
       gap: '20px',
-      marginBottom: '14px',
-      padding: '0 16px',
+      marginBottom: '4px',
+      padding: '3px 16px',
+      marginTop:"10px",
     },
 
     summaryCard: {

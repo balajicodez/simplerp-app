@@ -886,8 +886,15 @@ const LoanTableRow = ({
     </tr>
   );
 };
+const getLocalDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
-// FIXED: Create Hand Loan Form Component - Remove status field
+
 const CreateHandLoanForm = ({ 
   organizations, 
   fetchedBalance,
@@ -897,13 +904,13 @@ const CreateHandLoanForm = ({
   balanceLoading 
 }) => {
   const [form, setForm] = useState({
-    organizationId: '',
-    partyName: '',
-    loanAmount: '',
-    phoneNo: '',
-    narration: '',
-    handLoanType: 'ISSUE',
-    createdDate: new Date().toISOString().split('T')[0] // Default to today
+    organizationId: "",
+    partyName: "",
+    loanAmount: "",
+    phoneNo: "",
+    narration: "",
+    handLoanType: "ISSUE",
+    createdDate: getLocalDate(),
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -1185,7 +1192,7 @@ const CreateHandLoanForm = ({
             }
             title={fetchedBalance <= 0 ? "No available balance" : ""}
           >
-            {loading ? "Creating..." : "Create Loan"}
+            {loading ? "Creating..." : "💾 Save"}
           </button>
         </div>
       </form>
