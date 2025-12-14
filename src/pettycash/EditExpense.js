@@ -17,7 +17,7 @@ function EditExpense() {
     expenseType: '',
     expenseSubType: '',
     referenceNumber: '',
-    expenseDate: new Date().toISOString().slice(0, 10)
+    createdDate: new Date().toISOString().slice(0, 10)
   });
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,7 @@ function EditExpense() {
           expenseType: json.expenseType || '',
           expenseSubType: json.expenseSubType || '',
           referenceNumber: json.referenceNumber || '',
-          expenseDate: json.expenseDate || json.createdDate || new Date().toISOString().slice(0, 10)
+          createdDate: json.createdDate || json.createdDate || new Date().toISOString().slice(0, 10)
         });
       })
       .catch((err) => {
@@ -128,7 +128,7 @@ function EditExpense() {
         organizationName: form.organizationName || undefined,
         employeeId: form.employeeId ? Number(form.employeeId) : undefined,
         referenceNumber: form.referenceNumber || undefined,
-        expenseDate: form.expenseDate || undefined
+        createdDate: form.createdDate || undefined
       };
       
       const bearerToken = localStorage.getItem('token');
@@ -296,9 +296,9 @@ function EditExpense() {
                       <div className="date-input-wrapper">
                         <span className="input-icon" style={{marginLeft:"-10px"}}>📅</span>
                         <input 
-                          name="expenseDate" 
+                          name="createdDate" 
                           type="date" 
-                          value={form.expenseDate} 
+                          value={form.createdDate} 
                           onChange={handleChange} 
                           className="form-input"
                           disabled={loading}

@@ -175,14 +175,14 @@ function ExpenseView() {
                 <div className="detail-group">
                   <label className="detail-label">Expense Date</label>
                   <div className="detail-value">
-                    {formatDate(expense.expenseDate)}
+                    {formatDate(expense.createdDate)}
                   </div>
                 </div>
 
                 <div className="detail-group">
-                  <label className="detail-label">Created Date</label>
+                  <label className="detail-label">Transaction Date</label>
                   <div className="detail-value">
-                    {formatDate(expense.createdDate)}
+                    {formatDate(expense.transactionDate)}
                   </div>
                 </div>
 
