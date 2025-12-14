@@ -387,7 +387,11 @@ function CreateExpense() {
         headers: { Authorization: `Bearer ${bearerToken}` },
       });
 
-      if (!res.ok) throw new Error("Failed to create expense");
+       if (!res.ok) {
+        const data = await res.text();
+        setError(data);
+      } else {
+         setSuccess('Expense created successfully! Redirecting...');
 
       setSuccess("Expense created successfully! Redirecting...");
       setTimeout(() => {
@@ -399,6 +403,8 @@ function CreateExpense() {
           navigate("/pettycash/expenses");
         }
       }, 2000);
+    }
+
     } catch (err) {
       setError("Failed to create expense. Please try again.");
     } finally {
