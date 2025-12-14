@@ -15,7 +15,7 @@ function ExpensesOutward() {
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
-  
+
   const navigate = useNavigate();
   const pageParam = Number(searchParams.get('page') || 0);
   const sizeParam = Number(searchParams.get('size') || 20);
@@ -37,7 +37,7 @@ function ExpensesOutward() {
       list = list.filter(e => e.expenseType === 'CASH-OUT');
       setItems(list);
       setLinks(json._links || {});
-    } catch (e) { 
+    } catch (e) {
       console.error('Failed to fetch outward expenses:', e);
     } finally {
       setLoading(false);
@@ -47,12 +47,16 @@ function ExpensesOutward() {
   const handleOrganizationChange = (e) => {
     const value = e.target.value;
     setSelectedOrgId(value);
-    
+    const bearerToken = localStorage.getItem('token');
     if (value) {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`);
+      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       setSearchParams({ page: 0, size: sizeParam });
     } else {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT`);
+      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       setSearchParams({ page: 0, size: sizeParam });
     }
   };
@@ -72,9 +76,9 @@ function ExpensesOutward() {
   // Filter items based on search term
   const filteredItems = items.filter(item => {
     if (!searchTerm) return true;
-    
+
     const searchLower = safeToString(searchTerm).toLowerCase();
-    
+
     return (
       safeToString(item.description).toLowerCase().includes(searchLower) ||
       safeToString(item.employeeId).toLowerCase().includes(searchLower) ||
@@ -86,25 +90,25 @@ function ExpensesOutward() {
   // Sort items
   const sortedItems = React.useMemo(() => {
     if (!sortConfig.key) return filteredItems;
-    
+
     return [...filteredItems].sort((a, b) => {
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
-      
+
       // Handle null/undefined values
       if (aValue == null && bValue == null) return 0;
       if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
       if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
-      
+
       // Handle different data types
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
       }
-      
+
       // String comparison
       const aString = safeToString(aValue).toLowerCase();
       const bString = safeToString(bValue).toLowerCase();
-      
+
       if (aString < bString) {
         return sortConfig.direction === 'ascending' ? -1 : 1;
       }
@@ -123,27 +127,30 @@ function ExpensesOutward() {
   };
 
   useEffect(() => {
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT`);
+    const bearerToken = localStorage.getItem('token');
+    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT`,{
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
   }, [pageParam, sizeParam]);
 
   // Helper function to check if date is today
-const isToday = (dateString) => {
-  if (!dateString) return false;
-  
-  try {
-    const itemDate = new Date(dateString);
-    const today = new Date();
-    
-    return (
-      itemDate.getDate() === today.getDate() &&
-      itemDate.getMonth() === today.getMonth() &&
-      itemDate.getFullYear() === today.getFullYear()
-    );
-  } catch (e) {
-    console.error('Invalid date:', dateString, e);
-    return false;
-  }
-};
+  const isToday = (dateString) => {
+    if (!dateString) return false;
+
+    try {
+      const itemDate = new Date(dateString);
+      const today = new Date();
+
+      return (
+        itemDate.getDate() === today.getDate() &&
+        itemDate.getMonth() === today.getMonth() &&
+        itemDate.getFullYear() === today.getFullYear()
+      );
+    } catch (e) {
+      console.error('Invalid date:', dateString, e);
+      return false;
+    }
+  };
 
   useEffect(() => {
     const fetchOrganizations = async () => {
@@ -184,12 +191,12 @@ const isToday = (dateString) => {
     <div className="page-container">
       <Sidebar isOpen={true} />
       <PageCard title="Cash Outward Management">
-        
+
         {/* Header Section with Stats */}
         <div className="dashboard-header1">
           <div className="header-content">
             <div></div>
-            <button 
+            <button
               className="btn-primary1"
               onClick={() => navigate('/pettycash/expenses/create?type=CASH-OUT')}
             >
@@ -197,7 +204,7 @@ const isToday = (dateString) => {
               Create New Outward
             </button>
           </div>
-          
+
           {/* Statistics Cards */}
           <div className="stats-grid">
             <div className="stat-card outward-stat">
@@ -248,7 +255,7 @@ const isToday = (dateString) => {
                 className="search-input"
               />
               {searchTerm && (
-                <button 
+                <button
                   className="clear-search"
                   onClick={() => setSearchTerm('')}
                   title="Clear search"
@@ -257,18 +264,18 @@ const isToday = (dateString) => {
                 </button>
               )}
             </div>
-            
+
             <div className="filter-group">
               {/* <label>Organization</label> */}
-              <select 
-                value={selectedOrgId} 
+              <select
+                value={selectedOrgId}
                 onChange={handleOrganizationChange}
                 className="filter-select"
               >
                 <option value="">All Organizations</option>
                 {organizations.map(org => (
-                  <option 
-                    key={org.id || org._links?.self?.href} 
+                  <option
+                    key={org.id || org._links?.self?.href}
                     value={org.id || (org._links?.self?.href.split('/').pop())}
                   >
                     {org.name}
@@ -279,7 +286,7 @@ const isToday = (dateString) => {
 
             <div className="filter-group">
               {/* <label>Items per page</label> */}
-              <select 
+              <select
                 value={sizeParam}
                 onChange={(e) => setSearchParams({ page: 0, size: e.target.value })}
                 className="filter-select"
@@ -297,7 +304,7 @@ const isToday = (dateString) => {
         {searchTerm && (
           <div className="search-results-info">
             Found {filteredItems.length} expenses matching "{searchTerm}"
-            <button 
+            <button
               className="clear-search-btn"
               onClick={() => setSearchTerm('')}
             >
@@ -318,17 +325,17 @@ const isToday = (dateString) => {
               <table className="modern-table">
                 <thead>
                   <tr>
-                    <th 
-                      // onClick={() => handleSort('description')}
-                      // className="sortable-header"
+                    <th
+                    // onClick={() => handleSort('description')}
+                    // className="sortable-header"
                     >
-                      Amount 
+                      Description
                     </th>
-                    <th 
-                      // onClick={() => handleSort('amount')}
-                      // className="sortable-header"
+                    <th
+                    // onClick={() => handleSort('amount')}
+                    // className="sortable-header"
                     >
-                      Amount 
+                      Amount
                     </th>
                     {/* <th 
                       onClick={() => handleSort('employeeId')}
@@ -336,11 +343,11 @@ const isToday = (dateString) => {
                     >
                       Employee {getSortIcon('employeeId')}
                     </th> */}
-                    <th 
-                      // onClick={() => handleSort('expenseSubType')}
-                      // className="sortable-header"
+                    <th
+                    // onClick={() => handleSort('expenseSubType')}
+                    // className="sortable-header"
                     >
-                      Category 
+                      Category
                     </th>
                     <th>Receipt</th>
                     <th>Actions</th>
@@ -353,7 +360,7 @@ const isToday = (dateString) => {
                         <div className="no-data-content">
                           <div className="no-data-icon">💸</div>
                           <p>
-                            {searchTerm 
+                            {searchTerm
                               ? `No expenses found for "${searchTerm}"`
                               : 'No outward expenses found'
                             }
@@ -366,7 +373,7 @@ const isToday = (dateString) => {
                           {!searchTerm ? (
                             <div></div>
                           ) : (
-                            <button 
+                            <button
                               className="btn-secondary"
                               onClick={() => setSearchTerm('')}
                             >
@@ -385,8 +392,8 @@ const isToday = (dateString) => {
                           </div>
                           {item.organizationId && (
                             <div className="org-badge">
-                              {organizations.find(org => 
-                                String(org.id) === String(item.organizationId) || 
+                              {organizations.find(org =>
+                                String(org.id) === String(item.organizationId) ||
                                 String(org._links?.self?.href.split('/').pop()) === String(item.organizationId)
                               )?.name || 'Organization'}
                             </div>
@@ -403,9 +410,9 @@ const isToday = (dateString) => {
                           </div>
                         </td> */}
                         <td className="type-cell">
-                          <span 
+                          <span
                             className="type-tag"
-                            style={{ 
+                            style={{
                               backgroundColor: getExpenseTypeColor(item.expenseSubType),
                               color: 'white'
                             }}
@@ -415,7 +422,7 @@ const isToday = (dateString) => {
                         </td>
                         <td className="receipt-cell">
                           {item.imageData || item.fileUrl || item.file ? (
-                            <button 
+                            <button
                               className="btn-outline view-btn"
                               onClick={() => setModalFile(item.imageData || item.fileUrl || item.file)}
                             >
@@ -425,25 +432,25 @@ const isToday = (dateString) => {
                             <span className="no-receipt">No receipt</span>
                           )}
                         </td>
-                       <td className="actions-cell">
-  <div className="action-buttons">
-   
-       <button 
-         className="btn-outline edit-btn"
-         onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
-         title="Edit expense"   >
-         ✏️
-       </button>
-     
-    <button 
-      className="btn-outline view-btn"
-      onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}`)}
-      title="View details"
-    >
-      👁️
-    </button>
-  </div>
-</td>
+                        <td className="actions-cell">
+                          <div className="action-buttons">
+
+                            <button
+                              className="btn-outline edit-btn"
+                              onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
+                              title="Edit expense"   >
+                              ✏️
+                            </button>
+
+                            <button
+                              className="btn-outline view-btn"
+                              onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}`)}
+                              title="View details"
+                            >
+                              👁️
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     ))
                   )}
@@ -455,11 +462,11 @@ const isToday = (dateString) => {
             {sortedItems.length > 0 && (
               <div className="pagination-section">
                 <div className="pagination-info">
-                  Showing {sortedItems.length} expenses • Page {pageParam + 1} • 
+                  Showing {sortedItems.length} expenses • Page {pageParam + 1} •
                   Total: ₹{totalAmount.toLocaleString()}
                 </div>
                 <div className="pagination-controls">
-                  <button 
+                  <button
                     className="btn-outline"
                     disabled={!(links.prev || pageParam > 0)}
                     onClick={() => {
@@ -473,7 +480,7 @@ const isToday = (dateString) => {
                   <span className="page-indicator">
                     Page {pageParam + 1}
                   </span>
-                  <button 
+                  <button
                     className="btn-outline"
                     disabled={!(links.next || items.length >= sizeParam)}
                     onClick={() => {
@@ -496,7 +503,7 @@ const isToday = (dateString) => {
             <div className="modal-content" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Expense Receipt</h3>
-                <button 
+                <button
                   className="modal-close"
                   onClick={() => setModalFile(null)}
                 >
@@ -511,7 +518,7 @@ const isToday = (dateString) => {
                 )}
               </div>
               <div className="modal-footer">
-                <button 
+                <button
                   className="btn-primary"
                   onClick={() => setModalFile(null)}
                 >
