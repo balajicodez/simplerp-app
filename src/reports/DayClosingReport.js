@@ -1288,7 +1288,7 @@ function DayClosingReport() {
 
   const handleGenerateReport = () => {
     try {
-      const filteredRecords = records.filter(rec => records.closingDate === selectedDate);
+      const filteredRecords = new Array(records);
       const filteredExpenses = getExpensesForDate(selectedDate);
       const filteredHandloans = getHandloansForDate(selectedDate);
       const allHandloansWithBalances = getAllHandloansWithBalances();
@@ -1359,7 +1359,7 @@ function DayClosingReport() {
         const columnWidth = (pageWidth - 3 * margin) / 2;
 
         // Left Column - Cash Out Expenses
-        if (cashOutExpenses.length > 0) {
+        if (cashOutExpenses.length >= 0) {
           doc.setFontSize(12);
           doc.text('Cash Out Expenses', margin, currentY);
           
@@ -1384,7 +1384,7 @@ function DayClosingReport() {
         }
 
         // Right Column - Cash In Expenses
-        if (cashInExpenses.length > 0) {
+        if (cashInExpenses.length >=0 ) {
           doc.setFontSize(12);
           doc.text('Cash In Expenses', margin + columnWidth + margin, currentY);
           
@@ -1415,7 +1415,7 @@ function DayClosingReport() {
       }
 
       // Handloans Section - Side by Side Layout
-      if (filteredHandloans.length > 0) {
+      if (filteredHandloans.length >= 0) {
         // Add new page if not enough space
         if (currentY > 200) {
           doc.addPage();
@@ -1430,7 +1430,7 @@ function DayClosingReport() {
         const margin = 20;
         const columnWidth = (pageWidth - 3 * margin) / 2;
 
-        if (cashOutHandloans.length > 0) {
+        if (cashOutHandloans.length >= 0) {
           doc.setFontSize(12);
           doc.text('Handloans Given (Cash Out)', margin, currentY);
           
@@ -1455,7 +1455,7 @@ function DayClosingReport() {
         }
 
         // Right Column - Cash In Handloans (Received)
-        if (cashInHandloans.length > 0) {
+        if (cashInHandloans.length >= 0) {
           doc.setFontSize(12);
           doc.text('Handloans Received (Cash In)', margin + columnWidth + margin, currentY);
           
