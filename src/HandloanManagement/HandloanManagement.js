@@ -38,7 +38,10 @@ const HandLoanManagement = () => {
 
   const fetchOrganizations = async () => {
     try {
-      const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`);
+      const bearerToken = localStorage.getItem('token');
+      const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       if (response.ok) {
         const data = await response.json();
         const processedOrgs = (data._embedded?.organizations || []).map(org => {
@@ -64,7 +67,10 @@ const HandLoanManagement = () => {
 
     setLoadingRecoveredLoans(true);
     try {
-      const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/getmainloadbyid/${mainLoanId}`);
+      const bearerToken = localStorage.getItem('token');
+      const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/getmainloadbyid/${mainLoanId}`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       if (response.ok) {
         const data = await response.json();
         console.log('Recovered loans for main loan:', data);
@@ -134,8 +140,10 @@ const HandLoanManagement = () => {
 
     setBalanceLoading(true);
     try {
+      const bearerToken = localStorage.getItem('token');
       const response = await fetch(
-        `${APP_SERVER_URL_PREFIX}/expenses/balance?organizationId=${organizationId}&createdDate=${date}`
+        `${APP_SERVER_URL_PREFIX}/expenses/balance?organizationId=${organizationId}&createdDate=${date}`,
+        { headers: { 'Authorization': `Bearer ${bearerToken}` } }
       );
       
       if (response.ok) {
@@ -185,9 +193,10 @@ const HandLoanManagement = () => {
         url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByStatus?page=${currentPage}&size=${pageSize}`;
       }
       
-      console.log('Fetching loans from:', url);
-      
-      const response = await fetch(url);
+      const bearerToken = localStorage.getItem('token');
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       if (response.ok) {
         const data = await response.json();
         console.log('Loans API Response:', data);
@@ -249,7 +258,10 @@ const HandLoanManagement = () => {
 
   const fetchLoanRecoveries = async (loanId) => {
     try {
-      const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/${loanId}`);
+      const bearerToken = localStorage.getItem('token');
+      const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/${loanId}`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       if (response.ok) {
         const data = await response.json();
         console.log('Recoveries API Response:', data);
@@ -948,11 +960,12 @@ const CreateHandLoanForm = ({
       };
 
       console.log('Creating loan with data:', requestData);
-
+      const bearerToken = localStorage.getItem('token');
       const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${bearerToken}`
         },
         body: JSON.stringify(requestData)
       });
@@ -1180,11 +1193,12 @@ const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
       };
 
       console.log('Recovering loan with data:', requestData);
-
+      const bearerToken = localStorage.getItem('token');
       const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${bearerToken}`
         },
         body: JSON.stringify(requestData)
       });

@@ -32,7 +32,7 @@ function DayClosing() {
     setLoading(true);
     setError('');
     try {
-       const bearerToken = localStorage.getItem('token');
+      const bearerToken = localStorage.getItem('token');
       const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });

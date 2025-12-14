@@ -39,7 +39,7 @@ function Login() {
 
         setLoading(true);
         try {
-            const res = await fetch('http://simplerp.sridivyasarees.com:9090/auth/login', {
+            const res = await fetch(APP_SERVER_URL_PREFIX+'/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: email, password: password }),
