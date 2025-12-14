@@ -1032,60 +1032,60 @@ function DayClosingReport() {
     const today = new Date().toISOString().split('T')[0];
     setSelectedDate(today);
     
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError('');
+    // const fetchData = async () => {
+    //   try {
+    //     setLoading(true);
+    //     setError('');
         
-        // Fetch day closing data
-        const bearerToken = localStorage.getItem('token');
-        const response = await fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings`, {
-          headers: { 'Authorization': `Bearer ${bearerToken}` }
-        });
-        if (!response.ok) {
-          throw new Error('Failed to fetch day closing data');
-        }
-        const data = await response.json();
-        const list = data._embedded ? data._embedded.pettyCashDayClosings || [] : data;
-        setRecords(list);
+    //     // Fetch day closing data
+    //     const bearerToken = localStorage.getItem('token');
+    //     const response = await fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings`, {
+    //       headers: { 'Authorization': `Bearer ${bearerToken}` }
+    //     });
+    //     if (!response.ok) {
+    //       throw new Error('Failed to fetch day closing data');
+    //     }
+    //     const data = await response.json();
+    //     const list = data._embedded ? data._embedded.pettyCashDayClosings || [] : data;
+    //     setRecords(list);
         
-        // Fetch expenses data
-        try {
-          const expensesResponse = await fetch(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=20`, {
-            headers: { 'Authorization': `Bearer ${bearerToken}` }
-          });
-          if (expensesResponse.ok) {
-            const expensesData = await expensesResponse.json();
-            const expensesList = expensesData.content || expensesData || [];
-            setExpenses(expensesList);
-          }
-        } catch (expenseError) {
-          console.warn('Could not fetch expenses:', expenseError);
-        }
+    //     // Fetch expenses data
+    //     try {
+    //       const expensesResponse = await fetch(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=20`, {
+    //         headers: { 'Authorization': `Bearer ${bearerToken}` }
+    //       });
+    //       if (expensesResponse.ok) {
+    //         const expensesData = await expensesResponse.json();
+    //         const expensesList = expensesData.content || expensesData || [];
+    //         setExpenses(expensesList);
+    //       }
+    //     } catch (expenseError) {
+    //       console.warn('Could not fetch expenses:', expenseError);
+    //     }
         
-        // Fetch handloans data
-        try {
-          const bearerToken = localStorage.getItem('token');
-          const handloansResponse = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/all?page=0&size=20`, {
-            headers: { 'Authorization': `Bearer ${bearerToken}` }
-          });
-          if (handloansResponse.ok) {
-            const handloansData = await handloansResponse.json();
-            const handloansList = handloansData.content || handloansData || [];
-            setHandloans(handloansList);
-          }
-        } catch (handloanError) {
-          console.warn('Could not fetch handloans:', handloanError);
-        }
+    //     // Fetch handloans data
+    //     try {
+    //       const bearerToken = localStorage.getItem('token');
+    //       const handloansResponse = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/all?page=0&size=20`, {
+    //         headers: { 'Authorization': `Bearer ${bearerToken}` }
+    //       });
+    //       if (handloansResponse.ok) {
+    //         const handloansData = await handloansResponse.json();
+    //         const handloansList = handloansData.content || handloansData || [];
+    //         setHandloans(handloansList);
+    //       }
+    //     } catch (handloanError) {
+    //       console.warn('Could not fetch handloans:', handloanError);
+    //     }
         
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch day closing records');
-        setLoading(false);
-      }
-    };
+    //     setLoading(false);
+    //   } catch (err) {
+    //     setError('Failed to fetch day closing records');
+    //     setLoading(false);
+    //   }
+    // };
 
-    fetchData();
+    // fetchData();
   }, [selectedOrgId]);
 
   // useEffect(() => {
@@ -1221,6 +1221,36 @@ function DayClosingReport() {
       setOrganizationId(selectedOrgId);
       if (selectedOrgId && selectedDate) {
         await fetchDayClosing(selectedDate, selectedOrgId);
+
+         // Fetch expenses data
+        try {
+          const bearerToken = localStorage.getItem('token');
+          const expensesResponse = await fetch(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=20&organizationId=${selectedOrgId}&createdDate=${selectedDate}`, {
+            headers: { 'Authorization': `Bearer ${bearerToken}` }
+          });
+          if (expensesResponse.ok) {
+            const expensesData = await expensesResponse.json();
+            const expensesList = expensesData.content || expensesData || [];
+            setExpenses(expensesList);
+          }
+        } catch (expenseError) {
+          console.warn('Could not fetch expenses:', expenseError);
+        }
+
+        try {
+          const bearerToken = localStorage.getItem('token');
+          const handloansResponse = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgIdAndCreatedDate?page=0&size=20&organizationId=${selectedOrgId}&createdDate=${selectedDate}`, {
+            headers: { 'Authorization': `Bearer ${bearerToken}` }
+          });
+          if (handloansResponse.ok) {
+            const handloansData = await handloansResponse.json();
+            const handloansList = handloansData.content || handloansData || [];
+            setHandloans(handloansList);
+          }
+        } catch (handloanError) {
+          console.warn('Could not fetch handloans:', handloanError);
+        }
+
       }
     } else if (type === 'date') {
       const selectedDate = e.target.value;
