@@ -73,8 +73,8 @@
 
 //   useEffect(() => {
 //     // Calculate totals when records or expenses change
-//     const cashInTotal = records.reduce((sum, rec) => sum + (Number(rec.cashIn) || 0), 0);
-//     const cashOutTotal = records.reduce((sum, rec) => sum + (Number(rec.cashOut) || 0), 0);
+//     const cashInTotal = records.reduce((sum, rec) => sum + (Number(records.cashIn) || 0), 0);
+//     const cashOutTotal = records.reduce((sum, rec) => sum + (Number(records.cashOut) || 0), 0);
     
 //     // Expense categorization logic
 //     const expenseCashInTotal = expenses.reduce((sum, expense) => {
@@ -141,7 +141,7 @@
 
 //   const handleGenerateReport = () => {
 //     try {
-//       const filteredRecords = records.filter(rec => rec.closingDate === selectedDate);
+//       const filteredRecords = records.filter(rec => records.closingDate === selectedDate);
 //       const filteredExpenses = getExpensesForDate(selectedDate);
 //       const { cashInExpenses, cashOutExpenses } = categorizeExpenses(filteredExpenses);
       
@@ -186,12 +186,12 @@
 //         ];
         
 //         const mainTableRows = filteredRecords.map(rec => [
-//           rec.closingDate || '',
-//           rec.description || '',
-//           rec.createdBy || '',
-//           rec.createdTime || '',
-//           rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : '-',
-//           rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : '-'
+//           records.closingDate || '',
+//           records.description || '',
+//           records.createdBy || '',
+//           records.createdTime || '',
+//           records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : '-',
+//           records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : '-'
 //         ]);
 
 //         autoTable(doc, {
@@ -269,17 +269,17 @@
 
 //         if (filteredRecords.length > 0) {
 //           doc.setFontSize(12);
-//           doc.text(`Day Closing Details - ${rec.closingDate}`, 20, currentY);
+//           doc.text(`Day Closing Details - ${records.closingDate}`, 20, currentY);
 //           currentY += 10;
 
 //           const infoTableData = [
-//             ['Description:', rec.description || ''],
-//             ['Created By:', rec.createdBy || ''],
-//             ['Created Time:', rec.createdTime || ''],
-//             ['Starting Balance:', rec.startingBalance ? ` ${safeToLocaleString(rec.startingBalance)}` : ' 0'],
-//             ['Cash In:', rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : ' 0'],
-//             ['Cash Out:', rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : ' 0'],
-//             ['Closing Balance:', rec.closingBalance ? ` ${safeToLocaleString(rec.closingBalance)}` : ' 0']
+//             ['Description:', records.description || ''],
+//             ['Created By:', records.createdBy || ''],
+//             ['Created Time:', records.createdTime || ''],
+//             ['Starting Balance:', records.startingBalance ? ` ${safeToLocaleString(records.startingBalance)}` : ' 0'],
+//             ['Cash In:', records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : ' 0'],
+//             ['Cash Out:', records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : ' 0'],
+//             ['Closing Balance:', records.closingBalance ? ` ${safeToLocaleString(records.closingBalance)}` : ' 0']
 //           ];
 
 //           autoTable(doc, {
@@ -302,10 +302,10 @@
 //           const coinsData = [
 //             ['1  Coin', '5  Coin', '10  Coin', '20  Coin'],
 //             [
-//               rec._1CoinCount || 0,
-//               rec._5CoinCount || 0,
-//               rec._10CoinCount || 0,
-//               rec._20CoinCount || 0
+//               records._1CoinCount || 0,
+//               records._5CoinCount || 0,
+//               records._10CoinCount || 0,
+//               records._20CoinCount || 0
 //             ]
 //           ];
 
@@ -326,12 +326,12 @@
 
 //           const notesHead = ['10  Note', '20  Note', '50  Note', '100  Note', '200  Note', '500  Note'];
 //           const notesData = [
-//             rec._10NoteCount || 0,
-//             rec._20NoteCount || 0,
-//             rec._50NoteCount || 0,
-//             rec._100NoteCount || 0,
-//             rec._200NoteCount || 0,
-//             rec._500NoteCount || 0
+//             records._10NoteCount || 0,
+//             records._20NoteCount || 0,
+//             records._50NoteCount || 0,
+//             records._100NoteCount || 0,
+//             records._200NoteCount || 0,
+//             records._500NoteCount || 0
 //           ];
 
 //           autoTable(doc, {
@@ -351,12 +351,12 @@
 
 //           const soiledNotesHead = ['10  Soiled', '20  Soiled', '50  Soiled', '100  Soiled', '200  Soiled', '500  Soiled'];
 //           const soiledNotesData = [
-//             rec._10SoiledNoteCount || 0,
-//             rec._20SoiledNoteCount || 0,
-//             rec._50SoiledNoteCount || 0,
-//             rec._100SoiledNoteCount || 0,
-//             rec._200SoiledNoteCount || 0,
-//             rec._500SoiledNoteCount || 0
+//             records._10SoiledNoteCount || 0,
+//             records._20SoiledNoteCount || 0,
+//             records._50SoiledNoteCount || 0,
+//             records._100SoiledNoteCount || 0,
+//             records._200SoiledNoteCount || 0,
+//             records._500SoiledNoteCount || 0
 //           ];
 
 //           autoTable(doc, {
@@ -375,8 +375,8 @@
 //       doc.setFontSize(16);
 //       doc.text(`Grand Summary - ${selectedDate}`, 105, 20, { align: 'center' });
       
-//       const dateCashInTotal = filteredRecords.reduce((sum, rec) => sum + (Number(rec.cashIn) || 0), 0);
-//       const dateCashOutTotal = filteredRecords.reduce((sum, rec) => sum + (Number(rec.cashOut) || 0), 0);
+//       const dateCashInTotal = filteredRecords.reduce((sum, rec) => sum + (Number(records.cashIn) || 0), 0);
+//       const dateCashOutTotal = filteredRecords.reduce((sum, rec) => sum + (Number(records.cashOut) || 0), 0);
       
 //       const expenseCashInTotal = cashInExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
 //       const expenseCashOutTotal = cashOutExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
@@ -899,19 +899,19 @@
 //                 <tbody>
 //                   {records.map((rec, idx) => (
 //                     <tr key={idx} style={styles.tableRow}>
-//                       <td style={styles.tableCell}>{rec.closingDate}</td>
-//                       <td style={styles.tableCell}>{rec.description}</td>
-//                       <td style={styles.tableCell}>{rec.createdBy}</td>
-//                       <td style={styles.tableCell}>{rec.createdTime}</td>
-//                       <td style={styles.tableCell}>{safeToLocaleString(rec.startingBalance)}</td>
+//                       <td style={styles.tableCell}>{records.closingDate}</td>
+//                       <td style={styles.tableCell}>{records.description}</td>
+//                       <td style={styles.tableCell}>{records.createdBy}</td>
+//                       <td style={styles.tableCell}>{records.createdTime}</td>
+//                       <td style={styles.tableCell}>{safeToLocaleString(records.startingBalance)}</td>
 //                       <td style={{...styles.tableCell, color: '#059669', fontWeight: '500'}}>
-//                         {rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : '-'}
+//                         {records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : '-'}
 //                       </td>
 //                       <td style={{...styles.tableCell, color: '#dc2626', fontWeight: '500'}}>
-//                         {rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : '-'}
+//                         {records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : '-'}
 //                       </td>
 //                       <td style={{...styles.tableCell, color: '#1e3a8a', fontWeight: '600'}}>
-//                         {safeToLocaleString(rec.closingBalance)}
+//                         {safeToLocaleString(records.closingBalance)}
 //                       </td>
 //                     </tr>
 //                   ))}
@@ -947,23 +947,23 @@
 //                   <tbody>
 //                     {records.map((rec, idx) => (
 //                       <tr key={idx} style={styles.tableRow}>
-//                         <td style={styles.tableCell}>{rec.closingDate}</td>
-//                         <td style={styles.tableCell}>{rec._1CoinCount || 0}</td>
-//                         <td style={styles.tableCell}>{rec._5CoinCount || 0}</td>
-//                         <td style={styles.tableCell}>{rec._10CoinCount || 0}</td>
-//                         <td style={styles.tableCell}>{rec._20CoinCount || 0}</td>
-//                         <td style={styles.tableCell}>{rec._10NoteCount || 0}</td>
-//                         <td style={styles.tableCell}>{rec._20NoteCount || 0}</td>
-//                         <td style={styles.tableCell}>{rec._50NoteCount || 0}</td>
-//                         <td style={styles.tableCell}>{rec._100NoteCount || 0}</td>
-//                         <td style={styles.tableCell}>{rec._200NoteCount || 0}</td>
-//                         <td style={styles.tableCell}>{rec._500NoteCount || 0}</td>
-//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._10SoiledNoteCount || 0}</td>
-//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._20SoiledNoteCount || 0}</td>
-//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._50SoiledNoteCount || 0}</td>
-//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._100SoiledNoteCount || 0}</td>
-//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._200SoiledNoteCount || 0}</td>
-//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._500SoiledNoteCount || 0}</td>
+//                         <td style={styles.tableCell}>{records.closingDate}</td>
+//                         <td style={styles.tableCell}>{records._1CoinCount || 0}</td>
+//                         <td style={styles.tableCell}>{records._5CoinCount || 0}</td>
+//                         <td style={styles.tableCell}>{records._10CoinCount || 0}</td>
+//                         <td style={styles.tableCell}>{records._20CoinCount || 0}</td>
+//                         <td style={styles.tableCell}>{records._10NoteCount || 0}</td>
+//                         <td style={styles.tableCell}>{records._20NoteCount || 0}</td>
+//                         <td style={styles.tableCell}>{records._50NoteCount || 0}</td>
+//                         <td style={styles.tableCell}>{records._100NoteCount || 0}</td>
+//                         <td style={styles.tableCell}>{records._200NoteCount || 0}</td>
+//                         <td style={styles.tableCell}>{records._500NoteCount || 0}</td>
+//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{records._10SoiledNoteCount || 0}</td>
+//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{records._20SoiledNoteCount || 0}</td>
+//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{records._50SoiledNoteCount || 0}</td>
+//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{records._100SoiledNoteCount || 0}</td>
+//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{records._200SoiledNoteCount || 0}</td>
+//                         <td style={{...styles.tableCell, color: '#dc2626'}}>{records._500SoiledNoteCount || 0}</td>
 //                       </tr>
 //                     ))}
 //                   </tbody>
@@ -1088,49 +1088,49 @@ function DayClosingReport() {
     fetchData();
   }, [selectedOrgId]);
 
-  useEffect(() => {
-    // Calculate totals when records, expenses, or handloans change
-    const cashInTotal = records.reduce((sum, rec) => sum + (Number(rec.cashIn) || 0), 0);
-    const cashOutTotal = records.reduce((sum, rec) => sum + (Number(rec.cashOut) || 0), 0);
+  // useEffect(() => {
+  //   // Calculate totals when records, expenses, or handloans change
+  //   const cashInTotal = records.reduce((sum, rec) => sum + (Number(records.cashIn) || 0), 0);
+  //   const cashOutTotal = records.reduce((sum, rec) => sum + (Number(records.cashOut) || 0), 0);
     
-    // Expense categorization logic
-    const expenseCashInTotal = expenses.reduce((sum, expense) => {
-      const isCashIn = expense.expenseType === 'CASH-IN';
-      return isCashIn ? sum + (Number(expense.amount) || 0) : sum;
-    }, 0);
+  //   // Expense categorization logic
+  //   const expenseCashInTotal = expenses.reduce((sum, expense) => {
+  //     const isCashIn = expense.expenseType === 'CASH-IN';
+  //     return isCashIn ? sum + (Number(expense.amount) || 0) : sum;
+  //   }, 0);
     
-    const expenseCashOutTotal = expenses.reduce((sum, expense) => {
-      const isCashOut = expense.expenseType === 'CASH-OUT';
-      return isCashOut ? sum + (Number(expense.amount) || 0) : sum;
-    }, 0);
+  //   const expenseCashOutTotal = expenses.reduce((sum, expense) => {
+  //     const isCashOut = expense.expenseType === 'CASH-OUT';
+  //     return isCashOut ? sum + (Number(expense.amount) || 0) : sum;
+  //   }, 0);
 
-    // Handloan categorization logic - Updated for new field names
-    const handloanCashInTotal = handloans.reduce((sum, handloan) => {
-      const isCashIn = handloan.handLoanType === 'RECOVER' || handloan.handLoanType === 'RECEIVED';
-      return isCashIn ? sum + (Number(handloan.loanAmount) || 0) : sum;
-    }, 0);
+  //   // Handloan categorization logic - Updated for new field names
+  //   const handloanCashInTotal = handloans.reduce((sum, handloan) => {
+  //     const isCashIn = handloan.handLoanType === 'RECOVER' || handloan.handLoanType === 'RECEIVED';
+  //     return isCashIn ? sum + (Number(handloan.loanAmount) || 0) : sum;
+  //   }, 0);
     
-    const handloanCashOutTotal = handloans.reduce((sum, handloan) => {
-      const isCashOut = handloan.handLoanType === 'ISSUE' || handloan.handLoanType === 'GIVEN';
-      return isCashOut ? sum + (Number(handloan.loanAmount) || 0) : sum;
-    }, 0);
+  //   const handloanCashOutTotal = handloans.reduce((sum, handloan) => {
+  //     const isCashOut = handloan.handLoanType === 'ISSUE' || handloan.handLoanType === 'GIVEN';
+  //     return isCashOut ? sum + (Number(handloan.loanAmount) || 0) : sum;
+  //   }, 0);
 
-    // Safe starting balance calculation
-    let startingBalance = 0;
-    if (records.length > 0 && records[0].startingBalance) {
-      startingBalance = Number(records[0].startingBalance) || 0;
-    }
+  //   // Safe starting balance calculation
+  //   let startingBalance = 0;
+  //   if (records.length > 0 && records[0].startingBalance) {
+  //     startingBalance = Number(records[0].startingBalance) || 0;
+  //   }
     
-    setTotals({ 
-      cashIn: cashInTotal, 
-      cashOut: cashOutTotal, 
-      startingBalance: startingBalance,
-      expenseCashIn: expenseCashInTotal,
-      expenseCashOut: expenseCashOutTotal,
-      handloanCashIn: handloanCashInTotal,
-      handloanCashOut: handloanCashOutTotal
-    });
-  }, [records, expenses, handloans]);
+  //   setTotals({ 
+  //     cashIn: cashInTotal, 
+  //     cashOut: cashOutTotal, 
+  //     startingBalance: startingBalance,
+  //     expenseCashIn: expenseCashInTotal,
+  //     expenseCashOut: expenseCashOutTotal,
+  //     handloanCashIn: handloanCashInTotal,
+  //     handloanCashOut: handloanCashOutTotal
+  //   });
+  // }, [records, expenses, handloans]);
 
   useEffect(() => {
     // Fetch organizations for dropdown
@@ -1214,9 +1214,51 @@ function DayClosingReport() {
     return { cashInHandloans, cashOutHandloans };
   };
 
+  const handleChange = async (e) => {
+    const { name, value, type } = e.target;
+    if (type === 'select-one') {
+      const selectedOrgId = e.target.value;
+      setOrganizationId(selectedOrgId);
+      if (selectedOrgId && selectedDate) {
+        await fetchDayClosing(selectedDate, selectedOrgId);
+      }
+    } else if (type === 'date') {
+      const selectedDate = e.target.value;
+      setSelectedDate(selectedDate);
+      if (organizationId && selectedDate) {
+        await fetchDayClosing(selectedDate, organizationId);
+      }
+    }
+
+  };
+
+  const fetchDayClosing = async (closingDate, orgId) => {
+    try {      
+      setLoading(true);
+      setError('');
+      const bearerToken = localStorage.getItem('token');
+      const response = await fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings/search/findByClosingDateAndOrganizationId?closingDate=${closingDate}&organizationId=${orgId}`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      const data = await response.json();
+
+      setRecords(data);
+    } catch (err) {
+      console.log(err);
+      setError('No records found for the selected date and organization');
+      setRecords(JSON.stringify({cashIn :0, cashOut:0, closingBalance:0}));
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGenerateReport = () => {
     try {
-      const filteredRecords = records.filter(rec => rec.closingDate === selectedDate);
+      const filteredRecords = records.filter(rec => records.closingDate === selectedDate);
       const filteredExpenses = getExpensesForDate(selectedDate);
       const filteredHandloans = getHandloansForDate(selectedDate);
       const allHandloansWithBalances = getAllHandloansWithBalances();
@@ -1257,10 +1299,10 @@ function DayClosingReport() {
         ];
         
         const mainTableRows = filteredRecords.map(rec => [
-          rec.closingDate || '',
-          rec.description || '',
-          rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : '-',
-          rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : '-'
+          records.closingDate || '',
+          records.description || '',
+          records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : '-',
+          records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : '-'
         ]);
 
         autoTable(doc, {
@@ -1484,15 +1526,15 @@ function DayClosingReport() {
 
         if (filteredRecords.length > 0) {
           doc.setFontSize(12);
-          doc.text(`Day Closing Details - ${rec.closingDate}`, 20, currentY);
+          doc.text(`Day Closing Details - ${records.closingDate}`, 20, currentY);
           currentY += 10;
 
           const infoTableData = [
-            ['Description:', rec.description || ''],
-            ['Starting Balance:', rec.startingBalance ? ` ${safeToLocaleString(rec.startingBalance)}` : ' 0'],
-            ['Cash In:', rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : ' 0'],
-            ['Cash Out:', rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : ' 0'],
-            ['Closing Balance:', rec.closingBalance ? ` ${safeToLocaleString(rec.closingBalance)}` : ' 0']
+            ['Description:', records.description || ''],
+            ['Starting Balance:', records.startingBalance ? ` ${safeToLocaleString(records.startingBalance)}` : ' 0'],
+            ['Cash In:', records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : ' 0'],
+            ['Cash Out:', records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : ' 0'],
+            ['Closing Balance:', records.closingBalance ? ` ${safeToLocaleString(records.closingBalance)}` : ' 0']
           ];
 
           autoTable(doc, {
@@ -1515,10 +1557,10 @@ function DayClosingReport() {
           const coinsData = [
             ['1  Coin', '5  Coin', '10  Coin', '20  Coin'],
             [
-              rec._1CoinCount || 0,
-              rec._5CoinCount || 0,
-              rec._10CoinCount || 0,
-              rec._20CoinCount || 0
+              records._1CoinCount || 0,
+              records._5CoinCount || 0,
+              records._10CoinCount || 0,
+              records._20CoinCount || 0
             ]
           ];
 
@@ -1539,12 +1581,12 @@ function DayClosingReport() {
 
           const notesHead = ['10  Note', '20  Note', '50  Note', '100  Note', '200  Note', '500  Note'];
           const notesData = [
-            rec._10NoteCount || 0,
-            rec._20NoteCount || 0,
-            rec._50NoteCount || 0,
-            rec._100NoteCount || 0,
-            rec._200NoteCount || 0,
-            rec._500NoteCount || 0
+            records._10NoteCount || 0,
+            records._20NoteCount || 0,
+            records._50NoteCount || 0,
+            records._100NoteCount || 0,
+            records._200NoteCount || 0,
+            records._500NoteCount || 0
           ];
 
           autoTable(doc, {
@@ -1564,12 +1606,12 @@ function DayClosingReport() {
 
           const soiledNotesHead = ['10  Soiled', '20  Soiled', '50  Soiled', '100  Soiled', '200  Soiled', '500  Soiled'];
           const soiledNotesData = [
-            rec._10SoiledNoteCount || 0,
-            rec._20SoiledNoteCount || 0,
-            rec._50SoiledNoteCount || 0,
-            rec._100SoiledNoteCount || 0,
-            rec._200SoiledNoteCount || 0,
-            rec._500SoiledNoteCount || 0
+            records._10SoiledNoteCount || 0,
+            records._20SoiledNoteCount || 0,
+            records._50SoiledNoteCount || 0,
+            records._100SoiledNoteCount || 0,
+            records._200SoiledNoteCount || 0,
+            records._500SoiledNoteCount || 0
           ];
 
           autoTable(doc, {
@@ -1587,8 +1629,8 @@ function DayClosingReport() {
       // doc.addPage();
       doc.setFontSize(16);
       
-      const dateCashInTotal = filteredRecords.reduce((sum, rec) => sum + (Number(rec.cashIn) || 0), 0);
-      const dateCashOutTotal = filteredRecords.reduce((sum, rec) => sum + (Number(rec.cashOut) || 0), 0);
+      const dateCashInTotal = filteredRecords.reduce((sum, rec) => sum + (Number(records.cashIn) || 0), 0);
+      const dateCashOutTotal = filteredRecords.reduce((sum, rec) => sum + (Number(records.cashOut) || 0), 0);
       
       const expenseCashInTotal = cashInExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
       const expenseCashOutTotal = cashOutExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
@@ -1899,7 +1941,7 @@ function DayClosingReport() {
             <input
               type="date"
               value={selectedDate}
-              // onChange={handleChange}
+              onChange={handleChange}
               style={styles.dateInput}
             />
           </div>
@@ -1907,7 +1949,7 @@ function DayClosingReport() {
             {/* <label className="form-label">Organization</label> */}
             <select
               value={organizationId}
-              // onChange={handleChange}
+              onChange={handleChange}
               className="form-select"
               required
             >
@@ -1986,7 +2028,7 @@ function DayClosingReport() {
               <div style={{...styles.summaryCard,}}>
                 <div style={{color: '#2563eb', fontWeight: '600', fontSize: '14px'}}>Total Cash-In</div>
                 <div style={{...styles.summaryAmount, color: '#2563eb'}}>
-                  {safeToLocaleString(totals.cashIn + totals.expenseCashIn + totals.handloanCashIn)}
+                  {safeToLocaleString(records.cashIn)}
                 </div>
                 
                 {/* <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
@@ -1999,7 +2041,7 @@ function DayClosingReport() {
               <div style={{...styles.summaryCard, }}>
                 <div style={{color: '#dc2626', fontWeight: '600', fontSize: '14px'}}>Total Cash-Out</div>
                 <div style={{...styles.summaryAmount, color: '#dc2626'}}>
-                  {safeToLocaleString(totals.cashOut + totals.expenseCashOut + totals.handloanCashOut)}
+                  {safeToLocaleString(records.cashOut)}
                 </div>
                 {/* <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
                   Petty Cash: {safeToLocaleString(totals.cashOut)}
@@ -2012,8 +2054,7 @@ function DayClosingReport() {
                 <div style={{color: '#059669', fontWeight: '600', fontSize: '14px'}}>Net Balance</div>
                 <div style={{...styles.summaryAmount, color: '#059669'}}>
                   {safeToLocaleString(
-                    (totals.cashIn + totals.expenseCashIn + totals.handloanCashIn) - 
-                    (totals.cashOut + totals.expenseCashOut + totals.handloanCashOut)
+                   records.closingBalance
                   )}
                 </div>
                 {/* <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
@@ -2103,22 +2144,22 @@ function DayClosingReport() {
                   </tr>
                 </thead>
                 <tbody>
-                  {records.map((rec, idx) => (
-                    <tr key={idx} style={styles.tableRow}>
-                      <td style={styles.tableCell}>{rec.closingDate}</td>
-                      <td style={styles.tableCell}>{rec.description}</td>
-                      <td style={styles.tableCell}>{safeToLocaleString(rec.startingBalance)}</td>
+                  {
+                    <tr  style={styles.tableRow}>
+                      <td style={styles.tableCell}>{records.closingDate}</td>
+                      <td style={styles.tableCell}>{records.description}</td>
+                      <td style={styles.tableCell}>{safeToLocaleString(records.startingBalance)}</td>
                       <td style={{...styles.tableCell, color: '#059669', fontWeight: '500'}}>
-                        {rec.cashIn ? ` ${safeToLocaleString(rec.cashIn)}` : '-'}
+                        {records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : '-'}
                       </td>
                       <td style={{...styles.tableCell, color: '#dc2626', fontWeight: '500'}}>
-                        {rec.cashOut ? ` ${safeToLocaleString(rec.cashOut)}` : '-'}
+                        {records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : '-'}
                       </td>
                       <td style={{...styles.tableCell, color: '#1e3a8a', fontWeight: '600'}}>
-                        {safeToLocaleString(rec.closingBalance)}
+                        {safeToLocaleString(records.closingBalance)}
                       </td>
                     </tr>
-                  ))}
+                  }
                 </tbody>
               </table>
             </div>
