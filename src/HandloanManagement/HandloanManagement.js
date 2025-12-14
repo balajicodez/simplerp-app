@@ -142,7 +142,7 @@ const HandLoanManagement = () => {
     try {
       const bearerToken = localStorage.getItem('token');
       const response = await fetch(
-        `${APP_SERVER_URL_PREFIX}/expenses/balance?organizationId=${organizationId}&createdDate=${date}`,
+        `${APP_SERVER_URL_PREFIX}/expenses/current_balance?organizationId=${organizationId}&createdDate=${date}`,
         { headers: { 'Authorization': `Bearer ${bearerToken}` } }
       );
       
@@ -987,16 +987,20 @@ const CreateHandLoanForm = ({
   const isAmountExceedingBalance = form.loanAmount > fetchedBalance;
 
   return (
-    <div className="form-container">
-      <div className="form-header">
+    <div className="form-container1">
+      <div className="form-header1">
         <h2>Create New Loan</h2>
-        <button className="btn-close" onClick={onCancel}>×</button>
+        <button className="btn-close" onClick={onCancel}>
+          ×
+        </button>
       </div>
 
       {/* Balance Information */}
       <div className="balance-info-section">
         <div className="balance-display">
-          <div className="balance-label">Available Balance for Selected Organization & Date:</div>
+          <div className="balance-label">
+            Available Balance for Selected Organization & Date:
+          </div>
           <div className="balance-amount-display">
             {balanceLoading ? (
               <div className="balance-loading">
@@ -1004,7 +1008,11 @@ const CreateHandLoanForm = ({
                 Calculating balance...
               </div>
             ) : (
-              <div className={`balance-value ${fetchedBalance <= 0 ? 'zero-balance' : ''}`}>
+              <div
+                className={`balance-value ${
+                  fetchedBalance <= 0 ? "zero-balance" : ""
+                }`}
+              >
                 {formatCurrency(fetchedBalance)}
               </div>
             )}
@@ -1017,14 +1025,11 @@ const CreateHandLoanForm = ({
         )}
       </div>
 
-      {error && (
-        <div className="alert alert-error">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert alert-error">{error}</div>}
 
       <form onSubmit={handleSubmit}>
-        <div className="form-grid">
+        <div className="enhanced-grid1" style={{ padding: "4px" }}>
+          {/* Organization */}
           <div className="form-group">
             <label>Organization *</label>
             <select
@@ -1034,7 +1039,7 @@ const CreateHandLoanForm = ({
               required
             >
               <option value="">Select Organization</option>
-              {organizations.map(org => (
+              {organizations.map((org) => (
                 <option key={org.id} value={org.id}>
                   {org.name}
                 </option>
@@ -1042,6 +1047,7 @@ const CreateHandLoanForm = ({
             </select>
           </div>
 
+          {/* Loan Date */}
           <div className="form-group">
             <label>Loan Date *</label>
             <input
@@ -1053,6 +1059,7 @@ const CreateHandLoanForm = ({
             />
           </div>
 
+          {/* Party Name */}
           <div className="form-group">
             <label>Party Name *</label>
             <input
@@ -1065,6 +1072,7 @@ const CreateHandLoanForm = ({
             />
           </div>
 
+          {/* Loan Amount */}
           <div className="form-group">
             <label>Loan Amount (₹) *</label>
             <input
@@ -1072,18 +1080,20 @@ const CreateHandLoanForm = ({
               name="loanAmount"
               value={form.loanAmount}
               onChange={handleChange}
-              placeholder="Enter amount"
               min="1"
               max={fetchedBalance}
               required
-              className={isAmountExceedingBalance ? 'error' : ''}
+              className={isAmountExceedingBalance ? "error" : ""}
               disabled={fetchedBalance <= 0}
             />
+
             {isAmountExceedingBalance && (
               <div className="error-text">
-                Exceeds available balance by {formatCurrency(form.loanAmount - fetchedBalance)}
+                Exceeds available balance by{" "}
+                {formatCurrency(form.loanAmount - fetchedBalance)}
               </div>
             )}
+
             {fetchedBalance > 0 && (
               <div className="input-hint">
                 Maximum allowed: {formatCurrency(fetchedBalance)}
@@ -1091,6 +1101,7 @@ const CreateHandLoanForm = ({
             )}
           </div>
 
+          {/* Phone */}
           <div className="form-group">
             <label>Phone Number</label>
             <input
@@ -1102,28 +1113,79 @@ const CreateHandLoanForm = ({
             />
           </div>
 
+          {/* Narration */}
           <div className="form-group full-width">
             <label>Narration</label>
             <textarea
               name="narration"
               value={form.narration}
               onChange={handleChange}
-              placeholder="Loan purpose or notes"
               rows="3"
+              placeholder="Loan purpose or notes"
             />
+          </div>
+
+          {/* 🔗 FILE UPLOAD (NEW) */}
+          <div className="form-group full-width">
+            <label>Receipt Attachment</label>
+            <input
+              type="file"
+              name="file"
+              accept="image/*,.pdf,.doc,.docx,.xlsx"
+              onChange={handleChange}
+            />
+
+            {form.file && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "12px",
+                  marginTop: "4px",
+                }}
+              >
+                <span>{form.file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setForm((prev) => ({ ...prev, file: null }))}
+                  style={{
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                  }}
+                  title="Remove file"
+                >
+                  ×
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="form-actions">
-          <button type="button" onClick={onCancel} disabled={loading}>
+        {/* Actions */}
+        <div
+          className="form-actions1"
+          style={{ padding: "15px", margin: "0px 10px" }}
+        >
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            className="btn-secondary"
+          >
             Cancel
           </button>
-          <button 
-            type="submit" 
-            disabled={loading || isAmountExceedingBalance || fetchedBalance <= 0}
+
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={
+              loading || isAmountExceedingBalance || fetchedBalance <= 0
+            }
             title={fetchedBalance <= 0 ? "No available balance" : ""}
           >
-            {loading ? 'Creating...' : 'Create Loan'}
+            {loading ? "Creating..." : "Create Loan"}
           </button>
         </div>
       </form>

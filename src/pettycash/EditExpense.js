@@ -179,35 +179,7 @@ function EditExpense() {
       <Sidebar isOpen={true} />
       <PageCard title={`Edit Expense`}>
         
-        <div className={`edit-expense-header ${getExpenseTypeColor()}-header`}>
-          <div className="header-content">
-            <div className="header-icon">{getExpenseIcon()}</div>
-            <div className="header-stats">
-              <div className="stat-badge">
-                <span className="stat-number">{organizationCount}</span>
-                <span className="stat-label">Organizations</span>
-              </div>
-              <div className="stat-badge">
-                <span className="stat-number">{id ? '1' : '0'}</span>
-                <span className="stat-label">Expense</span>
-              </div>
-            </div>
-            <div className="header-text">
-              <h1>Edit Expense #{id}</h1>
-              <p>Update expense details and organization information</p>
-              {form.expenseSubType && (
-                <div className="expense-category">
-                  <span className="category-badge">{form.expenseSubType}</span>
-                  {form.expenseType && (
-                    <span className={`type-badge type-${form.expenseType.toLowerCase()}`}>
-                      {form.expenseType}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        
 
         <div className="edit-expense-form">
           {error && (
@@ -237,12 +209,12 @@ function EditExpense() {
             <form onSubmit={handleSubmit}>
               <div className="form-sections">
                 
-                <div className="form-section">
+                <div className="form-section1">
                   <h3 className="section-title">
                     <span className="section-icon">🏢</span>
                     Organization & Basic Information
                   </h3>
-                  <div className="form-grid enhanced-grid">
+                  <div className=" enhanced-grid1">
                     <div className="form-group">
                       <label className="form-label required">Branch</label>
                       <select 
@@ -335,21 +307,21 @@ function EditExpense() {
                   </div>
                 </div>
 
-                <div className="form-section summary-section">
+                <div className="form-section1 ">
                   <h3 className="section-title">
                     <span className="section-icon">📊</span>
                     Expense Summary
                   </h3>
-                  <div className="summary-grid">                   
+                  <div className="summary-grid1">                   
                     <div className="summary-item">
-                      <span className="summary-label">Organization:</span>
-                      <span className="summary-value">
+                      <span className="">Organization:</span>
+                      <span >
                         {form.organizationName || 'Not selected'}
                       </span>
                     </div>                    
                     <div className="summary-item">
-                      <span className="summary-label">Amount:</span>
-                      <span className="summary-value amount">
+                      <span className="">Amount:</span>
+                      <span className="">
                         {form.amount ? `₹${Number(form.amount).toLocaleString()}` : 'Not entered'}
                       </span>
                     </div>
@@ -363,7 +335,7 @@ function EditExpense() {
                 </div>
               </div>
 
-              <div className="form-actions">
+              <div className="form-actions1">
                 <button 
                   type="button" 
                   className="btn-secondary"
@@ -371,22 +343,22 @@ function EditExpense() {
                   disabled={loading}
                 >
                   <span className="btn-icon">←</span>
-                  Back to Details
+                  Back
                 </button>
                 
                 <div className="action-buttons">
-                  <button 
+                  {/* <button 
                     type="button" 
                     className="btn-outline"
                     onClick={() => navigate(-1)}
                     disabled={loading}
                   >
                     Cancel
-                  </button>
+                  </button> */}
                   
                   <button 
                     type="submit" 
-                    className={`btn-primary submit-btn ${loading ? 'loading' : ''}`}
+                    className={`btn-primary1 submit-btn ${loading ? 'loading' : ''}`}
                     disabled={loading}
                   >
                     {loading ? (

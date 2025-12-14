@@ -1543,7 +1543,7 @@ input:disabled, select:disabled {
 }
 
 .payroll-table th, .payroll-table td { 
-  padding: 10px 12px; 
+  padding: 1px 2px; 
   border-bottom: 1px solid #e6eef8; 
 }
 

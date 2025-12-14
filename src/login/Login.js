@@ -182,7 +182,6 @@ function Login() {
                 "Login to Dashboard"
               )}
             </button>
-
             <div className="signup">
               Need an account? <a href="#/signup">Sign up here</a>
             </div>

@@ -169,6 +169,19 @@ function ExpensesOutward() {
     fetchOrganizations();
   }, []);
 
+   const formatDate = (dateString) => {
+     if (!dateString) return "-";
+     try {
+       const date = new Date(dateString);
+       return date.toLocaleDateString("en-IN", {
+         day: "2-digit",
+         month: "2-digit",
+         year: "numeric",
+       });
+     } catch (e) {
+       return dateString;
+     }
+   };
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) return '↕️';
     return sortConfig.direction === 'ascending' ? '↑' : '↓';
@@ -191,14 +204,15 @@ function ExpensesOutward() {
     <div className="page-container">
       <Sidebar isOpen={true} />
       <PageCard title="Cash Outward Management">
-
         {/* Header Section with Stats */}
         <div className="dashboard-header1">
           <div className="header-content">
             <div></div>
             <button
               className="btn-primary1"
-              onClick={() => navigate('/pettycash/expenses/create?type=CASH-OUT')}
+              onClick={() =>
+                navigate("/pettycash/expenses/create?type=CASH-OUT")
+              }
             >
               <span className="btn-icon">+</span>
               Create New Outward
@@ -210,7 +224,9 @@ function ExpensesOutward() {
             <div className="stat-card outward-stat">
               {/* <div className="stat-icon">💸</div> */}
               <div className="stat-content">
-                <div className="stat-value">₹{totalAmount.toLocaleString()}</div>
+                <div className="stat-value">
+                  ₹{totalAmount.toLocaleString()}
+                </div>
                 <div className="stat-label">Total Outflow</div>
               </div>
             </div>
@@ -224,7 +240,9 @@ function ExpensesOutward() {
             <div className="stat-card outward-stat">
               {/* <div className="stat-icon">📊</div> */}
               <div className="stat-content">
-                <div className="stat-value">₹{Math.round(averageExpense).toLocaleString()}</div>
+                <div className="stat-value">
+                  ₹{Math.round(averageExpense).toLocaleString()}
+                </div>
                 <div className="stat-label">Average per Expense</div>
               </div>
             </div>
@@ -232,10 +250,10 @@ function ExpensesOutward() {
               {/* <div className="stat-icon">🏢</div> */}
               <div className="stat-content">
                 <div className="stat-value">
-                  {selectedOrgId ? '1' : organizations.length}
+                  {selectedOrgId ? "1" : organizations.length}
                 </div>
                 <div className="stat-label">
-                  {selectedOrgId ? 'Selected Org' : 'Organizations'}
+                  {selectedOrgId ? "Selected Org" : "Organizations"}
                 </div>
               </div>
             </div>
@@ -257,7 +275,7 @@ function ExpensesOutward() {
               {searchTerm && (
                 <button
                   className="clear-search"
-                  onClick={() => setSearchTerm('')}
+                  onClick={() => setSearchTerm("")}
                   title="Clear search"
                 >
                   ×
@@ -273,10 +291,10 @@ function ExpensesOutward() {
                 className="filter-select"
               >
                 <option value="">All Organizations</option>
-                {organizations.map(org => (
+                {organizations.map((org) => (
                   <option
                     key={org.id || org._links?.self?.href}
-                    value={org.id || (org._links?.self?.href.split('/').pop())}
+                    value={org.id || org._links?.self?.href.split("/").pop()}
                   >
                     {org.name}
                   </option>
@@ -288,7 +306,9 @@ function ExpensesOutward() {
               {/* <label>Items per page</label> */}
               <select
                 value={sizeParam}
-                onChange={(e) => setSearchParams({ page: 0, size: e.target.value })}
+                onChange={(e) =>
+                  setSearchParams({ page: 0, size: e.target.value })
+                }
                 className="filter-select"
               >
                 <option value={10}>10</option>
@@ -306,7 +326,7 @@ function ExpensesOutward() {
             Found {filteredItems.length} expenses matching "{searchTerm}"
             <button
               className="clear-search-btn"
-              onClick={() => setSearchTerm('')}
+              onClick={() => setSearchTerm("")}
             >
               Clear search
             </button>
@@ -326,12 +346,6 @@ function ExpensesOutward() {
                 <thead>
                   <tr>
                     <th
-                    // onClick={() => handleSort('description')}
-                    // className="sortable-header"
-                    >
-                      Description
-                    </th>
-                    <th
                     // onClick={() => handleSort('amount')}
                     // className="sortable-header"
                     >
@@ -347,8 +361,14 @@ function ExpensesOutward() {
                     // onClick={() => handleSort('expenseSubType')}
                     // className="sortable-header"
                     >
-                      Category
+                      Type
                     </th>
+                    <th
+                   
+                    >
+                      Expense Date
+                    </th>
+                    <th>TransactionDate</th>
                     <th>Receipt</th>
                     <th>Actions</th>
                   </tr>
@@ -362,8 +382,7 @@ function ExpensesOutward() {
                           <p>
                             {searchTerm
                               ? `No expenses found for "${searchTerm}"`
-                              : 'No outward expenses found'
-                            }
+                              : "No outward expenses found"}
                           </p>
                           {searchTerm || selectedOrgId ? (
                             <p className="no-data-subtext">
@@ -375,7 +394,7 @@ function ExpensesOutward() {
                           ) : (
                             <button
                               className="btn-secondary"
-                              onClick={() => setSearchTerm('')}
+                              onClick={() => setSearchTerm("")}
                             >
                               Clear Search
                             </button>
@@ -386,7 +405,7 @@ function ExpensesOutward() {
                   ) : (
                     sortedItems.map((item, idx) => (
                       <tr key={idx} className="table-row">
-                        <td className="description-cell">
+                        {/* <td className="description-cell">
                           <div className="description-text" title={item.amount}>
                             {item.amount}
                           </div>
@@ -398,7 +417,7 @@ function ExpensesOutward() {
                               )?.name || 'Organization'}
                             </div>
                           )}
-                        </td>
+                        </td> */}
                         <td className="amount-cell">
                           <span className="amount-badge outward-amount">
                             -₹{item.amount?.toLocaleString()}
@@ -413,18 +432,34 @@ function ExpensesOutward() {
                           <span
                             className="type-tag"
                             style={{
-                              backgroundColor: getExpenseTypeColor(item.expenseSubType),
-                              color: 'white'
+                              backgroundColor: getExpenseTypeColor(
+                                item.expenseSubType
+                              ),
+                              color: "white",
                             }}
                           >
-                            {item.expenseSubType || 'General'}
+                            {item.expenseSubType || "General"}
                           </span>
+                        </td>
+                        <td className="date-cell">
+                          <div className="date-display">
+                            {formatDate(item.createdDate)}
+                          </div>
+                        </td>
+                        <td className="date-cell">
+                          <div className="date-display">
+                            {formatDate(item.transactionDate)}
+                          </div>
                         </td>
                         <td className="receipt-cell">
                           {item.imageData || item.fileUrl || item.file ? (
                             <button
                               className="btn-outline view-btn"
-                              onClick={() => setModalFile(item.imageData || item.fileUrl || item.file)}
+                              onClick={() =>
+                                setModalFile(
+                                  item.imageData || item.fileUrl || item.file
+                                )
+                              }
                             >
                               👁️ View
                             </button>
@@ -434,21 +469,35 @@ function ExpensesOutward() {
                         </td>
                         <td className="actions-cell">
                           <div className="action-buttons">
-
                             <button
                               className="btn-outline edit-btn"
-                              onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}/edit`)}
-                              title="Edit expense"   >
+                              onClick={() =>
+                                navigate(
+                                  `/pettycash/expenses/${
+                                    item.id ||
+                                    item._links?.self?.href.split("/").pop()
+                                  }/edit`
+                                )
+                              }
+                              title="Edit expense"
+                            >
                               ✏️
                             </button>
 
-                            <button
+                            {/* <button
                               className="btn-outline view-btn"
-                              onClick={() => navigate(`/pettycash/expenses/${item.id || (item._links?.self?.href.split('/').pop())}`)}
+                              onClick={() =>
+                                navigate(
+                                  `/pettycash/expenses/${
+                                    item.id ||
+                                    item._links?.self?.href.split("/").pop()
+                                  }`
+                                )
+                              }
                               title="View details"
                             >
                               👁️
-                            </button>
+                            </button> */}
                           </div>
                         </td>
                       </tr>
@@ -477,9 +526,7 @@ function ExpensesOutward() {
                   >
                     ← Previous
                   </button>
-                  <span className="page-indicator">
-                    Page {pageParam + 1}
-                  </span>
+                  <span className="page-indicator">Page {pageParam + 1}</span>
                   <button
                     className="btn-outline"
                     disabled={!(links.next || items.length >= sizeParam)}
@@ -500,7 +547,7 @@ function ExpensesOutward() {
         {/* Receipt Modal */}
         {modalFile && (
           <div className="modal-overlay" onClick={() => setModalFile(null)}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>Expense Receipt</h3>
                 <button
@@ -511,10 +558,18 @@ function ExpensesOutward() {
                 </button>
               </div>
               <div className="modal-body">
-                {modalFile.startsWith('data:image') ? (
-                  <img src={modalFile} alt="Expense Receipt" className="receipt-image" />
+                {modalFile.startsWith("data:image") ? (
+                  <img
+                    src={modalFile}
+                    alt="Expense Receipt"
+                    className="receipt-image"
+                  />
                 ) : (
-                  <img src={`data:image/png;base64,${modalFile}`} alt="Expense Receipt" className="receipt-image" />
+                  <img
+                    src={`data:image/png;base64,${modalFile}`}
+                    alt="Expense Receipt"
+                    className="receipt-image"
+                  />
                 )}
               </div>
               <div className="modal-footer">
