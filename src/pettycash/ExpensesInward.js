@@ -27,7 +27,10 @@ function ExpensesInward() {
   const fetchUrl = async (url) => {
     setLoading(true);
     try {
-      const res = await fetch(url);
+      const bearerToken = localStorage.getItem('token');
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       const json = await res.json();
       const list = json.content || json._embedded?.expenses || [];
       setItems(list.filter(e => e.expenseType === 'CASH-IN'));
@@ -42,16 +45,19 @@ function ExpensesInward() {
   const handleOrganizationChange = (e) => {
     const value = e.target.value;
     setSelectedOrgId(value);
-    
-    if (value) {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`);
+    const bearerToken = localStorage.getItem('token');
+    if (value) {      
+      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       setSearchParams({ page: 0, size: sizeParam });
     } else {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN`);
+      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }});
       setSearchParams({ page: 0, size: sizeParam });
     }
   };
-
+  
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -167,7 +173,10 @@ const isToday = (dateString) => {
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
-        const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`);
+        const bearerToken = localStorage.getItem('token');
+        const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+          headers: { 'Authorization': `Bearer ${bearerToken}` }
+        });
         const data = await response.json();
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         setOrganizations(orgs);
@@ -187,40 +196,34 @@ const isToday = (dateString) => {
     <div className="page-container">
       <Sidebar isOpen={true} />
       <PageCard title="Cash Inward Management">
-        
-        {/* Header Section with Stats */}
-        <div className="dashboard-header">
+        <div className="dashboard-header1">
           <div className="header-content">
-            <div className="header-text">
-              <h1>Cash Inward </h1>
-              {/* <p>Manage and track all cash inflow expenses (CASH-IN)</p> */}
-            </div>
+          <div></div>
             <button 
-              className="btn-primary create-btn"
+              className="btn-primary1 "
               onClick={() => navigate('/pettycash/expenses/create?type=CASH-IN')}
             >
-              <span className="btn-icon">+</span>
-              Create New Inward
+              + Create New Inward
             </button>
           </div>
           
-          <div className="stats-grid">
+          <div className="stats-grid1">
             <div className="stat-card">
-              <div className="stat-icon">💰</div>
+              {/* <div className="stat-icon">💰</div> */}
               <div className="stat-content">
                 <div className="stat-value">₹{totalAmount.toLocaleString()}</div>
                 <div className="stat-label">Total Inward</div>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">📊</div>
+              {/* <div className="stat-icon">📊</div> */}
               <div className="stat-content">
                 <div className="stat-value">{totalTransactions}</div>
                 <div className="stat-label">Total Transactions</div>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">🏢</div>
+              {/* <div className="stat-icon">🏢</div> */}
               <div className="stat-content">
                 <div className="stat-value">{organizations.length}</div>
                 <div className="stat-label">Organizations</div>
@@ -229,8 +232,7 @@ const isToday = (dateString) => {
           </div>
         </div>
 
-        {/* Filters and Search Section */}
-        <div className="filters-section">
+        <div className="filters-section1">
           <div className="filters-grid">
             <div className="search-box">
               <div className="search-icon">🔍</div>
@@ -253,7 +255,7 @@ const isToday = (dateString) => {
             </div>
             
             <div className="filter-group">
-              <label>Organization Filter</label>
+             
               <select 
                 value={selectedOrgId} 
                 onChange={handleOrganizationChange}
@@ -272,7 +274,7 @@ const isToday = (dateString) => {
             </div>
 
             <div className="filter-group">
-              <label>Items per page</label>
+              {/* <label>Items per page</label> */}
               <select 
                 value={sizeParam}
                 onChange={(e) => setSearchParams({ page: 0, size: e.target.value })}
@@ -314,23 +316,23 @@ const isToday = (dateString) => {
                   <tr>
                    
                     <th 
-                      onClick={() => handleSort('amount')}
-                      className="sortable-header"
+                      // onClick={() => handleSort('amount')}
+                      // className="sortable-header"
                     >
-                      Amount {getSortIcon('amount')}
+                      Amount
                     </th>
                     
                     <th 
-                      onClick={() => handleSort('expenseSubType')}
-                      className="sortable-header"
+                      // onClick={() => handleSort('expenseSubType')}
+                      // className="sortable-header"
                     >
-                      Type {getSortIcon('expenseSubType')}
+                      Type
                     </th>
                     <th 
-                      onClick={() => handleSort('createdDate')}
-                      className="sortable-header"
+                      // onClick={() => handleSort('createdDate')}
+                      // className="sortable-header"
                     >
-                      Created Date {getSortIcon('createdDate')}
+                      Created Date 
                     </th>
                     <th>Receipt</th>
                     <th>Actions</th>
@@ -348,14 +350,7 @@ const isToday = (dateString) => {
                               : 'No inward transactions found'
                             }
                           </p>
-                          {!searchTerm && (
-                            <button 
-                              className="btn-secondary"
-                              onClick={() => navigate('/pettycash/expenses/create?type=CASH-IN')}
-                            >
-                              Create First Transaction
-                            </button>
-                          )}
+                         
                           {searchTerm && (
                             <button 
                               className="btn-secondary"

@@ -202,7 +202,7 @@
 }
 
 /* Enhanced Form Grid */
-.enhanced-grid {
+.enhanced-grid1 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 24px;
@@ -448,10 +448,10 @@
   box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
 }
 
-.btn-secondary {
-  background: linear-gradient(135deg, #6b7280, #4b5563);
+.btn-secondary1 {
+  background: linear-gradient(135deg, #6b7280, #6b7280);
   color: white;
-  box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+  /* box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3); */
 }
 
 .btn-secondary:hover:not(:disabled) {

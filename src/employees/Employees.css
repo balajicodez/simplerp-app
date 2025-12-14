@@ -7,12 +7,12 @@
 }
 
 /* ===== HEADER STYLES ===== */
-.employees-header,
+.employees-header1,
 .create-employee-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: #3c93c1;
   border-radius: 20px;
   padding: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 18px;
   color: white;
   position: relative;
   overflow: hidden;
@@ -27,14 +27,14 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-  animation: float 6s ease-in-out infinite;
+  /* background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: float 6s ease-in-out infinite; */
 }
 
-@keyframes float {
+/* @keyframes float {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-20px) rotate(180deg); }
-}
+} */
 
 .header-content {
   display: flex;
@@ -91,7 +91,7 @@
 .create-employee-btn {
   background: rgba(255, 255, 255, 0.25);
   border: 2px solid rgba(255, 255, 255, 0.4);
-  padding: 16px 28px;
+  padding: 10px 10px;
   border-radius: 16px;
   font-weight: 700;
   transition: all 0.4s ease;
@@ -768,10 +768,11 @@
   align-items: end;
 }
 
-.search-box {
+.search-box1 {
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .search-icon {
@@ -790,6 +791,11 @@
   transition: all 0.3s ease;
   background: white;
 }
+.search-input::placeholder {
+  color: #3c93c1;
+  opacity: 1; /* important for Firefox */
+}
+
 
 .search-input:focus {
   outline: none;
@@ -839,11 +845,23 @@
   min-width: 120px;
   transition: all 0.3s ease;
 }
+.filter-select {
+  color: #3c93c1;
+}
+
+.filter-select option {
+  color: #1f2937;
+}
+
+.filter-select option[value=""] {
+  color: #3c93c1;
+}
+
 
 .filter-select:focus {
   outline: none;
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  /* box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); */
 }
 
 /* Search Results */
@@ -1096,7 +1114,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, #fff, #fff);
   color: white;
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
 }
@@ -1146,7 +1164,7 @@
 }
 
 .btn-icon {
-  font-size: 1.2rem;
+  font-size: 0.2rem;
 }
 
 /* ===== DISABLED STATES ===== */

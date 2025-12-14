@@ -248,9 +248,11 @@
 }
 
 /* Form Actions - Compact */
-.form-actions {
-  padding: 16px 0 !important;
-  margin-top: 16px !important;
+.form-actions1 {
+  padding: 2px 0 !important;
+  margin-top: 2px !important;
+  display: flex;
+  justify-content: space-between;
 }
 
 .action-buttons {

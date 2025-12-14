@@ -27,8 +27,9 @@ function CreateExpenseMaster() {
     if (!form.description || !form.type) { setError('Description and Type are required'); return; }
     setLoading(true);
     try {
+      const bearerToken = localStorage.getItem('token');
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`, {
-        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(form)
+        method: 'POST', headers: {'Content-Type':'application/json','Authorization': `Bearer ${bearerToken}`}, body: JSON.stringify(form)
       });
       if (!res.ok) throw new Error('Failed');
       navigate('/pettycash/masters');

@@ -28,7 +28,10 @@ function ExpensesOutward() {
   const fetchUrl = async (url) => {
     setLoading(true);
     try {
-      const res = await fetch(url);
+      const bearerToken = localStorage.getItem('token');
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       const json = await res.json();
       let list = json.content || json._embedded?.expenses || [];
       list = list.filter(e => e.expenseType === 'CASH-OUT');
@@ -145,7 +148,10 @@ const isToday = (dateString) => {
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
-        const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`);
+        const bearerToken = localStorage.getItem('token');
+        const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+          headers: { 'Authorization': `Bearer ${bearerToken}` }
+        });
         const data = await response.json();
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         setOrganizations(orgs);
@@ -180,14 +186,11 @@ const isToday = (dateString) => {
       <PageCard title="Cash Outward Management">
         
         {/* Header Section with Stats */}
-        <div className="dashboard-header outward-header">
+        <div className="dashboard-header1">
           <div className="header-content">
-            <div className="header-text">
-              <h1>Cash Outward Transactions</h1>
-              {/* <p>Manage and track all cash outflow expenses (CASH-OUT)</p> */}
-            </div>
+            <div></div>
             <button 
-              className="btn-primary create-btn"
+              className="btn-primary1"
               onClick={() => navigate('/pettycash/expenses/create?type=CASH-OUT')}
             >
               <span className="btn-icon">+</span>
@@ -198,28 +201,28 @@ const isToday = (dateString) => {
           {/* Statistics Cards */}
           <div className="stats-grid">
             <div className="stat-card outward-stat">
-              <div className="stat-icon">💸</div>
+              {/* <div className="stat-icon">💸</div> */}
               <div className="stat-content">
                 <div className="stat-value">₹{totalAmount.toLocaleString()}</div>
                 <div className="stat-label">Total Outflow</div>
               </div>
             </div>
             <div className="stat-card outward-stat">
-              <div className="stat-icon">📤</div>
+              {/* <div className="stat-icon">📤</div> */}
               <div className="stat-content">
                 <div className="stat-value">{totalTransactions}</div>
                 <div className="stat-label">Expenses</div>
               </div>
             </div>
             <div className="stat-card outward-stat">
-              <div className="stat-icon">📊</div>
+              {/* <div className="stat-icon">📊</div> */}
               <div className="stat-content">
                 <div className="stat-value">₹{Math.round(averageExpense).toLocaleString()}</div>
                 <div className="stat-label">Average per Expense</div>
               </div>
             </div>
             <div className="stat-card outward-stat">
-              <div className="stat-icon">🏢</div>
+              {/* <div className="stat-icon">🏢</div> */}
               <div className="stat-content">
                 <div className="stat-value">
                   {selectedOrgId ? '1' : organizations.length}
@@ -233,7 +236,7 @@ const isToday = (dateString) => {
         </div>
 
         {/* Filters and Search Section */}
-        <div className="filters-section">
+        <div className="filters-section1">
           <div className="filters-grid">
             <div className="search-box">
               <div className="search-icon">🔍</div>
@@ -256,7 +259,7 @@ const isToday = (dateString) => {
             </div>
             
             <div className="filter-group">
-              <label>Organization</label>
+              {/* <label>Organization</label> */}
               <select 
                 value={selectedOrgId} 
                 onChange={handleOrganizationChange}
@@ -275,7 +278,7 @@ const isToday = (dateString) => {
             </div>
 
             <div className="filter-group">
-              <label>Items per page</label>
+              {/* <label>Items per page</label> */}
               <select 
                 value={sizeParam}
                 onChange={(e) => setSearchParams({ page: 0, size: e.target.value })}
@@ -316,16 +319,16 @@ const isToday = (dateString) => {
                 <thead>
                   <tr>
                     <th 
-                      onClick={() => handleSort('description')}
-                      className="sortable-header"
+                      // onClick={() => handleSort('description')}
+                      // className="sortable-header"
                     >
-                      Description {getSortIcon('description')}
+                      Description 
                     </th>
                     <th 
-                      onClick={() => handleSort('amount')}
-                      className="sortable-header"
+                      // onClick={() => handleSort('amount')}
+                      // className="sortable-header"
                     >
-                      Amount {getSortIcon('amount')}
+                      Amount 
                     </th>
                     {/* <th 
                       onClick={() => handleSort('employeeId')}
@@ -334,10 +337,10 @@ const isToday = (dateString) => {
                       Employee {getSortIcon('employeeId')}
                     </th> */}
                     <th 
-                      onClick={() => handleSort('expenseSubType')}
-                      className="sortable-header"
+                      // onClick={() => handleSort('expenseSubType')}
+                      // className="sortable-header"
                     >
-                      Category {getSortIcon('expenseSubType')}
+                      Category 
                     </th>
                     <th>Receipt</th>
                     <th>Actions</th>
@@ -361,12 +364,7 @@ const isToday = (dateString) => {
                             </p>
                           ) : null}
                           {!searchTerm ? (
-                            <button 
-                              className="btn-primary"
-                              onClick={() => navigate('/pettycash/expenses/create?type=CASH-OUT')}
-                            >
-                              Create First Outward Expense
-                            </button>
+                            <div></div>
                           ) : (
                             <button 
                               className="btn-secondary"

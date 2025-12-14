@@ -513,8 +513,12 @@ function CreateDayClosing() {
     });
   }, []);
 
+  
   React.useEffect(() => {
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
       .then(res => res.json())
       .then(data => {
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
@@ -544,9 +548,10 @@ function CreateDayClosing() {
 
   const fetchBalanceData = async (closingDate, orgId) => {
     try {
+      const bearerToken = localStorage.getItem('token');
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/petty-cash/day-closing/init?closingDate=${closingDate}&organizationId=${orgId}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bearerToken}` }
       });
 
       if (res.ok) {
@@ -748,10 +753,10 @@ function CreateDayClosing() {
         twentyCoinCount: denominations['20c']?.good || 0,
         denominations: denominations
       };
-
+      const bearerToken = localStorage.getItem('token');
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/petty-cash/day-closing`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${bearerToken}` },
         body: JSON.stringify(payload)
       });
       

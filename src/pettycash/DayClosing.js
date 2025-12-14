@@ -32,7 +32,10 @@ function DayClosing() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(url);
+       const bearerToken = localStorage.getItem('token');
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       const json = await res.json();
       let list = (json.content) || json.content || [];
       list = list.filter(e => e.createdDate === today);
@@ -48,12 +51,18 @@ function DayClosing() {
   };
 
   useEffect(() => {
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`);
+    const bearerToken = localStorage.getItem('token');
+    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`,{
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    });
   }, [pageParam, sizeParam, selectedOrgId]);
 
   useEffect(() => {
     // Fetch organizations for dropdown
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
       .then(res => res.json())
       .then(data => {
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
@@ -67,6 +76,7 @@ function DayClosing() {
     setSelectedOrgId(value);
     
     if (value) {
+      const bearerToken = localStorage.getItem('token');
       fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&organizationId=${value}`);
       setSearchParams({ page: 0, size: sizeParam });
     } else {
@@ -275,7 +285,7 @@ function DayClosing() {
                           <h3>No Transactions Today</h3>
                           <p>No transactions found for {today}. Start by creating a new transaction.</p>
                           <button 
-                            className="btn-primary"
+                            className="btn-primary1"
                             onClick={() => navigate('/pettycash/expenses/create')}
                           >
                             <span className="btn-icon">+</span>

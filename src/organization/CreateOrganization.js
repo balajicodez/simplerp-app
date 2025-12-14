@@ -27,7 +27,10 @@ function CreateOrganization({ onCreated }) {
 
   useEffect(() => {
     // Fetch organizations for dropdown
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
       .then(res => res.json())
       .then(data => {
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
@@ -79,10 +82,10 @@ function CreateOrganization({ onCreated }) {
       }
 
       console.log('Sending payload:', payload);
-
+      const bearerToken = localStorage.getItem('token');
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json','Authorization': `Bearer ${bearerToken}`  },
         body: JSON.stringify(payload)
       });
       
@@ -146,18 +149,7 @@ function CreateOrganization({ onCreated }) {
       <Sidebar isOpen={true} />
       <PageCard title="Create Organization">
         
-        {/* Header Section */}
-        <div className="create-org-header">
-          <div className="header-content">
-            <div className="header-icon">🏢</div>
-            <div className="header-text">
-              <h1>Create New Organization</h1>
-              <p>Add a new organization to the system with complete details</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Alerts */}
+      
         {error && (
           <div className="alert alert-error">
             <div className="alert-icon">⚠️</div>
@@ -365,18 +357,8 @@ function CreateOrganization({ onCreated }) {
             </div>
 
             {/* Form Actions */}
-            <div className="form-actions">
-              <button 
-                type="button" 
-                className="btn-secondary"
-                onClick={clearForm}
-                disabled={loading}
-              >
-                <span className="btn-icon">🗑️</span>
-                Clear Form
-              </button>
-              
-              <div className="action-buttons">
+            <div className="form-actions1">
+             
                 <button 
                   type="button" 
                   className="btn-outline"
@@ -389,7 +371,7 @@ function CreateOrganization({ onCreated }) {
                 
                 <button 
                   type="submit" 
-                  className={`btn-primary submit-btn ${loading ? 'loading' : ''}`}
+                  className={`btn-primary2 `}
                   disabled={loading}
                 >
                   {loading ? (
@@ -399,12 +381,36 @@ function CreateOrganization({ onCreated }) {
                     </>
                   ) : (
                     <>
-                      <span className="btn-icon">🏢</span>
-                      Create Organization
-                    </>
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ marginRight: '6px', verticalAlign: 'middle',color:"white" }}
+  >
+    <path
+      d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4z"
+      stroke="#ffffffff"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M7 3v6h10V3"
+      stroke="#ffffffff"
+      strokeWidth="2"
+    />
+    <path
+      d="M7 21v-6h10v6"
+      stroke="#fafdffff"
+      strokeWidth="2"
+    />
+  </svg>
+  Save
+</>
+
                   )}
                 </button>
-              </div>
             </div>
           </form>
         </div>

@@ -49,7 +49,7 @@ function Login() {
             navigate('/dashboard');
             localStorage.setItem('token', data.token);
         } catch (err) {
-            setError('Login failed. Please check your credentials and try again.');
+            setError('Login failed. Please check your credentials .');
         } finally {
             setLoading(false);
         }

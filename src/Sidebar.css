@@ -7,7 +7,7 @@
   background: #0f172a;
   color: #f8fafc;
   transition: all 0.3s ease;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+  /* box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3); */
   z-index: 1000;
   overflow-y: auto;
   border-right: 1px solid #1e293b;
@@ -230,16 +230,16 @@
   font-size: 18px;
 }
 
-.sidebar ul li:last-child a {
+/* .sidebar ul li:last-child a {
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.3);
   margin-top: 12px;
-}
+} */
 
-.sidebar ul li:last-child a:hover {
+/* .sidebar ul li:last-child a:hover {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.5);
-}
+} */
 
 .sidebar.open ul li {
   animation: none;

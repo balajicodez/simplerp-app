@@ -9,7 +9,7 @@ export default function PageCard({ title, children, className = '', shifted = tr
           <div className="page-card-header">
             <h1
               style={{
-                background: "linear-gradient(90deg, #1e37d7ff, #00c6ff, #010d7dff)",
+                background: "linear-gradient(90deg, #3c93c1, #3c93c1, #3c93c1)",
                 backgroundSize: "300% 300%",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -18,7 +18,7 @@ export default function PageCard({ title, children, className = '', shifted = tr
             >
               {title}
             </h1>
-            <hr />
+            {/* <hr /> */}
             <style>
               {`
                 @keyframes gradientMove {

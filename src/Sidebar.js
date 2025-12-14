@@ -54,7 +54,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </NavLink>
         </li>
        <li>
-  <NavLink 
+      <NavLink 
     to="/employee"
     className={({ isActive }) => `menu-item ${isActive ? 'active' : ''} disabled`}
     data-icon="💰"
@@ -64,7 +64,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   </NavLink>
 </li>
         
-        <li className="group">
+        <li className="group1">
           <div 
             className={`group-header ${expandedGroups.pettycash ? 'expanded' : ''}`}
             onClick={() => toggleGroup('pettycash')}
@@ -100,6 +100,15 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 ⚙️ Expenses - Masters
               </NavLink>
             </li>
+            <li  className="subitem">
+          <NavLink 
+            to="/handloans" 
+            className={({ isActive }) => isActive ? 'active' : ''}
+            data-icon="🏢"
+          >
+            <span>🏢 Hand Loans</span>
+          </NavLink>
+        </li>
             <li className="subitem">
               <NavLink 
                 to="/pettycash/day-closing" 
@@ -142,15 +151,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <span>🏢 Organization</span>
           </NavLink>
         </li>
-         <li>
-          <NavLink 
-            to="/handloans" 
-            className={({ isActive }) => isActive ? 'active' : ''}
-            data-icon="🏢"
-          >
-            <span>🏢 Hand Loans</span>
-          </NavLink>
-        </li>
+         
         <li>
           <NavLink 
             to="/holidays" 

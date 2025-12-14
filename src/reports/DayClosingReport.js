@@ -1003,6 +1003,7 @@ function DayClosingReport() {
   });
   const [pdfUrl, setPdfUrl] = useState('');
   const [organizations, setOrganizations] = useState([]);
+  const [organizationId, setOrganizationId] = useState('');
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
 
@@ -1013,6 +1014,19 @@ function DayClosingReport() {
     }
     return Number(value).toLocaleString();
   };
+
+  useEffect(() => {
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const orgs = data._embedded ? data._embedded.organizations || [] : data;
+        setOrganizations(orgs);
+      })
+      .catch(() => { });
+  }, []);
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -1112,7 +1126,10 @@ function DayClosingReport() {
 
   useEffect(() => {
     // Fetch organizations for dropdown
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
       .then(res => res.json())
       .then(data => {
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
@@ -1213,7 +1230,7 @@ function DayClosingReport() {
       doc.setFontSize(26);
       doc.text('Sri Divya Sarees', 105, 18, { align: 'center' });
       doc.setFontSize(12);
-      doc.text('Old Temple Road, Gulzar House, Hyderabad 500066', 105, 26, { align: 'center' });   
+      doc.text('Old Temple Road, Gulzar House, Hyderabad 500066', 105, 26, { align: 'center' });
       doc.setFontSize(11);
       doc.setLineWidth(0.5);
       doc.line(20, 32, 190, 32);
@@ -1579,7 +1596,7 @@ function DayClosingReport() {
       const url = doc.output('bloburl');
       setPdfUrl(url);
       setReportMsg(`PDF generated successfully for ${selectedDate}!`);
-      
+
     } catch (e) {
       console.error('PDF generation error:', e);
       setReportMsg('Failed to generate PDF');
@@ -1591,7 +1608,7 @@ function DayClosingReport() {
       minHeight: '100vh',
       backgroundColor: '#f8fafc'
     },
-    
+
     headerSection: {
       display: 'flex',
       flexDirection: 'row',
@@ -1602,19 +1619,19 @@ function DayClosingReport() {
       borderBottom: '1px solid #e2e8f0',
       gap: '20px',
     },
-    
+
     dateSelector: {
       display: 'flex',
       alignItems: 'center',
       gap: '12px',
     },
-    
+
     dateLabel: {
       fontWeight: '600',
       color: '#374151',
       fontSize: '14px',
     },
-    
+
     dateInput: {
       padding: '8px 12px',
       border: '1px solid #d1d5db',
@@ -1623,7 +1640,7 @@ function DayClosingReport() {
       backgroundColor: 'white',
       boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
     },
-    
+
     generateButton: {
       background: 'linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)',
       color: 'white',
@@ -1637,7 +1654,7 @@ function DayClosingReport() {
       boxShadow: '0 2px 4px rgba(30, 58, 138, 0.3)',
       whiteSpace: 'nowrap',
     },
-    
+
     summaryContainer: {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -1645,7 +1662,7 @@ function DayClosingReport() {
       marginBottom: '24px',
       padding: '0 16px',
     },
-    
+
     summaryCard: {
       background: 'white',
       padding: '5px',
@@ -1671,7 +1688,7 @@ function DayClosingReport() {
       fontWeight: '700',
       marginTop: '8px'
     },
-    
+
     tableContainer: {
       background: 'white',
       borderRadius: '12px',
@@ -1703,7 +1720,7 @@ function DayClosingReport() {
     tableRow: {
       transition: 'background-color 0.2s ease',
     },
-    
+
     notesSection: {
       marginTop: '32px'
     },
@@ -1722,7 +1739,7 @@ function DayClosingReport() {
       background: 'white',
       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     },
-    
+
     successMessage: {
       color: '#059669',
       backgroundColor: '#f0fdf4',
@@ -1741,7 +1758,7 @@ function DayClosingReport() {
       marginBottom: '16px',
       fontWeight: '500'
     },
-    
+
     pdfModal: {
       position: 'fixed',
       top: 0,
@@ -1783,7 +1800,7 @@ function DayClosingReport() {
       backgroundColor: '#eef1f4',
       boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
     },
-    
+
     loadingContainer: {
       display: 'flex',
       justifyContent: 'center',
@@ -1873,11 +1890,30 @@ function DayClosingReport() {
             <input
               type="date"
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
+              // onChange={handleChange}
               style={styles.dateInput}
             />
           </div>
-          <button 
+          <div className="form-group">
+            <label className="form-label">Organization</label>
+            <select
+              value={organizationId}
+              // onChange={handleChange}
+              className="form-select"
+              required
+            >
+              <option value="">Select organization</option>
+              {organizations.map(org => (
+                <option
+                  key={org.id || (org._links && org._links.self && org._links.self.href)}
+                  value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}
+                >
+                  {org.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
             style={styles.generateButton}
             onClick={handleGenerateReport}
             onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
@@ -1890,26 +1926,26 @@ function DayClosingReport() {
         {pdfUrl && (
           <div style={styles.pdfModal}>
             <div style={styles.pdfContainer}>
-              <button 
+              <button
                 style={styles.closeButton}
                 onClick={() => { setPdfUrl(''); }}
               >
                 ×
               </button>
-              <iframe 
-                src={pdfUrl} 
-                title="Day Closing PDF Report" 
-                style={{ 
-                  width: '70vw', 
-                  height: '75vh', 
+              <iframe
+                src={pdfUrl}
+                title="Day Closing PDF Report"
+                style={{
+                  width: '70vw',
+                  height: '75vh',
                   border: 'none',
                   borderRadius: '8px'
-                }} 
+                }}
               />
               <div style={{ textAlign: 'right', marginTop: '16px' }}>
-                <a 
-                  href={pdfUrl} 
-                  download={`DayClosingReport_${selectedDate}.pdf`} 
+                <a
+                  href={pdfUrl}
+                  download={`DayClosingReport_${selectedDate}.pdf`}
                   style={{
                     ...styles.generateButton,
                     textDecoration: 'none',
@@ -1929,7 +1965,7 @@ function DayClosingReport() {
           </div>
         )}
         {error && <div style={styles.errorMessage}>❌ {error}</div>}
-        
+
         {loading ? (
           <div style={styles.loadingContainer}>
             <div>Loading day closing records, expenses, and handloans...</div>
@@ -2075,11 +2111,11 @@ function DayClosingReport() {
                 </tbody>
               </table>
             </div>
-            
+
             <div style={styles.notesSection}>
               <h3 style={styles.notesHeader}>Notes & Coin Summary</h3>
               <div style={styles.scrollableContainer}>
-                <table className="payroll-table" style={{...styles.table, minWidth: '100%'}}>
+                <table className="payroll-table" style={{ ...styles.table, minWidth: '100%' }}>
                   <thead style={styles.tableHeader}>
                     <tr>
                       <th style={styles.tableHeaderCell}>Date</th>
@@ -2102,27 +2138,27 @@ function DayClosingReport() {
                     </tr>
                   </thead>
                   <tbody>
-                    {records.map((rec, idx) => (
-                      <tr key={idx} style={styles.tableRow}>
-                        <td style={styles.tableCell}>{rec.closingDate}</td>
-                        <td style={styles.tableCell}>{rec._1CoinCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._5CoinCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._10CoinCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._20CoinCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._10NoteCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._20NoteCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._50NoteCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._100NoteCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._200NoteCount || 0}</td>
-                        <td style={styles.tableCell}>{rec._500NoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._10SoiledNoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._20SoiledNoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._50SoiledNoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._100SoiledNoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._200SoiledNoteCount || 0}</td>
-                        <td style={{...styles.tableCell, color: '#dc2626'}}>{rec._500SoiledNoteCount || 0}</td>
-                      </tr>
-                    ))}
+
+                    <tr key={records.id} style={styles.tableRow}>
+                      <td style={styles.tableCell}>{records.closingDate}</td>
+                      <td style={styles.tableCell}>{records._1CoinCount || 0}</td>
+                      <td style={styles.tableCell}>{records._5CoinCount || 0}</td>
+                      <td style={styles.tableCell}>{records._10CoinCount || 0}</td>
+                      <td style={styles.tableCell}>{records._20CoinCount || 0}</td>
+                      <td style={styles.tableCell}>{records._10NoteCount || 0}</td>
+                      <td style={styles.tableCell}>{records._20NoteCount || 0}</td>
+                      <td style={styles.tableCell}>{records._50NoteCount || 0}</td>
+                      <td style={styles.tableCell}>{records._100NoteCount || 0}</td>
+                      <td style={styles.tableCell}>{records._200NoteCount || 0}</td>
+                      <td style={styles.tableCell}>{records._500NoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._10SoiledNoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._20SoiledNoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._50SoiledNoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._100SoiledNoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._200SoiledNoteCount || 0}</td>
+                      <td style={{ ...styles.tableCell, color: '#dc2626' }}>{records._500SoiledNoteCount || 0}</td>
+                    </tr>
+
                   </tbody>
                 </table>
               </div>

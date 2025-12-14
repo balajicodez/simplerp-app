@@ -15,7 +15,10 @@ function ExpenseView() {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`)
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();

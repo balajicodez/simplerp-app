@@ -51,17 +51,14 @@ function ViewOrganization() {
       <PageCard title="Organizations Management">
         
         {/* Header Section */}
-        <div className="dashboard-header organizations-header">
+        <div className="dashboard-header1">
           <div className="header-content">
-            <div className="header-text">
-              <h1>Organizations</h1>
-              <p>Manage all registered organizations and their details</p>
-            </div>
+           <div></div>
             <button 
-              className="btn-primary create-btn"
+              className="btn-primary1"
               onClick={() => navigate('/organization/create')}
             >
-              <span className="btn-icon">🏢</span>
+              <span className="btn-icon">+</span>
               Create Organization
             </button>
           </div>
@@ -69,14 +66,14 @@ function ViewOrganization() {
           {/* Statistics */}
           <div className="stats-grid">
             <div className="stat-card">
-              <div className="stat-icon">🏢</div>
+              {/* <div className="stat-icon">🏢</div> */}
               <div className="stat-content">
                 <div className="stat-value">{orgs.length}</div>
                 <div className="stat-label">Total Organizations</div>
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">🟢</div>
+              {/* <div className="stat-icon">🟢</div> */}
               <div className="stat-content">
                 <div className="stat-value">
                   {orgs.filter(org => org.status === 'Active').length}
@@ -85,7 +82,7 @@ function ViewOrganization() {
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-icon">🔴</div>
+              {/* <div className="stat-icon">🔴</div> */}
               <div className="stat-content">
                 <div className="stat-value">
                   {orgs.filter(org => org.status === 'Inactive').length}
@@ -159,21 +156,8 @@ function ViewOrganization() {
                               : 'No organizations found'
                             }
                           </h3>
-                          <p>
-                            {searchTerm 
-                              ? 'Try adjusting your search criteria'
-                              : 'Get started by creating your first organization'
-                            }
-                          </p>
-                          {!searchTerm && (
-                            <button 
-                              className="btn-primary"
-                              onClick={() => navigate('/organization/create')}
-                            >
-                              <span className="btn-icon">+</span>
-                              Create First Organization
-                            </button>
-                          )}
+                         
+                          
                         </div>
                       </td>
                     </tr>

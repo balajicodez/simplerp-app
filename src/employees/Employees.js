@@ -119,38 +119,35 @@ function Employees() {
       <Sidebar isOpen={true} />
       <PageCard title="Employee Management">
         
-        <div className="employees-header">
+        <div className="dashboard-header1">
           <div className="header-content">
-            <div className="header-text">
-              <h1>Employee Directory</h1>
-              <p>Manage and view all employees in your organization</p>
-            </div>
+            <div></div>
             <button 
-              className="btn-primary create-employee-btn"
+              className=" btn-primary1"
               onClick={() => navigate('/employees/create')}
             >
-              <span className="btn-icon">+</span>
-              Add New Employee
+              {/* <span className="btn-icon1"></span> */}
+              + Add New Employee
             </button>
           </div>
 
-          <div className="stats-grid">
-            <div className="emp-stat-card employee-stat">
-              <div className="stat-icon">👥</div>
+          <div className="stats-grid1">
+            <div className="stat-card">
+              {/* <div className="stat-icon">👥</div> */}
               <div className="stat-content">
                 <div className="stat-value">{totalEmployees}</div>
                 <div className="stat-label">Total Employees</div>
               </div>
             </div>
-            <div className="emp-stat-card migrant-stat">
-              <div className="stat-icon">🌍</div>
+            <div className="stat-card">
+              {/* <div className="stat-icon">🌍</div> */}
               <div className="stat-content">
                 <div className="stat-value">{migrantCount}</div>
                 <div className="stat-label">Migrant Workers</div>
               </div>
             </div>
-            <div className="emp-stat-card age-stat">
-              <div className="stat-icon">📊</div>
+            <div className="stat-card">
+              {/* <div className="stat-icon">📊</div> */}
               <div className="stat-content">
                 <div className="stat-value">{averageAge}</div>
                 <div className="stat-label">Average Age</div>
@@ -158,17 +155,18 @@ function Employees() {
             </div>
           </div>
         </div>
-        <div className="filters-section">
-          <div className="filters-grid">
-            <div className="search-box">
-              <div className="search-icon">🔍</div>
+        <div className="filters-section1">
+          <div className=""style={{display:"flex",justifyContent:"space-between"}}>
+            <div className="search-box1">
+              
               <input
                 type="text"
-                placeholder="Search employees by name, skill, region, or age..."
+                placeholder="Search employees..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
               />
+              <div className="search-icon">🔍</div>
               {searchTerm && (
                 <button 
                   className="clear-search"
@@ -180,8 +178,8 @@ function Employees() {
               )}
             </div>
             
-            <div className="filter-group">
-              <label>Items per page</label>
+            <div className="filter-group1">
+            
               <select 
                 value={sizeParam}
                 onChange={(e) => setSearchParams({ page: 0, size: e.target.value })}
@@ -219,48 +217,48 @@ function Employees() {
                 <thead>
                   <tr>
                     <th 
-                      onClick={() => handleSort('name')}
+                      // onClick={() => handleSort('name')}
                       className="sortable-header"
                     >
                       <div className="th-content">
                         <span>Employee</span>
-                        {getSortIcon('name')}
+                        {/* {getSortIcon('name')} */}
                       </div>
                     </th>
                     <th 
-                      onClick={() => handleSort('skill')}
+                      // onClick={() => handleSort('skill')}
                       className="sortable-header"
                     >
                       <div className="th-content">
                         <span>Skill</span>
-                        {getSortIcon('skill')}
+                        {/* {getSortIcon('skill')} */}
                       </div>
                     </th>
                     <th 
-                      onClick={() => handleSort('region')}
+                      // onClick={() => handleSort('region')}
                       className="sortable-header"
                     >
                       <div className="th-content">
                         <span>Region</span>
-                        {getSortIcon('region')}
+                        {/* {getSortIcon('region')} */}
                       </div>
                     </th>
                     <th 
-                      onClick={() => handleSort('age')}
+                      // onClick={() => handleSort('age')}
                       className="sortable-header"
                     >
                       <div className="th-content">
                         <span>Age</span>
-                        {getSortIcon('age')}
+                        {/* {getSortIcon('age')} */}
                       </div>
                     </th>
                     <th 
-                      onClick={() => handleSort('migrantWorker')}
+                      // onClick={() => handleSort('migrantWorker')}
                       className="sortable-header"
                     >
                       <div className="th-content">
                         <span>Migrant</span>
-                        {getSortIcon('migrantWorker')}
+                        {/* {getSortIcon('migrantWorker')} */}
                       </div>
                     </th>
                     <th>Actions</th>
@@ -278,14 +276,7 @@ function Employees() {
                               : 'No employees found'
                             }
                           </p>
-                          {!searchTerm && (
-                            <button 
-                              className="btn-primary"
-                              onClick={() => navigate('/employees/create')}
-                            >
-                              Add First Employee
-                            </button>
-                          )}
+                          
                           {searchTerm && (
                             <button 
                               className="btn-secondary"

@@ -29,7 +29,10 @@ function EditExpense() {
     setLoading(true);
     
     // Fetch expense details
-    fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`)
+    const bearerToken = localStorage.getItem('token');
+    fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
       .then(res => { 
         if (!res.ok) throw new Error('Failed to load expense'); 
         return res.json(); 
@@ -56,8 +59,10 @@ function EditExpense() {
         setError('Unable to load expense details');
       });
 
-    // Fetch organizations
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`)
+    // Fetch organizations     
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+      headers: { 'Authorization': `Bearer ${bearerToken}` }
+    })
       .then(res => {
         if (!res.ok) throw new Error('Failed to load organizations');
         return res.json();
@@ -126,9 +131,13 @@ function EditExpense() {
         expenseDate: form.expenseDate || undefined
       };
       
+      const bearerToken = localStorage.getItem('token');
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, { 
         method: 'PATCH', 
-        headers: {'Content-Type':'application/json'}, 
+        headers: {
+          'Content-Type':'application/json',
+          'Authorization': `Bearer ${bearerToken}`
+        }, 
         body: JSON.stringify(payload) 
       });
       

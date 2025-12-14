@@ -1,6 +1,10 @@
 .App {
   display: flex;
 }
+html, body {
+  font-family: 'Lexend Deca', 'Roboto', 'Segoe UI', Arial, sans-serif;
+}
+
 
 .content {
   margin-left: 40px;
