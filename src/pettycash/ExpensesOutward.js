@@ -322,7 +322,7 @@ const isToday = (dateString) => {
                       // onClick={() => handleSort('description')}
                       // className="sortable-header"
                     >
-                      Description 
+                      Amount 
                     </th>
                     <th 
                       // onClick={() => handleSort('amount')}
@@ -380,8 +380,8 @@ const isToday = (dateString) => {
                     sortedItems.map((item, idx) => (
                       <tr key={idx} className="table-row">
                         <td className="description-cell">
-                          <div className="description-text" title={item.description}>
-                            {item.description}
+                          <div className="description-text" title={item.amount}>
+                            {item.amount}
                           </div>
                           {item.organizationId && (
                             <div className="org-badge">

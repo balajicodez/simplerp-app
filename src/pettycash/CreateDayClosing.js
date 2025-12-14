@@ -793,54 +793,62 @@ function CreateDayClosing() {
       <PageCard title="Create Day Closing Report">
         <form onSubmit={handleSubmit} className="day-closing-form">
           {/* Basic Information Section */}
-          <div className="form-section">
+          <div className="form-section1">
             <h3 className="section-title">Basic Information</h3>
             <div className="form-grid">
               <div className="form-group">
                 <label className="form-label">Organization</label>
-                <select 
-                  value={organizationId} 
-                  onChange={handleChange} 
-                  className="form-select" 
+                <select
+                  value={organizationId}
+                  onChange={handleChange}
+                  className="form-select"
                   required
                 >
                   <option value="">Select organization</option>
-                  {organizations.map(org => (
-                    <option 
-                      key={org.id || (org._links && org._links.self && org._links.self.href)} 
-                      value={org.id || (org._links && org._links.self && org._links.self.href.split('/').pop())}
+                  {organizations.map((org) => (
+                    <option
+                      key={
+                        org.id ||
+                        (org._links && org._links.self && org._links.self.href)
+                      }
+                      value={
+                        org.id ||
+                        (org._links &&
+                          org._links.self &&
+                          org._links.self.href.split("/").pop())
+                      }
                     >
                       {org.name}
                     </option>
                   ))}
                 </select>
               </div>
-              
+
               <div className="form-group">
                 <label className="form-label">Description</label>
-                <input 
-                  type="text" 
-                  value={description} 
-                  onChange={e => setDescription(e.target.value)} 
-                  className="form-input" 
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="form-input"
                 />
               </div>
-              
+
               <div className="form-group">
                 <label className="form-label">Date</label>
-                <input 
-                  type="date" 
-                  value={date} 
-                  onChange={handleChange} 
-                  className="form-input" 
+                <input
+                  type="date"
+                  value={date}
+                  onChange={handleChange}
+                  className="form-input"
                 />
               </div>
-              
+
               <div className="form-group">
                 <label className="form-label">Comment</label>
-                <textarea 
-                  value={comment} 
-                  onChange={e => setComment(e.target.value)} 
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
                   className="form-input textarea-input"
                   rows={4}
                   placeholder="Enter your comments here..."
@@ -849,61 +857,64 @@ function CreateDayClosing() {
             </div>
           </div>
 
-          <div className="form-section">
+          <div className="form-section1">
             <h3 className="section-title">Balance Summary</h3>
             <div className="balance-grid">
               <div className="balance-card">
                 <label className="balance-label">Inward</label>
-                <input 
-                  type="number" 
-                  value={inward} 
-                  onChange={e => setInward(e.target.value)} 
-                  className="balance-input" 
-                  min="0" 
+                <input
+                  type="number"
+                  value={inward}
+                  onChange={(e) => setInward(e.target.value)}
+                  className="balance-input"
+                  min="0"
                   readOnly
                 />
               </div>
-              
+
               <div className="balance-card">
                 <label className="balance-label">Outward</label>
-                <input 
-                  type="number" 
-                  value={outward} 
-                  onChange={e => setOutward(e.target.value)} 
-                  className="balance-input" 
-                  min="0" 
+                <input
+                  type="number"
+                  value={outward}
+                  onChange={(e) => setOutward(e.target.value)}
+                  className="balance-input"
+                  min="0"
                   readOnly
                 />
               </div>
-              
+
               <div className="balance-card">
                 <label className="balance-label">Closing Balance</label>
-                <input 
-                  type="number" 
-                  value={closingBalance} 
-                  onChange={e => setClosingBalance(e.target.value)} 
-                  className="balance-input" 
-                  min="0" 
+                <input
+                  type="number"
+                  value={closingBalance}
+                  onChange={(e) => setClosingBalance(e.target.value)}
+                  className="balance-input"
+                  min="0"
                   readOnly
                 />
               </div>
             </div>
           </div>
 
-          <div className="form-section">
+          <div className="form-section1">
             <h3 className="section-title">Add Denomination</h3>
             <div className="denomination-form">
               <div className="denomination-inputs">
                 <div className="form-group">
                   <label className="form-label">Denomination</label>
-                  <select 
-                    value={selectedDenomination} 
-                    onChange={e => setSelectedDenomination(e.target.value)}
+                  <select
+                    value={selectedDenomination}
+                    onChange={(e) => setSelectedDenomination(e.target.value)}
                     className="form-select"
                   >
                     <option value="">Select denomination</option>
-                    {availableDenominations.map(option => (
-                      <option key={`${option.value}-${option.type}`} value={option.value}>
+                    {availableDenominations.map((option) => (
+                      <option
+                        key={`${option.value}-${option.type}`}
+                        value={option.value}
+                      >
                         {option.label}
                       </option>
                     ))}
@@ -912,11 +923,11 @@ function CreateDayClosing() {
 
                 <div className="form-group">
                   <label className="form-label">Good Count</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     min="0"
-                    value={goodCount} 
-                    onChange={e => setGoodCount(e.target.value)}
+                    value={goodCount}
+                    onChange={(e) => setGoodCount(e.target.value)}
                     className="form-input"
                     placeholder="0"
                   />
@@ -924,11 +935,11 @@ function CreateDayClosing() {
 
                 <div className="form-group">
                   <label className="form-label">Bad Count</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     min="0"
-                    value={badCount} 
-                    onChange={e => setBadCount(e.target.value)}
+                    value={badCount}
+                    onChange={(e) => setBadCount(e.target.value)}
                     className="form-input"
                     placeholder="0"
                   />
@@ -936,8 +947,8 @@ function CreateDayClosing() {
 
                 <div className="form-group">
                   <label className="form-label">&nbsp;</label>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={addDenominationEntry}
                     className="add-denomination-btn"
                     disabled={!selectedDenomination}
@@ -965,19 +976,21 @@ function CreateDayClosing() {
                       </tr>
                     </thead>
                     <tbody>
-                      {denominationEntries.map(entry => (
+                      {denominationEntries.map((entry) => (
                         <tr key={entry.id}>
                           <td className="denom-value">{entry.label}</td>
                           <td className="denom-type">{entry.type}</td>
                           <td>{entry.good}</td>
                           <td>{entry.bad}</td>
-                          <td className="total-amount">₹{entry.totalAmount.toFixed(2)}</td>
+                          <td className="total-amount">
+                            ₹{entry.totalAmount.toFixed(2)}
+                          </td>
                           <td>
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => removeDenominationEntry(entry.id)}
                               className=""
-                              style={{color:"red"}}
+                              style={{ color: "red" }}
                             >
                               Remove
                             </button>
@@ -987,10 +1000,18 @@ function CreateDayClosing() {
                     </tbody>
                     <tfoot>
                       <tr className="denomination-total">
-                        <td colSpan="2"><strong>Grand Total</strong></td>
-                        <td><strong>Good: ₹{totalGood.toFixed(2)}</strong></td>
-                        <td><strong>Bad: ₹{totalBad.toFixed(2)}</strong></td>
-                        <td colSpan="2"><strong>₹{totalAmount.toFixed(2)}</strong></td>
+                        <td colSpan="2">
+                          <strong>Grand Total</strong>
+                        </td>
+                        <td>
+                          <strong>Good: ₹{totalGood.toFixed(2)}</strong>
+                        </td>
+                        <td>
+                          <strong>Bad: ₹{totalBad.toFixed(2)}</strong>
+                        </td>
+                        <td colSpan="2">
+                          <strong>₹{totalAmount.toFixed(2)}</strong>
+                        </td>
                       </tr>
                     </tfoot>
                   </table>
@@ -1007,11 +1028,26 @@ function CreateDayClosing() {
             </div>
           )}
 
-          <div className="form-actions">
-            <button 
-              className={`submit-btn ${loading ? 'loading' : ''} ${balanceError ? 'disabled' : ''}`} 
-              type="submit" 
-              disabled={loading || balanceError || denominationEntries.length === 0}
+          <div className="form-actions1">
+            <div>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => navigate(-1)}
+                disabled={loading}
+              >
+                <span className="btn-icon">←</span>
+                Back 
+              </button>
+            </div>
+            <button
+              className={`btn-primary1 ${loading ? "loading" : ""} ${
+                balanceError ? "disabled" : ""
+              }`}
+              type="submit"
+              disabled={
+                loading || balanceError || denominationEntries.length === 0
+              }
             >
               {loading ? (
                 <>
@@ -1019,7 +1055,7 @@ function CreateDayClosing() {
                   Saving...
                 </>
               ) : (
-                'Create Day Closing Report'
+                "Save Day Closing "
               )}
             </button>
           </div>

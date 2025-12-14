@@ -531,7 +531,7 @@
 .file-upload-area {
   border: 2px dashed #d1d5db;
   border-radius: 8px;
-  padding: 10px 10px;
+  padding: 1px 1px;
   text-align: center;
   transition: all 0.3s ease;
   background: #fafafa;
@@ -630,15 +630,15 @@
 }
 
 .image-preview {
-  margin-top: 12px;
+  margin-top: 5px;
   text-align: center;
 }
 
 .preview-image {
-  max-width: 200px;
-  max-height: 200px;
+  max-width: 150px;
+  max-height: 150px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
 }
 
 /* ===== TABLE STYLES ===== */

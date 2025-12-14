@@ -419,11 +419,8 @@ function CreateExpense() {
             <div className="form-sections">
 
             
-              <div className="form-section">
-                <h3 className="section-title">
-                  <span className="section-icon">🏢</span>
-                  Organization & Basic Information
-                </h3>
+              <div className="form-section1">
+               
                 <div className=" enhanced-grid1">
                   <div className="form-group">
                     <label className="form-label required">Branch</label>
@@ -541,7 +538,7 @@ function CreateExpense() {
                   <div className="form-group">
                     <label className="form-label">Expense Date</label>
                     <div className="date-input-wrapper">
-                      <span className="input-icon" style={{ marginLeft: "-10px" }}>📅</span>
+                      {/* <span className="input-icon" style={{ marginLeft: "-10px" }}>📅</span> */}
                       <input
                         name="expenseDate"
                         type="date"
@@ -556,13 +553,13 @@ function CreateExpense() {
               </div>
 
               {/* File Upload Section */}
-              <div className="form-section">
+              <div className="form-section1">
                 <h3 className="section-title">
                   <span className="section-icon">📎</span>
                   Receipt Attachment
                 </h3>
                 <div className="file-upload-section">
-                  <div className={`file-upload-area ${form.file ? 'has-file' : ''}`}>
+                  <div className={`file-upload-area `}>
                     <input
                       name="file"
                       type="file"
@@ -571,16 +568,8 @@ function CreateExpense() {
                       id="file-upload"
                       accept="image/*,.pdf,.doc,.docx,.xlsx"
                     />
-                    <label htmlFor="file-upload" className="file-upload-label">
-                      {form.file ? (
-                        <>
-                          <div className="upload-icon">✅</div>
-                          <div className="upload-text">
-                            <strong>File Selected</strong>
-                            <span>Click to change file</span>
-                          </div>
-                        </>
-                      ) : (
+                    <label htmlFor="file-upload" >
+                     
                         <>
                           <div className="upload-icon">📁<strong style={{ fontSize: "20px" }}>Choose file</strong></div>
                           <div className="upload-text">
@@ -588,7 +577,7 @@ function CreateExpense() {
                             <small>Supports: JPG, PNG, PDF, DOC, XLSX (Max: 10MB)</small> */}
                           </div>
                         </>
-                      )}
+                      
                     </label>
                   </div>
 

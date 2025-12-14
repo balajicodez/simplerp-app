@@ -7,18 +7,18 @@ export default function PageCard({ title, children, className = '', shifted = tr
       <div className="page-card" role="main" aria-label={title || 'page'}>
         {title ? (
           <div className="page-card-header">
-            <h1
+            <h3
               style={{
                 background: "linear-gradient(90deg, #3c93c1, #3c93c1, #3c93c1)",
-                backgroundSize: "300% 300%",
+                backgroundSize: "200% 200%",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 animation: "gradientMove 5s ease infinite"
               }}
             >
               {title}
-            </h1>
-            {/* <hr /> */}
+            </h3>
+            <hr />
             <style>
               {`
                 @keyframes gradientMove {

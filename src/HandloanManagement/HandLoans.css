@@ -712,6 +712,12 @@
   grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
+.form-grid1 {
+  padding: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
 
 .form-group.full-width {
   grid-column: 1 / -1;

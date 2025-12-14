@@ -204,8 +204,8 @@
 /* Enhanced Form Grid */
 .enhanced-grid1 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 4px;
 }
 
 .form-group {

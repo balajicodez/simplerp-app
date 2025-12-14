@@ -81,21 +81,6 @@ function CreateEmployee() {
     <div className="page-container">
       <Sidebar isOpen={true} />
       <PageCard title="Create Employee">
-        
-        {/* Enhanced Header Section */}
-        <div className="create-employee-header">
-          <div className="header-content">
-            <div className="header-icon">👤</div>
-            
-            <div className="header-text">
-              <h1>Add New Employee</h1>
-              <p>Create a new employee record in the system</p>
-            </div>
-          </div>
-          
-        </div>
-
-        {/* Main Form */}
         <div className="create-employee-form">
           {error && (
             <div className="alert alert-error">
@@ -119,12 +104,12 @@ function CreateEmployee() {
             <div className="form-sections">
               
               {/* Basic Information Section */}
-              <div className="form-section">
+              <div className="form-section1">
                 <h3 className="section-title">
                   <span className="section-icon">📋</span>
                   Basic Information
                 </h3>
-                <div className="form-grid enhanced-grid">
+                <div className="form-grid1">
                   <div className="form-group">
                     <label className="form-label required">Full Name</label>
                     <input 
@@ -220,18 +205,8 @@ function CreateEmployee() {
               </div>
              
             </div>
-            <div className="form-actions">
-              <button 
-                type="button" 
-                className="btn-secondary"
-                onClick={clearForm}
-                disabled={loading}
-              >
-                <span className="btn-icon">🗑️</span>
-                Clear Form
-              </button>
-              
-              <div className="action-buttons">
+            <div className="form-actions2" >  
+              <div style={{display:"flex",justifyContent:"space-between"}}>
                 <button 
                   type="button" 
                   className="btn-outline"
@@ -241,7 +216,6 @@ function CreateEmployee() {
                   <span className="btn-icon">←</span>
                   Back to List
                 </button>
-                
                 <button 
                   type="submit" 
                   className={`btn-primary submit-btn ${loading ? 'loading' : ''}`}
@@ -254,7 +228,7 @@ function CreateEmployee() {
                     </>
                   ) : (
                     <>
-                      <span className="btn-icon">👤</span>
+                      
                       Create Employee
                     </>
                   )}

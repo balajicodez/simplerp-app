@@ -1903,7 +1903,7 @@ function DayClosingReport() {
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Organization</label>
+            {/* <label className="form-label">Organization</label> */}
             <select
               value={organizationId}
               // onChange={handleChange}
@@ -1922,7 +1922,8 @@ function DayClosingReport() {
             </select>
           </div>
           <button
-            style={styles.generateButton}
+          className='btn-primary1'
+            // style={styles.generateButton}
             onClick={handleGenerateReport}
             onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
             onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
@@ -1981,11 +1982,12 @@ function DayClosingReport() {
         ) : (
           <>
             <div style={styles.summaryContainer}>
-              <div style={{...styles.summaryCard, ...styles.cashInCard}}>
+              <div style={{...styles.summaryCard,}}>
                 <div style={{color: '#2563eb', fontWeight: '600', fontSize: '14px'}}>Total Cash-In</div>
                 <div style={{...styles.summaryAmount, color: '#2563eb'}}>
                   {safeToLocaleString(totals.cashIn + totals.expenseCashIn + totals.handloanCashIn)}
                 </div>
+                
                 <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
                   Petty Cash: {safeToLocaleString(totals.cashIn)}
                 </div>
@@ -1993,7 +1995,7 @@ function DayClosingReport() {
                   Expenses: {safeToLocaleString(totals.expenseCashIn)}
                 </div>
               </div>
-              <div style={{...styles.summaryCard, ...styles.cashOutCard}}>
+              <div style={{...styles.summaryCard, }}>
                 <div style={{color: '#dc2626', fontWeight: '600', fontSize: '14px'}}>Total Cash-Out</div>
                 <div style={{...styles.summaryAmount, color: '#dc2626'}}>
                   {safeToLocaleString(totals.cashOut + totals.expenseCashOut + totals.handloanCashOut)}
@@ -2005,7 +2007,7 @@ function DayClosingReport() {
                   Expenses: {safeToLocaleString(totals.expenseCashOut)}
                 </div>
               </div>
-              <div style={{...styles.summaryCard, ...styles.netBalanceCard}}>
+              <div style={{...styles.summaryCard, }}>
                 <div style={{color: '#059669', fontWeight: '600', fontSize: '14px'}}>Net Balance</div>
                 <div style={{...styles.summaryAmount, color: '#059669'}}>
                   {safeToLocaleString(

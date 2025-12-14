@@ -455,7 +455,7 @@ const HandLoanManagement = () => {
           <div className="header-actions">
             <div className="action-buttons">
               <button 
-                className="btn-primary"
+                className="btn-primary1"
                 onClick={handleCreateLoan}
                 title="Create new hand loan"
               >
@@ -475,7 +475,7 @@ const HandLoanManagement = () => {
             : "Recover selected loan"
       }
     >
-      <span className="btn-icon">💰</span>
+      {/* <span className="btn-icon">💰</span> */}
       Recover
     </button>
   )}
@@ -486,7 +486,7 @@ const HandLoanManagement = () => {
                 disabled={!selectedLoan}
                 title={!selectedLoan ? "Select a main loan to view its recovered loans" : `View recovered loans for ${selectedLoan.handLoanNumber}`}
               >
-                <span className="btn-icon">✅</span>
+                {/* <span className="btn-icon">✅</span> */}
                 {selectedLoan ? `Recovered Loans for ${selectedLoan.handLoanNumber}` : 'Recovered Loans'}
               </button>
             </div>
@@ -640,7 +640,7 @@ const LoanSummaryDashboard = ({ summary, viewMode, selectedLoan, recoveredLoansC
   };
 
   return (
-    <div className="loan-dashboard">
+    <div className="dashboard-header1">
       {/* <div className="dashboard-header">
         <h3>{getViewModeTitle()} Summary</h3>
         {viewMode === 'RECOVERED' && selectedLoan && (
@@ -651,28 +651,28 @@ const LoanSummaryDashboard = ({ summary, viewMode, selectedLoan, recoveredLoansC
       </div> */}
       <div className="dashboard-stats">
         <div className="stat-card">
-          <div className="stat-icon">📊</div>
+          {/* <div className="stat-icon">📊</div> */}
           <div className="stat-info">
             <div className="stat-value">{summary.totalLoans}</div>
             <div className="stat-label">Total Loans</div>
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">💰</div>
+          {/* <div className="stat-icon">💰</div> */}
           <div className="stat-info">
             <div className="stat-value">{formatCurrency(summary.totalIssued)}</div>
             <div className="stat-label">Total Issued</div>
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">⚖️</div>
+          {/* <div className="stat-icon">⚖️</div> */}
           <div className="stat-info">
             <div className="stat-value pending">{formatCurrency(summary.totalBalance)}</div>
             <div className="stat-label">Pending Balance</div>
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon">✅</div>
+          {/* <div className="stat-icon">✅</div> */}
           <div className="stat-info">
             <div className="stat-value">{summary.recoveryRate.toFixed(1)}%</div>
             <div className="stat-label">Recovery Rate</div>
@@ -752,21 +752,18 @@ const LoanDataTable = ({
   }
 
   return (
-    <div className="table-container">
+    <div className="modern-table1">
       <div className="table-responsive">
-        <table className="loans-table">
+        <table className="modern-table">
           <thead>
-           <tr>
-              {viewMode !== "ALL" && (
-                  <th className="select-col">Select</th>
-                )}
+            <tr>
+              {viewMode !== "ALL" && <th className="select-col">Select</th>}
               <th className="loan-details-col">Loan Details</th>
               <th className="org-col">Organization</th>
               <th className="date-col">Date</th>
               <th className="amount-col">Amount</th>
               <th className="balance-col">Balance</th>
-              {viewMode !=="ALL" &&(
-              <th className="progress-col">Progress</th>)}
+              {viewMode !== "ALL" && <th className="progress-col">Progress</th>}
               <th className="status-col">Status</th>
               <th className="actions-col">Actions</th>
             </tr>
@@ -778,7 +775,9 @@ const LoanDataTable = ({
                   <div className="no-data-content">
                     <div className="no-data-icon">💰</div>
                     <p>No {viewMode.toLowerCase()} loans found</p>
-                    <p className="no-data-subtitle">Try changing your filters or create a new loan</p>
+                    <p className="no-data-subtitle">
+                      Try changing your filters or create a new loan
+                    </p>
                   </div>
                 </td>
               </tr>
