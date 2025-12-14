@@ -1038,7 +1038,10 @@ function DayClosingReport() {
         setError('');
         
         // Fetch day closing data
-        const response = await fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings`);
+        const bearerToken = localStorage.getItem('token');
+        const response = await fetch(`${APP_SERVER_URL_PREFIX}/pettyCashDayClosings`, {
+          headers: { 'Authorization': `Bearer ${bearerToken}` }
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch day closing data');
         }
@@ -1048,7 +1051,9 @@ function DayClosingReport() {
         
         // Fetch expenses data
         try {
-          const expensesResponse = await fetch(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=20`);
+          const expensesResponse = await fetch(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=20`, {
+            headers: { 'Authorization': `Bearer ${bearerToken}` }
+          });
           if (expensesResponse.ok) {
             const expensesData = await expensesResponse.json();
             const expensesList = expensesData.content || expensesData || [];
@@ -1060,7 +1065,10 @@ function DayClosingReport() {
         
         // Fetch handloans data
         try {
-          const handloansResponse = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/all?page=0&size=20`);
+          const bearerToken = localStorage.getItem('token');
+          const handloansResponse = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/all?page=0&size=20`, {
+            headers: { 'Authorization': `Bearer ${bearerToken}` }
+          });
           if (handloansResponse.ok) {
             const handloansData = await handloansResponse.json();
             const handloansList = handloansData.content || handloansData || [];
