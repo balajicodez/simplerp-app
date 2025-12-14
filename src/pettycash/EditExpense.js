@@ -132,13 +132,14 @@ function EditExpense() {
       };
       
       const bearerToken = localStorage.getItem('token');
-      const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${id}`, { 
+      const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/update/${id}`, { 
         method: 'PATCH', 
         headers: {
           'Content-Type':'application/json',
           'Authorization': `Bearer ${bearerToken}`
         }, 
-        body: JSON.stringify(payload) 
+        body: JSON.stringify(form) 
+       // body: new Blob([JSON.stringify(payload)], { type: 'application/json' })
       });
       
       if (!res.ok) {
