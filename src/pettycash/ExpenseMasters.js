@@ -38,8 +38,7 @@ function ExpenseMasters() {
     <div>
       <Sidebar isOpen={true} />
       <PageCard title="Expense Category Masters">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:12 }}>
-          <div className="small">Masters of expense categories</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:12 }}>         
           <div>
             <button className="btn" onClick={() => navigate('/pettycash/masters/create')}>Create</button>
           </div>
