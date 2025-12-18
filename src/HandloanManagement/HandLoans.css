@@ -1238,7 +1238,7 @@
   border: 1px solid #e1e5e9;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -1246,7 +1246,7 @@
 
 .recovered-loan-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  /* box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); */
 }
 
 /* Card Header */

@@ -443,9 +443,9 @@ const HandLoanManagement = () => {
       <Sidebar isOpen={true} />
       <PageCard title="Hand Loan Management">
         {/* Summary Dashboard */}
-        <LoanSummaryDashboard 
-          summary={summaryStats} 
-          viewMode={viewMode} 
+        <LoanSummaryDashboard
+          summary={summaryStats}
+          viewMode={viewMode}
           selectedLoan={selectedLoan}
           recoveredLoansCount={recoveredLoansForMainLoan.length}
         />
@@ -454,7 +454,7 @@ const HandLoanManagement = () => {
         <div className="handloan-header">
           <div className="header-actions">
             <div className="action-buttons">
-              <button 
+              <button
                 className="btn-primary1"
                 onClick={handleCreateLoan}
                 title="Create new hand loan"
@@ -462,35 +462,43 @@ const HandLoanManagement = () => {
                 <span className="btn-icon">+</span>
                 New Loan
               </button>
-             {selectedLoan?.status !== 'RECOVERED' && (
-    <button 
-      className="btn-secondary"
-      onClick={handleRecoverLoan}
-      disabled={!selectedLoan || selectedLoan.status === 'CLOSED'}
-      title={
-        !selectedLoan
-          ? "Select a loan to recover"
-          : selectedLoan.status === 'CLOSED'
-            ? "Loan already recovered"
-            : "Recover selected loan"
-      }
-    >
-      {/* <span className="btn-icon">💰</span> */}
-      Recover
-    </button>
-  )}
-              <button 
-                className={`btn-secondary ${viewMode === 'RECOVERED' ? 'active' : ''}`}
-                style={{padding:"4px"}}
+              {selectedLoan?.status !== "RECOVERED" && (
+                <button
+                  className="btn-secondary"
+                  onClick={handleRecoverLoan}
+                  disabled={!selectedLoan || selectedLoan.status === "CLOSED"}
+                  title={
+                    !selectedLoan
+                      ? "Select a loan to recover"
+                      : selectedLoan.status === "CLOSED"
+                      ? "Loan already recovered"
+                      : "Recover selected loan"
+                  }
+                >
+                  {/* <span className="btn-icon">💰</span> */}
+                  Recover
+                </button>
+              )}
+              <button
+                className={`btn-secondary ${
+                  viewMode === "RECOVERED" ? "active" : ""
+                }`}
+                style={{ padding: "4px" }}
                 onClick={handleViewRecoveredLoans}
                 disabled={!selectedLoan}
-                title={!selectedLoan ? "Select a main loan to view its recovered loans" : `View recovered loans for ${selectedLoan.handLoanNumber}`}
+                title={
+                  !selectedLoan
+                    ? "Select a main loan to view its recovered loans"
+                    : `View recovered loans for ${selectedLoan.handLoanNumber}`
+                }
               >
                 {/* <span className="btn-icon">✅</span> */}
-                {selectedLoan ? `Recovered Loans for ${selectedLoan.handLoanNumber}` : 'Recovered Loans'}
+                {selectedLoan
+                  ? `Recovered Loans for ${selectedLoan.handLoanNumber}`
+                  : "Recovered Loans"}
               </button>
             </div>
-            
+
             <div className="search-section">
               <div className="search-box">
                 <input
@@ -507,16 +515,16 @@ const HandLoanManagement = () => {
 
           {/* View Mode Tabs */}
           <div className="view-mode-tabs">
-            <button 
-              className={`tab-btn ${viewMode === 'ISSUED' ? 'active' : ''}`}
-              onClick={() => handleViewModeChange('ISSUED')}
+            <button
+              className={`tab-btn ${viewMode === "ISSUED" ? "active" : ""}`}
+              onClick={() => handleViewModeChange("ISSUED")}
             >
               <span className="tab-icon">📋</span>
               Issued Loans
             </button>
-            <button 
-              className={`tab-btn ${viewMode === 'ALL' ? 'active' : ''}`}
-              onClick={() => handleViewModeChange('ALL')}
+            <button
+              className={`tab-btn ${viewMode === "ALL" ? "active" : ""}`}
+              onClick={() => handleViewModeChange("ALL")}
             >
               <span className="tab-icon">📊</span>
               All Loans
@@ -526,8 +534,8 @@ const HandLoanManagement = () => {
 
         {/* Selection Info */}
         {selectedLoan && (
-          <SelectedLoanInfo 
-            loan={selectedLoan} 
+          <SelectedLoanInfo
+            loan={selectedLoan}
             onClear={() => {
               setSelectedLoan(null);
               setRecoveredLoansForMainLoan([]);
@@ -538,16 +546,25 @@ const HandLoanManagement = () => {
         )}
 
         {/* Selected Loan Info for Recovered Loans View */}
-        {viewMode === 'RECOVERED' && selectedLoan && (
+        {viewMode === "RECOVERED" && selectedLoan && (
           <div className="selected-main-loan-info">
-            <div className="main-loan-banner">
-              <strong>Showing recovered loans for: {selectedLoan.handLoanNumber}</strong>
-              <span>Party: {selectedLoan.partyName}</span>
-              <span>Original Amount: {formatCurrency(selectedLoan.loanAmount)}</span>
-              <button 
-                className="btn-clear"
+            <div
+              className="main-loan-banner"
+              style={{ display: "flex", justifyContent: "space-between" }}
+            >
+              <strong style={{ color: "#3b90be", paddingLeft: "0%" }}>
+                Showing recovered loans for: {selectedLoan.handLoanNumber}
+              </strong>
+              <span style={{ color: "#3b90be" }}>
+                Party: {selectedLoan.partyName}
+              </span>
+              <span style={{ color: "#3b90be" }}>
+                Original Amount: {formatCurrency(selectedLoan.loanAmount)}
+              </span>
+              <button
+                className="btn-primary1"
                 onClick={() => {
-                  setViewMode('ISSUED');
+                  setViewMode("ISSUED");
                   setRecoveredLoansForMainLoan([]);
                 }}
               >
@@ -562,14 +579,16 @@ const HandLoanManagement = () => {
           <div className="alert alert-error">
             <div className="alert-content">
               <strong>Error:</strong> {error}
-              <button className="retry-btn" onClick={fetchLoans}>Try Again</button>
+              <button className="retry-btn" onClick={fetchLoans}>
+                Try Again
+              </button>
             </div>
           </div>
         )}
 
         {/* Main Content */}
         {showCreateForm ? (
-          <CreateHandLoanForm 
+          <CreateHandLoanForm
             organizations={organizations}
             fetchedBalance={fetchedBalance}
             onSuccess={() => {
@@ -581,7 +600,7 @@ const HandLoanManagement = () => {
             balanceLoading={balanceLoading}
           />
         ) : showRecoverForm ? (
-          <RecoverHandLoanForm 
+          <RecoverHandLoanForm
             loan={selectedLoan}
             organizations={organizations}
             onSuccess={() => {
@@ -592,7 +611,7 @@ const HandLoanManagement = () => {
             onCancel={() => setShowRecoverForm(false)}
           />
         ) : showLoanDetails ? (
-          <LoanDetailsModal 
+          <LoanDetailsModal
             loan={selectedLoan}
             recoveries={loanRecoveries}
             onClose={() => setShowLoanDetails(false)}
@@ -605,8 +624,14 @@ const HandLoanManagement = () => {
           />
         ) : (
           <LoanDataTable
-            loans={viewMode === 'RECOVERED' && recoveredLoansForMainLoan.length > 0 ? recoveredLoansForMainLoan : filteredLoans}
-            loading={loading || (viewMode === 'RECOVERED' && loadingRecoveredLoans)}
+            loans={
+              viewMode === "RECOVERED" && recoveredLoansForMainLoan.length > 0
+                ? recoveredLoansForMainLoan
+                : filteredLoans
+            }
+            loading={
+              loading || (viewMode === "RECOVERED" && loadingRecoveredLoans)
+            }
             selectedLoan={selectedLoan}
             onLoanSelect={handleLoanSelect}
             onViewDetails={handleViewLoanDetails}
@@ -615,7 +640,9 @@ const HandLoanManagement = () => {
             formatDate={formatDate}
             RecoveryProgressBar={RecoveryProgressBar}
             viewMode={viewMode}
-            isRecoveredLoansView={viewMode === 'RECOVERED' && recoveredLoansForMainLoan.length > 0}
+            isRecoveredLoansView={
+              viewMode === "RECOVERED" && recoveredLoansForMainLoan.length > 0
+            }
             mainLoan={selectedLoan}
           />
         )}
@@ -1418,13 +1445,14 @@ const RecoveredLoansCardView = ({ loans, onViewDetails, formatCurrency, formatDa
   return (
     <div className="recovered-loans-container">
       <div className="recovered-loans-header">
-        <h3>
-          {mainLoan 
+        <h3 style={{ color: "#3b90be" }}>
+          {mainLoan
             ? `Recovered Loans for ${mainLoan.handLoanNumber}`
-            : 'Recovered Loans'
-          }
+            : "Recovered Loans"}
         </h3>
-        <div className="recovered-count">Total: {loans.length} recovery transactions</div>
+        <div className="recovered-count">
+          Total: {loans.length} recovery transactions
+        </div>
       </div>
       <div className="recovered-loans-grid">
         {loans.map((loan) => (
@@ -1482,8 +1510,7 @@ const RecoveredLoanCard = ({ loan, onViewDetails, formatCurrency, formatDate, ma
         </div>
       </div>
 
-      {/* Progress Section */}
-      <div className="card-progress-section">
+      {/* <div className="card-progress-section">
         <div className="progress-label">Progress</div>
         <div className="progress-container">
           <div className="progress-bar">
@@ -1494,7 +1521,7 @@ const RecoveredLoanCard = ({ loan, onViewDetails, formatCurrency, formatDate, ma
           </div>
           <div className="progress-text">{recoveryPercentage.toFixed(0)}%</div>
         </div>
-      </div>
+      </div> */}
 
       {/* Status Section */}
       <div className="card-status-section">
