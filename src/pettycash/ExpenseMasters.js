@@ -18,8 +18,20 @@ function ExpenseMasters() {
       headers: {'Authorization': `Bearer ${bearerToken}` }
     })
       .then(res => {
+        // Check if the response is successful
+        if (!res.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        return res.json(); // Parse the JSON response body
+      })
+      .then(data => {
         setLoading(false);
-      }).catch(() => setLoading(false));
+        // Access the _embedded property from the parsed data
+        const expenseTypes = data._embedded.expenseTypeMasters;
+        setItems(expenseTypes);  // Set the expense types to state
+      }).catch(err => {
+        setLoading(false);  // If an error occurs, set error message
+      });
   }, []);
 
   return (
