@@ -1012,56 +1012,8 @@ function DayClosingReport() {
                     width: "100%",
                   }}
                 >
-                  {/* LEFT: CASH OUT EXPENSES */}
-                  <div style={{ flex: 1, minWidth: "48%" }}>
-                    <h4 style={{ color: "#dc2626", marginBottom: "10px" }}>
-                      Cash Out Expenses
-                    </h4>
-                    <div
-                      style={{
-                        ...styles.tableContainer,
-                        width: "100%",
-                        height: "auto",
-                      }}
-                    >
-                      <table style={styles.table}>
-                        <thead style={styles.tableHeader}>
-                          <tr>
-                            <th style={styles.tableHeaderCell}>ID</th>
-                            <th style={styles.tableHeaderCell}>Amount</th>
-                            <th style={styles.tableHeaderCell}>Description</th>
-                            <th style={styles.tableHeaderCell}>Type</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {cashOutExpenses.map((expense, idx) => (
-                            <tr key={idx} style={styles.tableRow}>
-                              <td style={styles.tableCell}>
-                                {expense.id || "N/A"}
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  color: "#dc2626",
-                                  fontWeight: "600",
-                                }}
-                              >
-                                {safeToLocaleString(expense.amount)}
-                              </td>
-                              <td style={styles.tableCell}>
-                                {expense.description || "General"}
-                              </td>
-                              <td style={styles.tableCell}>
-                                {expense.expenseSubType || "CASH-OUT"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
 
-                  {/* RIGHT: CASH IN EXPENSES */}
+                  {/* LEFT: CASH IN EXPENSES */}
                   <div style={{ flex: 1, minWidth: "48%" }}>
                     <h4 style={{ color: "#059669", marginBottom: "10px" }}>
                       Cash In Expenses
@@ -1109,6 +1061,55 @@ function DayClosingReport() {
                       </table>
                     </div>
                   </div>
+
+                  {/* RIGHT: CASH OUT EXPENSES */}
+                  <div style={{ flex: 1, minWidth: "48%" }}>
+                    <h4 style={{ color: "#dc2626", marginBottom: "10px" }}>
+                      Cash Out Expenses
+                    </h4>
+                    <div
+                      style={{
+                        ...styles.tableContainer,
+                        width: "100%",
+                        height: "auto",
+                      }}
+                    >
+                      <table style={styles.table}>
+                        <thead style={styles.tableHeader}>
+                          <tr>
+                            <th style={styles.tableHeaderCell}>ID</th>
+                            <th style={styles.tableHeaderCell}>Amount</th>
+                            <th style={styles.tableHeaderCell}>Description</th>
+                            <th style={styles.tableHeaderCell}>Type</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {cashOutExpenses.map((expense, idx) => (
+                            <tr key={idx} style={styles.tableRow}>
+                              <td style={styles.tableCell}>
+                                {expense.id || "N/A"}
+                              </td>
+                              <td
+                                style={{
+                                  ...styles.tableCell,
+                                  color: "#dc2626",
+                                  fontWeight: "600",
+                                }}
+                              >
+                                {safeToLocaleString(expense.amount)}
+                              </td>
+                              <td style={styles.tableCell}>
+                                {expense.description || "General"}
+                              </td>
+                              <td style={styles.tableCell}>
+                                {expense.expenseSubType || "CASH-OUT"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>                  
                 </div>
               </div>
             )}
