@@ -412,7 +412,7 @@ function DayClosingReport() {
 
           const infoTableData = [
             ['Description:', records.description || ''],
-            ['Starting Balance:', records.startingBalance ? ` ${safeToLocaleString(records.startingBalance)}` : ' 0'],
+            ['Opening Balance:', records.openingBalance ? ` ${safeToLocaleString(records.openingBalance)}` : ' 0'],
             ['Cash In:', records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : ' 0'],
             ['Cash Out:', records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : ' 0'],
             ['Closing Balance:', records.closingBalance ? ` ${safeToLocaleString(records.closingBalance)}` : ' 0']
