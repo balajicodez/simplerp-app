@@ -212,39 +212,7 @@ function DayClosing() {
                 Perform Day Closing
               </button>
             </div>
-          </div>
-
-          {/* Statistics Cards */}
-          <div className="stats-grid1">
-            <div className="stat-card">
-              <div className="stat-content">
-                <div className="stat-value">{totalTransactions}</div>
-                <div className="stat-label">Total Transactions</div>
-                {/* <div className="stat-date">{formatDate(selectedDate)}</div> */}
-              </div>
-            </div>
-            <div className="stat-card ">
-              <div className="stat-content">
-                <div className="stat-value">{formatCurrency(totalInward)}</div>
-                <div className="stat-label">Total Inward</div>
-                {/* <div className="stat-date">{formatDate(selectedDate)}</div> */}
-              </div>
-            </div>
-            <div className="stat-card ">
-              <div className="stat-content">
-                <div className="stat-value">{formatCurrency(totalOutward)}</div>
-                <div className="stat-label">Total Outward</div>
-                {/* <div className="stat-date">{formatDate(selectedDate)}</div> */}
-              </div>
-            </div>
-            <div className="stat-card ">
-              <div className="stat-content">
-                <div className="stat-value">{formatCurrency(netBalance)}</div>
-                <div className="stat-label">Net Balance</div>
-                {/* <div className="stat-date">{formatDate(selectedDate)}</div> */}
-              </div>
-            </div>
-          </div>
+          </div>          
         </div>
 
         {/* Filters Section */}
@@ -512,46 +480,7 @@ function DayClosing() {
                   </button>
                 </div>
               </div>
-            )}
-
-            {/* Final Summary */}
-            {filteredItems.length > 0 && (
-              <div className="final-summary">
-                <div className="summary-card">
-                  <h3>Daily Summary for {formatDate(selectedDate)}</h3>
-                  <div className="summary-grid">
-                    <div className="summary-item">
-                      <span className="summary-label">Total Inward:</span>
-                      <span className="summary-value income">
-                        {formatCurrency(totalInward)}
-                      </span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">Total Outward:</span>
-                      <span className="summary-value expense">
-                        {formatCurrency(totalOutward)}
-                      </span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label">Net Balance:</span>
-                      <span
-                        className={`summary-value balance ${
-                          netBalance >= 0 ? "positive" : "negative"
-                        }`}
-                      >
-                        {formatCurrency(netBalance)}
-                      </span>
-                    </div>
-                    <div className="summary-item">
-                      <span className="summary-label1">Transaction Count:</span>
-                      <span className="summary-value count">
-                        {totalTransactions}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            )}           
           </>
         )}
       </PageCard>

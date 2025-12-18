@@ -183,7 +183,7 @@ function DayClosingReport() {
     } catch (err) {
       console.log(err);
       setError('No records found for the selected date and organization');
-      setRecords(JSON.stringify({cashIn :0, cashOut:0, closingBalance:0}));
+      setRecords(JSON.stringify({cashIn :0, cashOut:0, closingBalance:0,openingBalance:0}));
       setLoading(false);
     } finally {
       setLoading(false);
@@ -621,7 +621,11 @@ function DayClosingReport() {
       fontWeight: '700',
       marginTop: '8px'
     },
-
+    openingBalance: {
+      fontSize: '24px',
+      fontWeight: '700',
+      marginTop: '8px'
+    },
     tableContainer: {
       background: 'white',
       borderRadius: '12px',
@@ -927,6 +931,20 @@ function DayClosingReport() {
         ) : (
           <>
             <div style={styles.summaryContainer}>
+               <div style={{ ...styles.summaryCard }}>
+                <div
+                  style={{
+                    color: "#2563eb",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                  }}
+                >
+                  Opening Balance
+                </div>
+                <div style={{ ...styles.openingBalance, color: "#2563eb" }}>
+                  {safeToLocaleString(records.openingBalance)}
+                </div>
+              </div>
               <div style={{ ...styles.summaryCard }}>
                 <div
                   style={{
@@ -940,13 +958,6 @@ function DayClosingReport() {
                 <div style={{ ...styles.summaryAmount, color: "#2563eb" }}>
                   {safeToLocaleString(records.cashIn)}
                 </div>
-
-                {/* <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
-                  Petty Cash: {safeToLocaleString(totals.cashIn)}
-                </div>
-                <div style={{fontSize: '12px', color: '#64748b'}}>
-                  Expenses: {safeToLocaleString(totals.expenseCashIn)}
-                </div> */}
               </div>
               <div style={{ ...styles.summaryCard }}>
                 <div

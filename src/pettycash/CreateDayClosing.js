@@ -747,7 +747,7 @@ function CreateDayClosing() {
         inward: inward ? Number(inward) : 0,
         outward: outward ? Number(outward) : 0,
         closingBalance: closingBalanceCalc || (closingBalance ? Number(closingBalance) : 0),
-        openingBalance: 0,
+        openingBalance: openingBalance,
         cashIn: inward ? Number(inward) : 0,
         cashOut: outward ? Number(outward) : 0,
         tenNoteCount: denominations[10]?.good || 0,
