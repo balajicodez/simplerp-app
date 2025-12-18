@@ -525,8 +525,7 @@ function DayClosingReport() {
       const closingBalance = startingBalance + netCashFlow;
 
       const url = doc.output('bloburl');
-      setPdfUrl(url);
-      setReportMsg(`PDF generated successfully for ${selectedDate}!`);
+      setPdfUrl(url);  
 
     } catch (e) {
       console.error('PDF generation error:', e);
