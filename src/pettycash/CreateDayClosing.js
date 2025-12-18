@@ -477,6 +477,7 @@ function CreateDayClosing() {
   const [inward, setInward] = useState('');
   const [outward, setOutward] = useState('');
   const [closingBalance, setClosingBalance] = useState('');
+  const [openingBalance, setOpeningBalance] = useState('');
   
   // Simplified denomination state
   const [selectedDenomination, setSelectedDenomination] = useState('');
@@ -569,16 +570,19 @@ function CreateDayClosing() {
         setInward(data.cashIn || '0');
         setOutward(data.cashOut || '0');
         setClosingBalance(data.closingBalance || '0');
+        setOpeningBalance(data.openingBalance || '0');
       } else {
         setInward('');
         setOutward('');
         setClosingBalance('');
+        setOpeningBalance('');
       }
     } catch (error) {
       console.error('Error fetching balance data:', error);
       setInward('');
       setOutward('');
       setClosingBalance('');
+      setOpeningBalance('');
     }
   };
 
@@ -743,6 +747,7 @@ function CreateDayClosing() {
         inward: inward ? Number(inward) : 0,
         outward: outward ? Number(outward) : 0,
         closingBalance: closingBalanceCalc || (closingBalance ? Number(closingBalance) : 0),
+        openingBalance: 0,
         cashIn: inward ? Number(inward) : 0,
         cashOut: outward ? Number(outward) : 0,
         tenNoteCount: denominations[10]?.good || 0,
@@ -870,6 +875,16 @@ function CreateDayClosing() {
           <div className="form-section1">
             <h3 className="section-title">Balance Summary</h3>
             <div className="balance-grid">
+            <div className="balance-card">
+                <label className="balance-label">Opening Balance</label>
+                <input
+                  type="number"
+                  value={openingBalance}
+                  className="balance-input"
+                  min="0"
+                  readOnly
+                />
+              </div>
               <div className="balance-card">
                 <label className="balance-label">Inward</label>
                 <input
