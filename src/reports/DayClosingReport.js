@@ -216,7 +216,7 @@ function DayClosingReport() {
       const doc = new jsPDF();
       
       const selectedRecord = filteredRecords[0];
-      const startingBalance = Number(selectedRecord?.startingBalance) || 0;
+      const startingBalance = Number(selectedRecord?.openingBalance) || 0;
 
       // Header Section
       doc.setFontSize(26);
