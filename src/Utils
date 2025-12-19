@@ -1,0 +1,30 @@
+class Utils {
+
+    /**
+     * Check if JWT is expired
+     * @param {string} token
+     * @returns {boolean}
+     */
+    static accessAllowed(page) {
+        const roles = localStorage.getItem('decodedPayload.roles');
+        const rolesCsv = localStorage.getItem('decodedPayload.roles');
+
+        const rolesArray = rolesCsv
+            ? rolesCsv.split(',').map(role => role.trim())
+            : [];
+
+        return rolesArray.includes(page);
+    }
+
+    static isRoleApplicable(page) {
+        const roles = localStorage.getItem('decodedPayload.roles');
+        const rolesCsv = localStorage.getItem('decodedPayload.roles');
+
+        const rolesArray = rolesCsv
+            ? rolesCsv.split(',').map(role => role.trim())
+            : [];
+
+        return rolesArray.includes(page);
+    }
+}
+export default Utils;

@@ -5,12 +5,13 @@ import PageCard from '../components/PageCard';
 
 function Dashboard() {
     const [isOpen, setIsOpen] = useState(false);
-
+    const [userName, setUserName] = useState(localStorage.getItem('userName') || 'User');
+    const [organizationId, setOrganizationId] = useState(localStorage.getItem('organizationId') || '');
     return (
         <div className="dashboard-container">
             <Sidebar isOpen={true} />
             
-            <PageCard title={"Welcome to Sri Divya Sarees - SimplERP Solution"}>
+            <PageCard title={userName ? `Welcome ${userName}, to Sri Divya Sarees - SimplERP Solution!` : "Welcome to Sri Divya Sarees - SimplERP Solution"}>
                 
                 <div className="dashboard-grid">
                     {/* <div className="stats-card employees-card">

@@ -271,34 +271,9 @@ function DayClosingReport() {
         const columnWidth = (pageWidth - 3 * margin) / 2;
 
         // Left Column - Cash Out Expenses
-        if (cashOutExpenses.length >= 0) {
+        if (cashInExpenses.length >= 0) {
           doc.setFontSize(12);
-          doc.text('Cash Out Expenses', margin, currentY);
-          
-          const cashOutColumns = ['ID', 'Amount', 'Description', 'Type'];
-          const cashOutRows = cashOutExpenses.map(expense => [
-            expense.id || 'N/A',
-            ` ${safeToLocaleString(expense.amount)}`,
-            expense.description || 'General',
-            expense.expenseSubType || 'CASH-OUT'
-          ]);
-
-          autoTable(doc, {
-            startY: currentY + 5,
-            head: [cashOutColumns],
-            body: cashOutRows,
-            theme: 'grid',
-            headStyles: { fillColor: [220, 53, 69] },
-            styles: { fontSize: 8 },
-            tableWidth: columnWidth,
-            margin: { left: margin }
-          });
-        }
-
-        // Right Column - Cash In Expenses
-        if (cashInExpenses.length >=0 ) {
-          doc.setFontSize(12);
-          doc.text('Cash In Expenses', margin + columnWidth + margin, currentY);
+          doc.text('Cash In Expenses', margin, currentY);
           
           const cashInColumns = ['ID', 'Amount', 'Description', 'Type'];
           const cashInRows = cashInExpenses.map(expense => [
@@ -314,6 +289,31 @@ function DayClosingReport() {
             body: cashInRows,
             theme: 'grid',
             headStyles: { fillColor: [34, 139, 34] },
+            styles: { fontSize: 8 },
+            tableWidth: columnWidth,
+            margin: { left: margin }
+          });
+        }
+
+        // Right Column - Cash In Expenses
+        if (cashOutExpenses.length >=0 ) {
+          doc.setFontSize(12);
+          doc.text('Cash Out Expenses', margin + columnWidth + margin, currentY);
+          
+          const cashOutColumns = ['ID', 'Amount', 'Description', 'Type'];
+          const cashOutRows = cashOutExpenses.map(expense => [
+            expense.id || 'N/A',
+            ` ${safeToLocaleString(expense.amount)}`,
+            expense.description || 'General',
+            expense.expenseSubType || 'CASH-OUT'
+          ]);
+
+          autoTable(doc, {
+            startY: currentY + 5,
+            head: [cashOutColumns],
+            body: cashOutRows,
+            theme: 'grid',
+            headStyles: { fillColor: [220, 53, 69] },
             styles: { fontSize: 8 },
             tableWidth: columnWidth,
             margin: { left: margin + columnWidth + margin }

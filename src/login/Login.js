@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import logo from './../assets/images/logo.jpg';
 import './Login.css';
+import { jwtDecode } from "jwt-decode";
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -43,12 +44,16 @@ function Login() {
                 body: JSON.stringify({ username: email, password: password }),
             });
             const data = await res.json();
-            console.log("Status:", res.status);
-            console.log("Response:", data);
-
+           
             if (!res.ok) throw new Error('Failed to create employee');
             navigate('/dashboard');
+            const decodedPayload = jwtDecode(data.token);
+            console.log("Decoded Payload:", decodedPayload);
+
             localStorage.setItem('token', data.token);
+            localStorage.setItem('userName', data.userName);
+            localStorage.setItem('organizationId', data.organizationId);
+            localStorage.setItem('roles', decodedPayload.roles);
         } catch (err) {
             setError('Login failed. Please enter valid User Name .');
         } finally {

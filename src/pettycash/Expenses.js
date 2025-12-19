@@ -4,6 +4,7 @@ import PageCard from '../components/PageCard';
 import './PettyCash.css';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Utils from '../Utils';
 
 const API_PREFIX = '/simplerp/api';
 
@@ -16,7 +17,7 @@ function Expenses() {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = Number(searchParams.get('page') || 0);
   const sizeParam = Number(searchParams.get('size') || 20);
-
+  
   const fetchUrl = async (url) => {
     setLoading(true);
     try {
@@ -30,23 +31,25 @@ function Expenses() {
   };
 
   useEffect(() => {
-    const bearerToken = localStorage.getItem('token');
+    const bearerToken = localStorage.getItem('token');    
+    if(Utils.isRoleApplicable('ADMIN')) {
     fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`, {
       headers: { 'Authorization': `Bearer ${bearerToken}` }
-    });
+    });}
   }, [pageParam, sizeParam]);
 
   return (
     <div>
       <Sidebar isOpen={true} />
       <PageCard title="Expenses">
+        if(Utils.isRoleApplicable('ADMIN') || Utils.accessAllowed('EXPENSES_OR_PETTYCASH')) {
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div className="small">Payroll expenses (paginated)</div>
           <div>
             <button className="btn" onClick={() => navigate('/pettycash/expenses/create')}>Create Expense</button>
           </div>
         </div>
-
+        }
         {loading ? <div className="small">Loading...</div> : (
           <>
             <table className="payroll-table">

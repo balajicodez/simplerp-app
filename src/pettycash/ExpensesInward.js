@@ -4,6 +4,7 @@ import PageCard from '../components/PageCard';
 import './PettyCash.css';
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Utils from '../Utils';
 
 function ExpensesInward() {
   const [items, setItems] = useState([]);
@@ -23,6 +24,7 @@ function ExpensesInward() {
   // Calculate statistics
   const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0);
   const totalTransactions = items.length;
+  const enableOrgDropDown = true;//Utils.isRoleApplicable('ADMIN');
 
   const fetchUrl = async (url) => {
     setLoading(true);
@@ -31,8 +33,7 @@ function ExpensesInward() {
       const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
-      const json = await res.json();
-      console.log(json);
+      const json = await res.json();     
       const list = json.content || json._embedded?.expenses || [];
       setItems(list.filter(e => e.expenseType === 'CASH-IN'));
       setLinks(json._links || {});
@@ -241,31 +242,13 @@ const isToday = (dateString) => {
 
         <div className="filters-section1">
           <div className="filters-grid">
-            <div className="search-box">
-              <div className="search-icon">🔍</div>
-              <input
-                type="text"
-                placeholder="Search by branch, employee ID, type, amount, or date..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="search-input"
-              />
-              {searchTerm && (
-                <button
-                  className="clear-search"
-                  onClick={() => setSearchTerm("")}
-                  title="Clear search"
-                >
-                  ×
-                </button>
-              )}
-            </div>
-
             <div className="filter-group">
               <select
-                value={selectedOrgId}
+                value={localStorage.getItem('organizationId') || selectedOrgId}
                 onChange={handleOrganizationChange}
                 className="filter-select"
+                enabled = {enableOrgDropDown}
+                  
               >
                 <option value="">All Organizations</option>
                 {organizations.map((org) => (
