@@ -367,12 +367,9 @@ function ExpensesOutward() {
                     >
                       Type
                     </th>
-                    <th
-                   
-                    >
-                      Expense Date
-                    </th>
+                    <th>Expense Date</th>
                     <th>TransactionDate</th>
+                    <th>Book</th>
                     <th>Receipt</th>
                     <th>Actions</th>
                   </tr>
@@ -455,6 +452,12 @@ function ExpensesOutward() {
                             {formatDate(item.transactionDate)}
                           </div>
                         </td>
+                        <td className="type-cell">
+                          <span className="type-tag">
+                            {item.gstapplicable ? "Yes" : "No"}
+                          </span>
+                        </td>
+
                         <td className="receipt-cell">
                           {item.imageData || item.fileUrl || item.file ? (
                             <button

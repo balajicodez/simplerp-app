@@ -102,7 +102,8 @@ function ExpensesInward() {
       safeToString(item.amount).includes(searchTerm) || // Direct number comparison without toLowerCase
       safeToString(item.expenseDate).toLowerCase().includes(searchLower) ||
       safeToString(item.createdDate).toLowerCase().includes(searchLower) ||
-      safeToString(item.referenceNumber).toLowerCase().includes(searchLower)
+      safeToString(item.referenceNumber).toLowerCase().includes(searchLower)||
+      safeToString(item.gstapplicable).toLowerCase().includes(searchLower)
     );
   });
 
@@ -218,8 +219,8 @@ function ExpensesInward() {
                 <span className="btn-icon">+</span>
                 Create New Inward
               </button>
-            </div> )}
-          
+            </div>
+          )}
 
           <div className="stats-grid1">
             <div className="stat-card">
@@ -331,6 +332,7 @@ function ExpensesInward() {
                       Expense Date
                     </th>
                     <th>TransactionDate</th>
+                    <th>Book</th>
                     <th>Receipt</th>
                   </tr>
                 </thead>
@@ -382,6 +384,12 @@ function ExpensesInward() {
                             {formatDate(item.transactionDate)}
                           </div>
                         </td>
+                        <td className="type-cell">
+                          <span className="type-tag">
+                            {item.gstapplicable ? "Yes" : "No"}
+                          </span>
+                        </td>
+
                         <td className="receipt-cell">
                           {item.imageData || item.fileUrl || item.file ? (
                             <button

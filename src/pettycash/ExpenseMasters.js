@@ -58,7 +58,7 @@ function ExpenseMasters() {
         {loading ? (
           <div className="small">Loading...</div>
         ) : (
-          <table className="modern-table">
+          <table className="modern-table1">
             <thead>
               <tr className="table-row">
                 <th>Description</th>
