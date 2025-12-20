@@ -572,7 +572,7 @@ const handleGenerateReport = () => {
         safeToLocaleString(h.loanAmount),
       ];
     });
-
+ currentY += 6;
     if (handLoanTotal > 0) {
       doc.setFontSize(13);
       doc.setTextColor(30, 64, 175);
