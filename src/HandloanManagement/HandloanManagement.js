@@ -872,6 +872,8 @@ const LoanTableRow = ({
           )} */}
         </div>
       </td>
+      <td>          <div className="party-name">{loan.partyName}</div>
+</td>
       <td className="org-col">
         <div className="org-name" title={loan.organization?.name}>
           {loan.organization?.name || 'N/A'}
