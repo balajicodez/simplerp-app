@@ -786,6 +786,7 @@ const LoanDataTable = ({
             <tr>
               {viewMode !== "ALL" && <th className="select-col">Select</th>}
               <th className="loan-details-col">Loan Details</th>
+              <th className="loan-details-col">Party Name</th>
               <th className="org-col">Organization</th>
               <th className="date-col">Date</th>
               <th className="amount-col">Amount</th>
@@ -863,7 +864,6 @@ const LoanTableRow = ({
       <td className="loan-details-col">
         <div className="loan-main-info">
           <div className="loan-number">{loan.handLoanNumber || `HL${String(loan.id).padStart(4, '0')}`}</div>
-          <div className="party-name">{loan.partyName}</div>
           {loan.phoneNo && <div className="party-phone">{loan.phoneNo}</div>}
           {/* {loan.narration && (
             <div className="loan-narration" title={loan.narration}>
