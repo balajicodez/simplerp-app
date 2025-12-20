@@ -47,9 +47,7 @@ function Login() {
            
             if (!res.ok) throw new Error('Failed to create employee');
             navigate('/dashboard');
-            const decodedPayload = jwtDecode(data.token);
-            console.log("Decoded Payload:", decodedPayload);
-
+            const decodedPayload = jwtDecode(data.token);          
             localStorage.setItem('token', data.token);
             localStorage.setItem('userName', data.userName);
             localStorage.setItem('organizationId', data.organizationId);
@@ -89,7 +87,7 @@ function Login() {
         <div className="login-card" role="main" aria-labelledby="loginHeading">
           <div className="brand">
             <img src={logo} alt="DataSynOps logo" />
-            <h3 id="loginHeading">SimplERP - Sri Divya Sarees</h3>
+            <h3 id="loginHeading">SimplERP - Sri Divya Sarees Pvt. Ltd.</h3>
           </div>
 
           <form className="login-form" onSubmit={handleSubmit} noValidate>

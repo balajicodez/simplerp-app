@@ -170,8 +170,12 @@ function ExpensesInward() {
     }));
   };
 
-  useEffect(() => {
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN`);
+  useEffect(() => {    
+     const bearerToken = localStorage.getItem('token');
+    const value = selectedOrgId ? selectedOrgId : localStorage.getItem('organizationId');
+    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
   }, [pageParam, sizeParam]);
 
   useEffect(() => {
@@ -248,7 +252,7 @@ function ExpensesInward() {
           <div className="filters-grid">
             <div className="filter-group">
               <select
-                value={localStorage.getItem('organizationId') || selectedOrgId}
+                value={selectedOrgId || localStorage.getItem('organizationId') }
                 onChange={handleOrganizationChange}
                 className="filter-select"
                 disabled={!enableOrgDropDown}

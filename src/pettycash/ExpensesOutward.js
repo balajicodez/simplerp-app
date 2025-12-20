@@ -4,6 +4,7 @@ import PageCard from '../components/PageCard';
 import './PettyCash.css';
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Utils from '../Utils';
 
 function ExpensesOutward() {
   const [items, setItems] = useState([]);
@@ -24,6 +25,7 @@ function ExpensesOutward() {
   const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0);
   const totalTransactions = items.length;
   const averageExpense = totalTransactions > 0 ? totalAmount / totalTransactions : 0;
+  const enableOrgDropDown = Utils.isRoleApplicable('ADMIN');
 
   const fetchUrl = async (url) => {
     setLoading(true);
@@ -128,7 +130,8 @@ function ExpensesOutward() {
 
   useEffect(() => {
     const bearerToken = localStorage.getItem('token');
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT`,{
+    const value = selectedOrgId ? selectedOrgId : localStorage.getItem('organizationId');
+    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`,{
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
   }, [pageParam, sizeParam]);
@@ -286,9 +289,10 @@ function ExpensesOutward() {
             <div className="filter-group">
               {/* <label>Organization</label> */}
               <select
-                value={selectedOrgId}
+                value={selectedOrgId || localStorage.getItem('organizationId') }
                 onChange={handleOrganizationChange}
                 className="filter-select"
+                disabled={!enableOrgDropDown}
               >
                 <option value="">All Organizations</option>
                 {organizations.map((org) => (
