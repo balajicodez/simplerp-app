@@ -466,11 +466,10 @@ const handleGenerateReport = () => {
 
     let currentY = 48;
 
+    /* ================= DAY CLOSING ================= */
     autoTable(doc, {
       startY: currentY,
-      head: [
-        ["Closing Date", "Description", "Total Cash-In", "Total Cash-Out"],
-      ],
+      head: [["Closing Date", "Description", "Total Cash-In", "Total Cash-Out"]],
       body: filteredRecords.map(() => [
         records.closingDate || "",
         records.description || "",
@@ -478,13 +477,18 @@ const handleGenerateReport = () => {
         records.cashOut ? safeToLocaleString(records.cashOut) : "-",
       ]),
       theme: "grid",
-      headStyles: { fillColor: [11, 59, 114] },
-      styles: { fontSize: 10 },
+      styles: { fontSize: 11 },
+      headStyles: {
+       fillColor: [243, 244, 246]  ,
+      textColor: 17,
+        fontStyle: "bold",
+        fontSize: 14,
+      },
     });
 
     currentY = doc.lastAutoTable.finalY + 10;
 
-    /* ================= EXPENSES SUMMARY ================= */
+    /* ================= EXPENSES ================= */
     doc.setFontSize(14);
     doc.text("EXPENSES SUMMARY", 105, currentY, { align: "center" });
     currentY += 10;
@@ -499,11 +503,16 @@ const handleGenerateReport = () => {
       body: cashInExpenses.map((e) => [
         e.id,
         safeToLocaleString(e.amount),
-        e.description,
+        e.description || "General",
       ]),
       theme: "grid",
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [34, 139, 34] },
+      styles: { fontSize: 12 },
+      headStyles: {
+        fillColor: [22, 163, 74],
+        textColor: 255,
+        fontStyle: "bold",
+        
+      },
       tableWidth: colWidth,
       margin: { left: margin },
     });
@@ -514,11 +523,15 @@ const handleGenerateReport = () => {
       body: cashOutExpenses.map((e) => [
         e.id,
         safeToLocaleString(e.amount),
-        e.description,
+        e.description || "General",
       ]),
       theme: "grid",
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [220, 53, 69] },
+      styles: { fontSize: 11 },
+      headStyles: {
+        fillColor: [185, 28, 28],
+        textColor: 255,
+        fontStyle: "bold",
+      },
       tableWidth: colWidth,
       margin: { left: margin + colWidth + margin },
     });
@@ -545,66 +558,35 @@ const handleGenerateReport = () => {
           h.partyName,
         ]),
         theme: "grid",
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [220, 53, 69] },
+        styles: { fontSize:11 },
+        headStyles: {
+          fillColor: [153, 27, 27],
+          textColor: 255,
+          fontStyle: "bold",
+        },
       });
 
       currentY = doc.lastAutoTable.finalY + 15;
     }
 
-    /* ================= DENOMINATION (FIXED & DYNAMIC) ================= */
+    /* ================= DENOMINATION ================= */
     const denominations = [
-      {
-        label: "500",
-        value: 500,
-        good: records._500NoteCount,
-        soiled: records._500SoiledNoteCount,
-      },
-      {
-        label: "200",
-        value: 200,
-        good: records._200NoteCount,
-        soiled: records._200SoiledNoteCount,
-      },
-      {
-        label: "100",
-        value: 100,
-        good: records._100NoteCount,
-        soiled: records._100SoiledNoteCount,
-      },
-      {
-        label: "50",
-        value: 50,
-        good: records._50NoteCount,
-        soiled: records._50SoiledNoteCount,
-      },
-      {
-        label: "20",
-        value: 20,
-        good: records._20NoteCount,
-        soiled: records._20SoiledNoteCount,
-      },
-      {
-        label: "10",
-        value: 10,
-        good: records._10NoteCount,
-        soiled: records._10SoiledNoteCount,
-      },
+      { label: "500", value: 500, good: records._500NoteCount, soiled: records._500SoiledNoteCount },
+      { label: "200", value: 200, good: records._200NoteCount, soiled: records._200SoiledNoteCount },
+      { label: "100", value: 100, good: records._100NoteCount, soiled: records._100SoiledNoteCount },
+      { label: "50", value: 50, good: records._50NoteCount, soiled: records._50SoiledNoteCount },
+      { label: "20", value: 20, good: records._20NoteCount, soiled: records._20SoiledNoteCount },
+      { label: "10", value: 10, good: records._10NoteCount, soiled: records._10SoiledNoteCount },
     ];
 
     let denominationTotal = 0;
 
     const denominationRows = denominations
-      .filter((d) => Number(d.good) > 0 || Number(d.soiled) > 0)
-      .map((d) => {
+      .filter(d => Number(d.good) > 0 || Number(d.soiled) > 0)
+      .map(d => {
         const amount = (Number(d.good) - Number(d.soiled)) * d.value;
         denominationTotal += amount;
-        return [
-          d.label,
-          d.good || 0,
-          d.soiled || 0,
-          safeToLocaleString(amount),
-        ];
+        return [d.label, d.good || 0, d.soiled || 0, safeToLocaleString(amount)];
       });
 
     const coinsCount =
@@ -615,21 +597,11 @@ const handleGenerateReport = () => {
 
     if (coinsCount > 0) {
       denominationTotal += coinsCount;
-      denominationRows.push([
-        "COINS",
-        coinsCount,
-        0,
-        safeToLocaleString(coinsCount),
-      ]);
+      denominationRows.push(["COINS", coinsCount, 0, safeToLocaleString(coinsCount)]);
     }
 
     if (denominationRows.length > 0) {
-      denominationRows.push([
-        "TOTAL",
-        "",
-        "",
-        safeToLocaleString(denominationTotal),
-      ]);
+      denominationRows.push(["TOTAL", "", "", safeToLocaleString(denominationTotal)]);
 
       doc.setFontSize(11);
       doc.text("Cash Denomination Summary", 20, currentY);
@@ -640,26 +612,18 @@ const handleGenerateReport = () => {
         head: [["NOTE", "GOOD", "SOILED", "AMOUNT"]],
         body: denominationRows,
         theme: "grid",
-        styles: { fontSize: 10, halign: "center", valign: "middle" },
+        styles: { fontSize: 11, halign: "center", valign: "middle" },
         headStyles: {
-          fillColor: [255, 102, 102],
-          textColor: 0,
+          fillColor: [88, 28, 135],
+          textColor: 255,
           fontStyle: "bold",
         },
-        columnStyles: { 0: { cellWidth: 20 } },
+        columnStyles: { 0: { cellWidth: 22 } },
 
-        didDrawCell(data) {
-          if (data.section === "head" && data.column.index === 0) {
-            const { cell } = data;
-            doc.saveGraphicsState();
-           
-            doc.restoreGraphicsState();
-            data.cell.text = [];
-          }
-
+        didParseCell(data) {
           if (data.row.raw?.[0] === "TOTAL") {
             data.cell.styles.fontStyle = "bold";
-            data.cell.styles.fillColor = [240, 240, 240];
+            data.cell.styles.fillColor = [229, 231, 235];
           }
         },
       });
@@ -672,6 +636,7 @@ const handleGenerateReport = () => {
     setReportMsg("Failed to generate PDF");
   }
 };
+
 
 
   const styles = {
