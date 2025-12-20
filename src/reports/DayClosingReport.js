@@ -767,7 +767,7 @@ const handleGenerateReport = () => {
 
     summaryContainer: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
       gap: '20px',
       marginBottom: '4px',
       padding: '3px 16px',
