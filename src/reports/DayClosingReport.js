@@ -1150,12 +1150,7 @@ const handleGenerateReport = () => {
                 <div style={{ ...styles.summaryAmount, color: "#dc2626" }}>
                   {safeToLocaleString(records.cashOut)}
                 </div>
-                {/* <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
-                  Petty Cash: {safeToLocaleString(totals.cashOut)}
-                </div>
-                <div style={{fontSize: '12px', color: '#64748b'}}>
-                  Expenses: {safeToLocaleString(totals.expenseCashOut)}
-                </div> */}
+               
               </div>
               <div style={{ ...styles.summaryCard }}>
                 <div
@@ -1175,10 +1170,7 @@ const handleGenerateReport = () => {
 
             {/* Existing Expenses Section */}
             {(cashInExpenses.length > 0 || cashOutExpenses.length > 0) && (
-              <div style={styles.expensesSection}>
-                <h3 style={styles.expensesHeader}>
-                  Expenses for {selectedDate}
-                </h3>
+              <div style={styles.expensesSection}>                
                 <div
                   style={{
                     display: "flex",
@@ -1284,148 +1276,8 @@ const handleGenerateReport = () => {
                   </div>                  
                 </div>
               </div>
-            )}
-            <div style={styles.tableContainer}>
-              <table className="payroll-table" style={styles.table}>
-                <thead style={styles.tableHeader}>
-                  <tr>
-                    <th style={styles.tableHeaderCell}>Date</th>
-                    <th style={styles.tableHeaderCell}>Description</th>
-                    <th style={styles.tableHeaderCell}>Starting Balance</th>
-                    <th style={styles.tableHeaderCell}>Credit</th>
-                    <th style={styles.tableHeaderCell}>Debit</th>
-                    <th style={styles.tableHeaderCell}>Closing Balance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    <tr style={styles.tableRow}>
-                      <td style={styles.tableCell}>{records.closingDate}</td>
-                      <td style={styles.tableCell}>{records.description}</td>
-                      <td style={styles.tableCell}>
-                        {safeToLocaleString(records.startingBalance)}
-                      </td>
-                      <td
-                        style={{
-                          ...styles.tableCell,
-                          color: "#059669",
-                          fontWeight: "500",
-                        }}
-                      >
-                        {records.cashIn
-                          ? ` ${safeToLocaleString(records.cashIn)}`
-                          : "-"}
-                      </td>
-                      <td
-                        style={{
-                          ...styles.tableCell,
-                          color: "#dc2626",
-                          fontWeight: "500",
-                        }}
-                      >
-                        {records.cashOut
-                          ? ` ${safeToLocaleString(records.cashOut)}`
-                          : "-"}
-                      </td>
-                      <td
-                        style={{
-                          ...styles.tableCell,
-                          color: "#1e3a8a",
-                          fontWeight: "600",
-                        }}
-                      >
-                        {safeToLocaleString(records.closingBalance)}
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-
-            <div style={styles.notesSection}>
-              <h3 style={styles.notesHeader}>Notes & Coin Summary</h3>
-              <div style={styles.scrollableContainer}>
-                <table
-                  className="payroll-table"
-                  style={{ ...styles.table, minWidth: "100%" }}
-                >
-                  <thead style={styles.tableHeader}>
-                    <tr>
-                      <th style={styles.tableHeaderCell}>Date</th>
-                      <th style={styles.tableHeaderCell}>1 Coin</th>
-                      <th style={styles.tableHeaderCell}>5 Coin</th>
-                      <th style={styles.tableHeaderCell}>10 Coin</th>
-                      <th style={styles.tableHeaderCell}>20 Coin</th>
-                      <th style={styles.tableHeaderCell}>10 Note</th>
-                      <th style={styles.tableHeaderCell}>20 Note</th>
-                      <th style={styles.tableHeaderCell}>50 Note</th>
-                      <th style={styles.tableHeaderCell}>100 Note</th>
-                      <th style={styles.tableHeaderCell}>200 Note</th>
-                      <th style={styles.tableHeaderCell}>500 Note</th>
-                      <th style={styles.tableHeaderCell}>10 Soiled</th>
-                      <th style={styles.tableHeaderCell}>20 Soiled</th>
-                      <th style={styles.tableHeaderCell}>50 Soiled</th>
-                      <th style={styles.tableHeaderCell}>100 Soiled</th>
-                      <th style={styles.tableHeaderCell}>200 Soiled</th>
-                      <th style={styles.tableHeaderCell}>500 Soiled</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr key={records.id} style={styles.tableRow}>
-                      <td style={styles.tableCell}>{records.closingDate}</td>
-                      <td style={styles.tableCell}>
-                        {records._1CoinCount || 0}
-                      </td>
-                      <td style={styles.tableCell}>
-                        {records._5CoinCount || 0}
-                      </td>
-                      <td style={styles.tableCell}>
-                        {records._10CoinCount || 0}
-                      </td>
-                      <td style={styles.tableCell}>
-                        {records._20CoinCount || 0}
-                      </td>
-                      <td style={styles.tableCell}>
-                        {records._10NoteCount || 0}
-                      </td>
-                      <td style={styles.tableCell}>
-                        {records._20NoteCount || 0}
-                      </td>
-                      <td style={styles.tableCell}>
-                        {records._50NoteCount || 0}
-                      </td>
-                      <td style={styles.tableCell}>
-                        {records._100NoteCount || 0}
-                      </td>
-                      <td style={styles.tableCell}>
-                        {records._200NoteCount || 0}
-                      </td>
-                      <td style={styles.tableCell}>
-                        {records._500NoteCount || 0}
-                      </td>
-                      <td style={{ ...styles.tableCell, color: "#dc2626" }}>
-                        {records._10SoiledNoteCount || 0}
-                      </td>
-                      <td style={{ ...styles.tableCell, color: "#dc2626" }}>
-                        {records._20SoiledNoteCount || 0}
-                      </td>
-                      <td style={{ ...styles.tableCell, color: "#dc2626" }}>
-                        {records._50SoiledNoteCount || 0}
-                      </td>
-                      <td style={{ ...styles.tableCell, color: "#dc2626" }}>
-                        {records._100SoiledNoteCount || 0}
-                      </td>
-                      <td style={{ ...styles.tableCell, color: "#dc2626" }}>
-                        {records._200SoiledNoteCount || 0}
-                      </td>
-                      <td style={{ ...styles.tableCell, color: "#dc2626" }}>
-                        {records._500SoiledNoteCount || 0}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            )}           
+            
           </>
         )}
       </PageCard>
