@@ -197,7 +197,6 @@ function DayClosingReport() {
     setOrganizationId(e.target.value);
   };
 
-
 // const handleGenerateReport = () => {
 //   try {
 //     const filteredRecords = new Array(records);
@@ -421,10 +420,11 @@ function DayClosingReport() {
 const handleGenerateReport = () => {
   try {
     const doc = new jsPDF();
-    let currentY = 15;
+    let currentY = 18;
 
     const selectedRecord = records;
     const openingBalance = Number(selectedRecord?.openingBalance) || 0;
+    const closingBalance = Number(selectedRecord?.closingBalance) || 0;
 
     const filteredExpenses = getExpensesForDate(selectedDate);
     const filteredHandloans = getHandloansForDate(selectedDate);
@@ -433,17 +433,56 @@ const handleGenerateReport = () => {
       categorizeExpenses(filteredExpenses);
     const { cashOutHandloans } = categorizeHandloans(filteredHandloans);
 
-    /* ================= HEADER ================= */
-    doc.setFontSize(20);
-    doc.setTextColor(30, 64, 175); // Indigo
-    doc.text("DAY CLOSING REPORT", 105, currentY, { align: "center" });
-
-    currentY += 8;
-    doc.setFontSize(11);
+    /* ================= COMPANY HEADER (EXACT OLD STYLE) ================= */
+    doc.setFontSize(26);
     doc.setTextColor(0);
-    doc.text(`Date : ${selectedDate}`, 105, currentY, { align: "center" });
+    doc.text("Sri Divya Sarees", 105, 18, { align: "center" });
 
-    currentY += 12;
+    doc.setFontSize(12);
+    doc.text("Old Temple Road, Gulzar House, Hyderabad 500066", 105, 26, {
+      align: "center",
+    });
+
+    doc.setLineWidth(0.5);
+    doc.line(20, 32, 190, 32);
+
+    /* ================= TITLE + OPENING BALANCE (EXACT OLD POSITION) ================= */
+    doc.setFontSize(14);
+    doc.text(`Day Closing Report - ${selectedDate}`, 14, 40);
+
+    doc.setFontSize(13);
+    doc.text(
+      `Opening Balance: ${safeToLocaleString(openingBalance)}`,
+      190,
+      40,
+      { align: "right" }
+    );
+    /* ================= COMPANY HEADER (EXACT OLD STYLE) ================= */
+    doc.setFontSize(26);
+    doc.setTextColor(0);
+    doc.text("Sri Divya Sarees", 105, 18, { align: "center" });
+
+    doc.setFontSize(12);
+    doc.text("Old Temple Road, Gulzar House, Hyderabad 500066", 105, 26, {
+      align: "center",
+    });
+
+    doc.setLineWidth(0.5);
+    doc.line(20, 32, 190, 32);
+
+    /* ================= TITLE + OPENING BALANCE (EXACT OLD POSITION) ================= */
+    doc.setFontSize(14);
+    doc.text(`Day Closing Report - ${selectedDate}`, 14, 40);
+
+    doc.setFontSize(13);
+    doc.text(
+      `Opening Balance: ${safeToLocaleString(openingBalance) || 0}`,
+      190,
+      40,
+      { align: "right" }
+    );
+
+     currentY = 48; // 👈 EXACT same as old
 
     /* ================= CREDIT / DEBIT ================= */
 
@@ -487,7 +526,7 @@ const handleGenerateReport = () => {
       tableWidth: 85,
       margin: { left: 15 },
       headStyles: {
-        fillColor: [22, 163, 74], // green
+        fillColor: [22, 163, 74],
         textColor: 255,
         fontStyle: "bold",
       },
@@ -507,7 +546,7 @@ const handleGenerateReport = () => {
       tableWidth: 85,
       margin: { left: 110 },
       headStyles: {
-        fillColor: [220, 38, 38], // red
+        fillColor: [220, 38, 38],
         textColor: 255,
         fontStyle: "bold",
       },
@@ -548,7 +587,7 @@ const handleGenerateReport = () => {
         body: handLoanRows,
         theme: "grid",
         headStyles: {
-          fillColor: [2, 132, 199], // blue
+          fillColor: [2, 132, 199],
           textColor: 255,
           fontStyle: "bold",
         },
@@ -653,7 +692,7 @@ const handleGenerateReport = () => {
       body: denominationRows,
       theme: "grid",
       headStyles: {
-        fillColor: [124, 58, 237], // violet
+        fillColor: [124, 58, 237],
         textColor: 255,
         fontStyle: "bold",
       },
