@@ -419,23 +419,30 @@ function DayClosingReport() {
 
 const handleGenerateReport = () => {
   try {
-    const doc = new jsPDF();
-    let currentY = 18;
-
-    const selectedRecord = records;
-    const openingBalance = Number(selectedRecord?.openingBalance) || 0;
-    const closingBalance = Number(selectedRecord?.closingBalance) || 0;
-
+    const filteredRecords = new Array(records);
     const filteredExpenses = getExpensesForDate(selectedDate);
     const filteredHandloans = getHandloansForDate(selectedDate);
 
     const { cashInExpenses, cashOutExpenses } =
       categorizeExpenses(filteredExpenses);
-    const { cashOutHandloans } = categorizeHandloans(filteredHandloans);
+    const { cashInHandloans, cashOutHandloans } =
+      categorizeHandloans(filteredHandloans);
 
-    /* ================= COMPANY HEADER (EXACT OLD STYLE) ================= */
+    if (
+      filteredRecords.length === 0 &&
+      filteredExpenses.length === 0 &&
+      filteredHandloans.length === 0
+    ) {
+      setReportMsg("No records found for the selected date");
+      return;
+    }
+
+    const doc = new jsPDF();
+    const selectedRecord = filteredRecords[0];
+    const startingBalance = Number(selectedRecord?.openingBalance) || 0;
+
+    /* ================= HEADER ================= */
     doc.setFontSize(26);
-    doc.setTextColor(0);
     doc.text("Sri Divya Sarees", 105, 18, { align: "center" });
 
     doc.setFontSize(12);
@@ -446,169 +453,106 @@ const handleGenerateReport = () => {
     doc.setLineWidth(0.5);
     doc.line(20, 32, 190, 32);
 
-    /* ================= TITLE + OPENING BALANCE (EXACT OLD POSITION) ================= */
     doc.setFontSize(14);
     doc.text(`Day Closing Report - ${selectedDate}`, 14, 40);
 
     doc.setFontSize(13);
     doc.text(
-      `Opening Balance: ${safeToLocaleString(openingBalance)}`,
+      `Opening Balance: ${safeToLocaleString(startingBalance)}`,
       190,
       40,
       { align: "right" }
     );
-    /* ================= COMPANY HEADER (EXACT OLD STYLE) ================= */
-    doc.setFontSize(26);
-    doc.setTextColor(0);
-    doc.text("Sri Divya Sarees", 105, 18, { align: "center" });
 
-    doc.setFontSize(12);
-    doc.text("Old Temple Road, Gulzar House, Hyderabad 500066", 105, 26, {
-      align: "center",
+    let currentY = 48;
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [
+        ["Closing Date", "Description", "Total Cash-In", "Total Cash-Out"],
+      ],
+      body: filteredRecords.map(() => [
+        records.closingDate || "",
+        records.description || "",
+        records.cashIn ? safeToLocaleString(records.cashIn) : "-",
+        records.cashOut ? safeToLocaleString(records.cashOut) : "-",
+      ]),
+      theme: "grid",
+      headStyles: { fillColor: [11, 59, 114] },
+      styles: { fontSize: 10 },
     });
 
-    doc.setLineWidth(0.5);
-    doc.line(20, 32, 190, 32);
+    currentY = doc.lastAutoTable.finalY + 10;
 
-    /* ================= TITLE + OPENING BALANCE (EXACT OLD POSITION) ================= */
+    /* ================= EXPENSES SUMMARY ================= */
     doc.setFontSize(14);
-    doc.text(`Day Closing Report - ${selectedDate}`, 14, 40);
+    doc.text("EXPENSES SUMMARY", 105, currentY, { align: "center" });
+    currentY += 10;
 
-    doc.setFontSize(13);
-    doc.text(
-      `Opening Balance: ${safeToLocaleString(openingBalance) || 0}`,
-      190,
-      40,
-      { align: "right" }
-    );
-
-     currentY = 48; // 👈 EXACT same as old
-
-    /* ================= CREDIT / DEBIT ================= */
-
-    // CREDIT
-    const creditRows = [
-      ["OPENING BALANCE", safeToLocaleString(openingBalance)],
-    ];
-    cashInExpenses.forEach((exp) => {
-      creditRows.push([
-        exp.description || exp.expenseSubType || "CASH-IN",
-        safeToLocaleString(exp.amount),
-      ]);
-    });
-
-    const creditTotal = creditRows.reduce(
-      (sum, r) => sum + Number(r[1].replace(/,/g, "")),
-      0
-    );
-    creditRows.push(["TOTAL", safeToLocaleString(creditTotal)]);
-
-    // DEBIT
-    const debitRows = [];
-    cashOutExpenses.forEach((exp) => {
-      debitRows.push([
-        exp.description || exp.expenseSubType || "CASH-OUT",
-        safeToLocaleString(exp.amount),
-      ]);
-    });
-
-    const debitTotal = cashOutExpenses.reduce(
-      (sum, e) => sum + Number(e.amount || 0),
-      0
-    );
-    debitRows.push(["TOTAL", safeToLocaleString(debitTotal)]);
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 20;
+    const colWidth = (pageWidth - 3 * margin) / 2;
 
     autoTable(doc, {
       startY: currentY,
-      head: [["CREDIT", "AMOUNT"]],
-      body: creditRows,
+      head: [["ID", "Amount", "Description"]],
+      body: cashInExpenses.map((e) => [
+        e.id,
+        safeToLocaleString(e.amount),
+        e.description,
+      ]),
       theme: "grid",
-      tableWidth: 85,
-      margin: { left: 15 },
-      headStyles: {
-        fillColor: [22, 163, 74],
-        textColor: 255,
-        fontStyle: "bold",
-      },
-      styles: { fontSize: 10 },
-      didParseCell(data) {
-        if (data.row.raw?.[0] === "TOTAL") {
-          data.cell.styles.fontStyle = "bold";
-        }
-      },
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [34, 139, 34] },
+      tableWidth: colWidth,
+      margin: { left: margin },
     });
 
     autoTable(doc, {
       startY: currentY,
-      head: [["DEBIT", "AMOUNT"]],
-      body: debitRows,
+      head: [["ID", "Amount", "Description"]],
+      body: cashOutExpenses.map((e) => [
+        e.id,
+        safeToLocaleString(e.amount),
+        e.description,
+      ]),
       theme: "grid",
-      tableWidth: 85,
-      margin: { left: 110 },
-      headStyles: {
-        fillColor: [220, 38, 38],
-        textColor: 255,
-        fontStyle: "bold",
-      },
-      styles: { fontSize: 10 },
-      didParseCell(data) {
-        if (data.row.raw?.[0] === "TOTAL") {
-          data.cell.styles.fontStyle = "bold";
-        }
-      },
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [220, 53, 69] },
+      tableWidth: colWidth,
+      margin: { left: margin + colWidth + margin },
     });
 
-    currentY = Math.max(doc.lastAutoTable.finalY, currentY) + 12;
+    currentY = doc.lastAutoTable.finalY + 15;
 
-    /* ================= HAND LOAN (ONLY IF > 0) ================= */
-    let handLoanTotal = 0;
+    /* ================= HAND LOANS ================= */
+    const handLoanTotal = cashOutHandloans.reduce(
+      (sum, h) => sum + Number(h.loanAmount || 0),
+      0
+    );
 
-    const handLoanRows = cashOutHandloans.map((h) => {
-      handLoanTotal += Number(h.loanAmount || 0);
-      return [
-        h.partyName || "N/A",
-        h.handLoanType || "HAND LOAN",
-        selectedDate,
-        safeToLocaleString(h.loanAmount),
-      ];
-    });
- currentY += 6;
     if (handLoanTotal > 0) {
-      doc.setFontSize(13);
-      doc.setTextColor(30, 64, 175);
-      doc.text("HAND LOAN SUMMARY", 105, currentY, { align: "center" });
-
-      currentY += 6;
-      handLoanRows.push(["TOTAL", "", "", safeToLocaleString(handLoanTotal)]);
+      doc.setFontSize(14);
+      doc.text("HANDLOANS SUMMARY", 105, currentY, { align: "center" });
+      currentY += 10;
 
       autoTable(doc, {
         startY: currentY,
-        head: [["NAME", "TYPE", "DATE", "AMOUNT"]],
-        body: handLoanRows,
+        head: [["ID", "Amount", "Person"]],
+        body: cashOutHandloans.map((h) => [
+          h.handLoanNumber,
+          safeToLocaleString(h.loanAmount),
+          h.partyName,
+        ]),
         theme: "grid",
-        headStyles: {
-          fillColor: [2, 132, 199],
-          textColor: 255,
-          fontStyle: "bold",
-        },
-        styles: { fontSize: 9 },
-        didParseCell(data) {
-          if (data.row.raw?.[0] === "TOTAL") {
-            data.cell.styles.fontStyle = "bold";
-          }
-        },
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [220, 53, 69] },
       });
 
-      currentY = doc.lastAutoTable.finalY + 12;
+      currentY = doc.lastAutoTable.finalY + 15;
     }
 
-    /* ================= DENOMINATION ================= */
-    doc.setFontSize(13);
-    doc.setTextColor(30, 64, 175);
-    doc.text("DENOMINATION SUMMARY", 105, currentY, { align: "center" });
-
-    currentY += 6;
-
+    /* ================= DENOMINATION (FIXED & DYNAMIC) ================= */
     const denominations = [
       {
         label: "500",
@@ -657,60 +601,78 @@ const handleGenerateReport = () => {
         denominationTotal += amount;
         return [
           d.label,
-          d.good || "",
-          d.soiled || "",
+          d.good || 0,
+          d.soiled || 0,
           safeToLocaleString(amount),
         ];
       });
 
-    const coinsAmount =
+    const coinsCount =
       (records._1CoinCount || 0) +
       (records._5CoinCount || 0) +
       (records._10CoinCount || 0) +
       (records._20CoinCount || 0);
 
-    if (coinsAmount > 0) {
-      denominationTotal += coinsAmount;
+    if (coinsCount > 0) {
+      denominationTotal += coinsCount;
       denominationRows.push([
         "COINS",
-        coinsAmount,
-        "",
-        safeToLocaleString(coinsAmount),
+        coinsCount,
+        0,
+        safeToLocaleString(coinsCount),
       ]);
     }
 
-    denominationRows.push([
-      "TOTAL",
-      "",
-      "",
-      safeToLocaleString(denominationTotal),
-    ]);
+    if (denominationRows.length > 0) {
+      denominationRows.push([
+        "TOTAL",
+        "",
+        "",
+        safeToLocaleString(denominationTotal),
+      ]);
 
-    autoTable(doc, {
-      startY: currentY,
-      head: [["NOTE", "GOOD", "SOILED", "AMOUNT"]],
-      body: denominationRows,
-      theme: "grid",
-      headStyles: {
-        fillColor: [124, 58, 237],
-        textColor: 255,
-        fontStyle: "bold",
-      },
-      styles: { fontSize: 10, halign: "center" },
-      didParseCell(data) {
-        if (data.row.raw?.[0] === "TOTAL") {
-          data.cell.styles.fontStyle = "bold";
-        }
-      },
-    });
+      doc.setFontSize(11);
+      doc.text("Cash Denomination Summary", 20, currentY);
+      currentY += 8;
+
+      autoTable(doc, {
+        startY: currentY,
+        head: [["NOTE", "GOOD", "SOILED", "AMOUNT"]],
+        body: denominationRows,
+        theme: "grid",
+        styles: { fontSize: 10, halign: "center", valign: "middle" },
+        headStyles: {
+          fillColor: [255, 102, 102],
+          textColor: 0,
+          fontStyle: "bold",
+        },
+        columnStyles: { 0: { cellWidth: 20 } },
+
+        didDrawCell(data) {
+          if (data.section === "head" && data.column.index === 0) {
+            const { cell } = data;
+            doc.saveGraphicsState();
+           
+            doc.restoreGraphicsState();
+            data.cell.text = [];
+          }
+
+          if (data.row.raw?.[0] === "TOTAL") {
+            data.cell.styles.fontStyle = "bold";
+            data.cell.styles.fillColor = [240, 240, 240];
+          }
+        },
+      });
+    }
 
     const url = doc.output("bloburl");
     setPdfUrl(url);
-  } catch (err) {
-    console.error(err);
-    setReportMsg("Failed to generate report");
+  } catch (e) {
+    console.error("PDF generation error:", e);
+    setReportMsg("Failed to generate PDF");
   }
 };
+
 
   const styles = {
     container: {
