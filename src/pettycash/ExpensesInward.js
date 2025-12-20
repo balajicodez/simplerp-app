@@ -16,7 +16,7 @@ function ExpensesInward() {
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
-  
+
   const navigate = useNavigate();
   const pageParam = Number(searchParams.get('page') || 0);
   const sizeParam = Number(searchParams.get('size') || 20);
@@ -24,7 +24,8 @@ function ExpensesInward() {
   // Calculate statistics
   const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0);
   const totalTransactions = items.length;
-  const enableOrgDropDown = true;//Utils.isRoleApplicable('ADMIN');
+  const enableOrgDropDown = Utils.isRoleApplicable('ADMIN');
+  const enableCreate = Utils.isRoleApplicable('ADMIN');
 
   const fetchUrl = async (url) => {
     setLoading(true);
@@ -33,11 +34,11 @@ function ExpensesInward() {
       const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
-      const json = await res.json();     
+      const json = await res.json();
       const list = json.content || json._embedded?.expenses || [];
       setItems(list.filter(e => e.expenseType === 'CASH-IN'));
       setLinks(json._links || {});
-    } catch (e) { 
+    } catch (e) {
       console.error('Failed to fetch expenses:', e);
     } finally {
       setLoading(false);
@@ -48,18 +49,19 @@ function ExpensesInward() {
     const value = e.target.value;
     setSelectedOrgId(value);
     const bearerToken = localStorage.getItem('token');
-    if (value) {      
+    if (value) {
       fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
       setSearchParams({ page: 0, size: sizeParam });
     } else {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN`, {
-        headers: { 'Authorization': `Bearer ${bearerToken}` }});
+      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
+        headers: { 'Authorization': `Bearer ${bearerToken}` }
+      });
       setSearchParams({ page: 0, size: sizeParam });
     }
   };
-  
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -90,9 +92,9 @@ function ExpensesInward() {
   // Filter items based on search term
   const filteredItems = items.filter(item => {
     if (!searchTerm) return true;
-    
+
     const searchLower = safeToString(searchTerm).toLowerCase();
-    
+
     return (
       safeToString(item.branchName).toLowerCase().includes(searchLower) ||
       safeToString(item.employeeId).toLowerCase().includes(searchLower) ||
@@ -107,32 +109,32 @@ function ExpensesInward() {
   // Sort items
   const sortedItems = React.useMemo(() => {
     if (!sortConfig.key) return filteredItems;
-    
+
     return [...filteredItems].sort((a, b) => {
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
-      
+
       // Handle null/undefined values
       if (aValue == null && bValue == null) return 0;
       if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
       if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
-      
+
       // Handle date sorting
       if (sortConfig.key.includes('Date')) {
         const aDate = new Date(aValue);
         const bDate = new Date(bValue);
         return sortConfig.direction === 'ascending' ? aDate - bDate : bDate - aDate;
       }
-      
+
       // Handle different data types
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
       }
-      
+
       // String comparison
       const aString = safeToString(aValue).toLowerCase();
       const bString = safeToString(bValue).toLowerCase();
-      
+
       if (aString < bString) {
         return sortConfig.direction === 'ascending' ? -1 : 1;
       }
@@ -144,23 +146,23 @@ function ExpensesInward() {
   }, [filteredItems, sortConfig]);
 
   // Helper function to check if date is today
-const isToday = (dateString) => {
-  if (!dateString) return false;
-  
-  try {
-    const itemDate = new Date(dateString);
-    const today = new Date();
-    
-    return (
-      itemDate.getDate() === today.getDate() &&
-      itemDate.getMonth() === today.getMonth() &&
-      itemDate.getFullYear() === today.getFullYear()
-    );
-  } catch (e) {
-    console.error('Invalid date:', dateString, e);
-    return false;
-  }
-};
+  const isToday = (dateString) => {
+    if (!dateString) return false;
+
+    try {
+      const itemDate = new Date(dateString);
+      const today = new Date();
+
+      return (
+        itemDate.getDate() === today.getDate() &&
+        itemDate.getMonth() === today.getMonth() &&
+        itemDate.getFullYear() === today.getFullYear()
+      );
+    } catch (e) {
+      console.error('Invalid date:', dateString, e);
+      return false;
+    }
+  };
   const handleSort = (key) => {
     setSortConfig(current => ({
       key,
@@ -199,19 +201,21 @@ const isToday = (dateString) => {
       <Sidebar isOpen={true} />
       <PageCard title="Cash Inward Management">
         <div className="dashboard-header1">
-          <div className="header-content">
-            <div></div>
-            <button
-              className="btn-primary1"
-              onClick={() =>
-                navigate("/pettycash/expenses/create?type=CASH-IN")
-              }
-            >
-              {" "}
-              <span className="btn-icon">+</span>
-              Create New Inward
-            </button>
-          </div>
+          {enableCreate && (
+            <div className="header-content">
+              <div></div>
+              <button
+                className="btn-primary1"
+                onClick={() =>
+                  navigate("/pettycash/expenses/create?type=CASH-IN")
+                }
+              >
+                {" "}
+                <span className="btn-icon">+</span>
+                Create New Inward
+              </button>
+            </div> )}
+          
 
           <div className="stats-grid1">
             <div className="stat-card">
@@ -247,8 +251,7 @@ const isToday = (dateString) => {
                 value={localStorage.getItem('organizationId') || selectedOrgId}
                 onChange={handleOrganizationChange}
                 className="filter-select"
-                enabled = {enableOrgDropDown}
-                  
+                disabled={!enableOrgDropDown}
               >
                 <option value="">All Organizations</option>
                 {organizations.map((org) => (
