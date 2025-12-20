@@ -367,6 +367,7 @@ function CreateExpense() {
         createdByUser,
         createdDate: form.expenseDate,
         referenceNumber: form.referenceNumber || undefined,
+        book: form.book === form.book || undefined,
         currentBalance:
           getExpenseType() === "CASH-OUT"
             ? Number(form.currentBalance)
@@ -425,6 +426,7 @@ function CreateExpense() {
       organizationId: "",
       organizationName: "",
       currentBalance: "",
+      book: "NO",
     });
     setPreviewUrl("");
     setError("");
@@ -503,7 +505,7 @@ function CreateExpense() {
           <form onSubmit={handleSubmit} encType="multipart/form-data">
             <div className="form-sections">
               <div className="form-section1">
-                <div className=" enhanced-grid1">
+                <div className="enhanced-grid2 grid grid-cols-3 md:grid-cols-3 gap-4">
                   <div className="form-group">
                     <label className="form-label required">Branch</label>
                     <select
@@ -527,137 +529,39 @@ function CreateExpense() {
                     </select>
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label required">
-                      Transaction Date
-                    </label>
-                    <div className="date-input-wrapper">
-                      <input
-                        name="transactionDate"
-                        type="date"
-                        value={form.transactionDate}
-                        onChange={handleChange}
-                        className="form-input"
-                        required
-                        readOnly
-                      />
-                    </div>
-                  </div>
-
-                  {/* Current Balance Field - Only for CASH-OUT */}
+                  {/* Current Balance (conditional) */}
                   {showCurrentBalanceSection && (
                     <div className="form-group">
                       <label className="form-label required">
                         Current Balance (₹)
                       </label>
                       <div className="balance-input-wrapper">
-                        <div className="balance-input-container">
-                          <span className="currency-symbol">₹</span>
-                          <input
-                            name="currentBalance"
-                            type="number"
-                            value={form.currentBalance}
-                            onChange={handleChange}
-                            className="form-input balance-input"
-                            placeholder="0.00"
-                            min="0"
-                            step="0.01"
-                            required
-                            readOnly // Make it read-only since it's auto-fetched
-                          />
-                          <button
-                            type="button"
-                            className="fetch-balance-btn"
-                            onClick={handleFetchBalance}
-                            disabled={
-                              !form.organizationId ||
-                              !form.transactionDate ||
-                              balanceLoading
-                            }
-                            title="Refresh balance"
-                          >
-                            {balanceLoading ? (
-                              <div className="loading-spinner-tiny"></div>
-                            ) : (
-                              "🔄"
-                            )}
-                          </button>
-                        </div>
-                        {balanceLoading && (
-                          <div className="balance-loading-text">
-                            Fetching balance...
-                          </div>
-                        )}
+                        <span className="currency-symbol" style={{marginRight:"2px"}}>₹</span>
+                        <input
+                          name="currentBalance"
+                          type="number"
+                          value={form.currentBalance}
+                          onChange={handleChange}
+                          className="form-input"
+                          readOnly
+                        />
+                        <button
+                          type="button"
+                          className="fetch-balance-btn"
+                          onClick={handleFetchBalance}
+                          disabled={
+                            !form.organizationId ||
+                            !form.transactionDate ||
+                            balanceLoading
+                          }
+                        >
+                          {balanceLoading ? "..." : "🔄"}
+                        </button>
                       </div>
                     </div>
                   )}
 
-                  <div className="form-group">
-                    <label className="form-label required">Amount (₹)</label>
-                    <div className="amount-input-wrapper">
-                      <span className="currency-symbol">₹</span>
-                      <input
-                        name="amount"
-                        type="number"
-                        value={form.amount}
-                        onChange={handleChange}
-                        className="form-input amount-input"
-                        placeholder="0.00"
-                        min="0"
-                        step="0.01"
-                        required
-                      />
-                    </div>
-                    {showCurrentBalanceSection && form.currentBalance && (
-                      <div className="balance-validation">
-                        {form.amount &&
-                        Number(form.amount) > Number(form.currentBalance) ? (
-                          <div className="balance-error">
-                            ❌ Amount exceeds current balance by ₹
-                            {(
-                              Number(form.amount) - Number(form.currentBalance)
-                            ).toLocaleString()}
-                          </div>
-                        ) : form.amount &&
-                          Number(form.amount) <= Number(form.currentBalance) ? (
-                          <div className="balance-success">
-                            ✅ Available balance after expense: ₹
-                            {(
-                              Number(form.currentBalance) - Number(form.amount)
-                            ).toLocaleString()}
-                          </div>
-                        ) : null}
-                      </div>
-                    )}
-                  </div>
-
-                  {subtypes.length > 0 && (
-                    <div className="form-group">
-                      <label className="form-label required">
-                        Expense Category
-                      </label>
-                      <select
-                        name="subtype"
-                        value={form.subtype}
-                        onChange={handleChange}
-                        className="form-select"
-                        required={subtypes.length > 0}
-                      >
-                        <option value="">Select category</option>
-                        {subtypes.map((s, i) => (
-                          <option key={i} value={s}>
-                            <span className="category-option">
-                              <span className="category-icon">
-                                {getCategoryIcon(s)}
-                              </span>
-                              {s}
-                            </span>
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
+                  {/* Expense Date */}
                   <div className="form-group">
                     <label className="form-label required">Expense Date</label>
                     <input
@@ -670,117 +574,124 @@ function CreateExpense() {
                     />
                   </div>
 
-                  {/* <div className="form-group">
-                    <label className="form-label">Reference Number</label>
-                    <input
-                      name="referenceNumber"
-                      type="text"
-                      value={form.referenceNumber}
-                      onChange={handleChange}
-                      className="form-input"
-                      placeholder="Enter reference number"
-                    />
+                  {/* Amount */}
+                  <div className="form-group">
+                    <label className="form-label required">Amount (₹)</label>
+                    <div className="amount-input-wrapper">
+                      <span className="currency-symbol">₹</span>
+                      <input
+                        name="amount"
+                        type="number"
+                        value={form.amount}
+                        onChange={handleChange}
+                        className="form-input"
+                        required
+                      />
+                    </div>
+
+                    {showCurrentBalanceSection && form.currentBalance && (
+                      <div className="balance-validation">
+                        {form.amount &&
+                        Number(form.amount) > Number(form.currentBalance) ? (
+                          <div className="balance-error">
+                            ❌ Amount exceeds current balance by ₹
+                            {(
+                              Number(form.amount) - Number(form.currentBalance)
+                            ).toLocaleString()}
+                          </div>
+                        ) : form.amount ? (
+                          <div className="balance-success">
+                            ✅ Available balance after expense: ₹
+                            {(
+                              Number(form.currentBalance) - Number(form.amount)
+                            ).toLocaleString()}
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
 
+                  {/* Expense Category */}
+                  {subtypes.length > 0 && (
+                    <div className="form-group">
+                      <label className="form-label required">
+                        Expense Category
+                      </label>
+                      <select
+                        name="subtype"
+                        value={form.subtype}
+                        onChange={handleChange}
+                        className="form-select"
+                        required
+                      >
+                        <option value="">Select category</option>
+                        {subtypes.map((s, i) => (
+                          <option key={i} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Transaction Date */}
                   <div className="form-group">
-                    <label className="form-label">Employee ID</label>
+                    <label className="form-label required">
+                      Transaction Date
+                    </label>
                     <input
-                      name="employeeId"
-                      type="text"
-                      value={form.employeeId}
+                      name="transactionDate"
+                      type="date"
+                      value={form.transactionDate}
                       onChange={handleChange}
                       className="form-input"
-                      placeholder="Enter employee ID"
+                      readOnly
                     />
-                  </div> */}
-                </div>
-              </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label required">Book</label>
+                    <select
+                      name="book"
+                      value={form.book}
+                      onChange={handleChange}
+                      className="form-select"
+                      required
+                    >
+                      <option value="" disabled>
+                        Select Book
+                      </option>
+                      <option value="YES">Yes</option>
+                      <option value="NO">No</option>
+                    </select>
+                  </div>
 
-              {/* File Upload Section */}
-              <div className="form-section1">
-                <h3 className="section-title">
-                  <span className="section-icon">📎</span>
-                  Receipt Attachment
-                </h3>
-                <div className="file-upload-section">
-                  <div className={`file-upload-area `}>
+                  <div className="mt-0 ">
+                    <label className="">File Upload</label>
                     <input
                       name="file"
                       type="file"
                       onChange={handleChange}
-                      className="file-input"
-                      id="file-upload"
                       accept="image/*,.pdf,.doc,.docx,.xlsx"
                     />
-                    <label htmlFor="file-upload">
-                      <>
-                        <div className="upload-icon">
-                          📁
-                          <strong style={{ fontSize: "20px" }}>
-                            Choose file
-                          </strong>
-                        </div>
-                        <div className="upload-text">
-                          {/* <span>or drag and drop here</span>
-                            <small>Supports: JPG, PNG, PDF, DOC, XLSX (Max: 10MB)</small> */}
-                        </div>
-                      </>
-                    </label>
-                  </div>
 
-                  {form.file && (
-                    <div className="file-preview">
-                      <div className="file-info">
-                        <div className="file-icon">
-                          {form.file.type.startsWith("image/") ? "🖼️" : "📄"}
-                        </div>
-                        <div className="file-details">
-                          <div className="file-name">{form.file.name}</div>
-                          <div className="file-meta">
-                            <span className="file-size">
-                              {(form.file.size / 1024 / 1024).toFixed(2)} MB
-                            </span>
-                            <span className="file-type">{form.file.type}</span>
-                          </div>
-                        </div>
+                    {form.file && (
+                      <div className="file-preview">
+                        <span>{form.file.name}</span>
                         <button
                           type="button"
-                          className="remove-file"
                           onClick={() => {
                             setForm((f) => ({ ...f, file: null }));
                             setPreviewUrl("");
                           }}
-                          title="Remove file"
                         >
                           ×
                         </button>
                       </div>
-
-                      {previewUrl && (
-                        <div className="image-preview">
-                          <div className="preview-header">
-                            <span>Preview</span>
-                            <button
-                              type="button"
-                              className="preview-close"
-                              onClick={() => setPreviewUrl("")}
-                            >
-                              ×
-                            </button>
-                          </div>
-                          <img
-                            src={previewUrl}
-                            alt="Preview"
-                            className="preview-image"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-
             <div className="form-actions1">
               <button
                 type="button"

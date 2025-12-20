@@ -198,340 +198,480 @@ function DayClosingReport() {
   };
 
 
-  const handleGenerateReport = () => {
-    try {
-      const filteredRecords = new Array(records);
-      const filteredExpenses = getExpensesForDate(selectedDate);
-      const filteredHandloans = getHandloansForDate(selectedDate);
-      const allHandloansWithBalances = getAllHandloansWithBalances();
-      
-      const { cashInExpenses, cashOutExpenses } = categorizeExpenses(filteredExpenses);
-      const { cashInHandloans, cashOutHandloans } = categorizeHandloans(filteredHandloans);
-      
-      if (filteredRecords.length === 0 && filteredExpenses.length === 0 && filteredHandloans.length === 0) {
-        setReportMsg('No records found for the selected date');
-        return;
-      }
+// const handleGenerateReport = () => {
+//   try {
+//     const filteredRecords = new Array(records);
+//     const filteredExpenses = getExpensesForDate(selectedDate);
+//     const filteredHandloans = getHandloansForDate(selectedDate);
 
-      const doc = new jsPDF();
-      
-      const selectedRecord = filteredRecords[0];
-      const startingBalance = Number(selectedRecord?.openingBalance) || 0;
+//     const { cashInExpenses, cashOutExpenses } =
+//       categorizeExpenses(filteredExpenses);
+//     const { cashInHandloans, cashOutHandloans } =
+//       categorizeHandloans(filteredHandloans);
 
-      // Header Section
-      doc.setFontSize(26);
-      doc.text('Sri Divya Sarees', 105, 18, { align: 'center' });
-      doc.setFontSize(12);
-      doc.text('Old Temple Road, Gulzar House, Hyderabad 500066', 105, 26, { align: 'center' });
-      doc.setFontSize(11);
-      doc.setLineWidth(0.5);
-      doc.line(20, 32, 190, 32);
-      doc.setFontSize(14);
-      doc.text(`Day Closing Report - ${selectedDate}`, 14, 40, { align: "left" });
+//     if (
+//       filteredRecords.length === 0 &&
+//       filteredExpenses.length === 0 &&
+//       filteredHandloans.length === 0
+//     ) {
+//       setReportMsg("No records found for the selected date");
+//       return;
+//     }
+
+//     const doc = new jsPDF();
+//     const selectedRecord = filteredRecords[0];
+//     const startingBalance = Number(selectedRecord?.openingBalance) || 0;
+//     doc.setFontSize(26);
+//     doc.text("Sri Divya Sarees", 105, 18, { align: "center" });
+//     doc.setFontSize(12);
+//     doc.text("Old Temple Road, Gulzar House, Hyderabad 500066", 105, 26, {
+//       align: "center",
+//     });
+//     doc.setLineWidth(0.5);
+//     doc.line(20, 32, 190, 32);
+//     doc.setFontSize(14);
+//     doc.text(`Day Closing Report - ${selectedDate}`, 14, 40);
+//     doc.setFontSize(13);
+//     doc.text(
+//       `Opening Balance: ${safeToLocaleString(startingBalance)}`,
+//       190,
+//       40,
+//       { align: "right" }
+//     );
+
+//     let currentY = 48;
+//     autoTable(doc, {
+//       startY: currentY,
+//       head: [
+//         ["Closing Date", "Description", "Total Cash-In", "Total Cash-Out"],
+//       ],
+//       body: filteredRecords.map(() => [
+//         records.closingDate || "",
+//         records.description || "",
+//         records.cashIn ? safeToLocaleString(records.cashIn) : "-",
+//         records.cashOut ? safeToLocaleString(records.cashOut) : "-",
+//       ]),
+//       theme: "grid",
+//       headStyles: { fillColor: [11, 59, 114] },
+//       styles: { fontSize: 10 },
+//     });
+
+//     currentY = doc.lastAutoTable.finalY + 10;
+
+//     doc.setFontSize(14);
+//     doc.text("EXPENSES SUMMARY", 105, currentY, { align: "center" });
+//     currentY += 10;
+
+//     const pageWidth = doc.internal.pageSize.width;
+//     const margin = 20;
+//     const colWidth = (pageWidth - 3 * margin) / 2;
+
+//     autoTable(doc, {
+//       startY: currentY,
+//       head: [["ID", "Amount", "Description"]],
+//       body: cashInExpenses.map((e) => [
+//         e.id,
+//         safeToLocaleString(e.amount),
+//         e.description,
+//       ]),
+//       theme: "grid",
+//       styles: { fontSize: 8 },
+//       headStyles: { fillColor: [34, 139, 34] },
+//       tableWidth: colWidth,
+//       margin: { left: margin },
+//     });
+
+//     autoTable(doc, {
+//       startY: currentY,
+//       head: [["ID", "Amount", "Description"]],
+//       body: cashOutExpenses.map((e) => [
+//         e.id,
+//         safeToLocaleString(e.amount),
+//         e.description,
+//       ]),
+//       theme: "grid",
+//       styles: { fontSize: 8 },
+//       headStyles: { fillColor: [220, 53, 69] },
+//       tableWidth: colWidth,
+//       margin: { left: margin + colWidth + margin },
+//     });
+
+//     currentY = doc.lastAutoTable.finalY + 15;
+//     doc.setFontSize(14);
+//     doc.text("HANDLOANS SUMMARY", 105, currentY, { align: "center" });
+//     currentY += 10;
+
+//     autoTable(doc, {
+//       startY: currentY,
+//       head: [["ID", "Amount", "Person"]],
+//       body: cashOutHandloans.map((h) => [
+//         h.handLoanNumber,
+//         safeToLocaleString(h.loanAmount),
+//         h.partyName,
+//       ]),
+//       theme: "grid",
+//       styles: { fontSize: 8 },
+//       headStyles: { fillColor: [220, 53, 69] },
+//       tableWidth: colWidth,
+//       margin: { left: margin },
+//     });
+
+//     autoTable(doc, {
+//       startY: currentY,
+//       head: [["ID", "Amount", "Person"]],
+//       body: cashInHandloans.map((h) => [
+//         h.handLoanNumber,
+//         safeToLocaleString(h.loanAmount),
+//         h.partyName,
+//       ]),
+//       theme: "grid",
+//       styles: { fontSize: 8 },
+//       headStyles: { fillColor: [34, 139, 34] },
+//       tableWidth: colWidth,
+//       margin: { left: margin + colWidth + margin },
+//     });
+
+//     currentY = doc.lastAutoTable.finalY + 15;
+
+//     doc.setFontSize(12);
+//     doc.text(`Day Closing Details - ${records.closingDate}`, 20, currentY);
+//     currentY += 10;
+
+//     autoTable(doc, {
+//       startY: currentY,
+//       body: [
+//         ["Description", records.description || ""],
+//         ["Opening Balance", safeToLocaleString(records.openingBalance || 0)],
+//         ["Cash In", safeToLocaleString(records.cashIn || 0)],
+//         ["Cash Out", safeToLocaleString(records.cashOut || 0)],
+//         ["Closing Balance", safeToLocaleString(records.closingBalance || 0)],
+//       ],
+//       theme: "grid",
+//       styles: { fontSize: 10 },
+//       columnStyles: {
+//         0: { fontStyle: "bold", fillColor: [240, 240, 240] },
+//       },
+//     });
+
+//     currentY = doc.lastAutoTable.finalY + 15;
+
+//     doc.setFontSize(11);
+//     doc.text("Cash Denomination Summary", 20, currentY);
+//     currentY += 8;
+
+//     autoTable(doc, {
+//       startY: currentY,
+//       head: [["Type", "1", "5", "10", "20", "50", "100", "200", "500"]],
+//       body: [
+//         [
+//           "Coins",
+//           records._1CoinCount || 0,
+//           records._5CoinCount || 0,
+//           records._10CoinCount || 0,
+//           records._20CoinCount || 0,
+//           "-",
+//           "-",
+//           "-",
+//           "-",
+//         ],
+//         [
+//           "Notes",
+//           "-",
+//           "-",
+//           records._10NoteCount || 0,
+//           records._20NoteCount || 0,
+//           records._50NoteCount || 0,
+//           records._100NoteCount || 0,
+//           records._200NoteCount || 0,
+//           records._500NoteCount || 0,
+//         ],
+//         [
+//           "Soiled Notes",
+//           "-",
+//           "-",
+//           records._10SoiledNoteCount || 0,
+//           records._20SoiledNoteCount || 0,
+//           records._50SoiledNoteCount || 0,
+//           records._100SoiledNoteCount || 0,
+//           records._200SoiledNoteCount || 0,
+//           records._500SoiledNoteCount || 0,
+//         ],
+//       ],
+//       theme: "grid",
+//       styles: { fontSize: 10, halign: "center" },
+//       headStyles: { fillColor: [11, 59, 114] },
+//       didParseCell(data) {
+//         if (data.column.index === 0 && data.row.section === "body") {
+//           data.cell.styles.fontStyle = "bold";
+//         }
+//         if (data.row.raw?.[0] === "Soiled Notes") {
+//           data.cell.styles.fillColor = [255, 235, 235];
+//         }
+//       },
+//     });
+
+//     const url = doc.output("bloburl");
+//     setPdfUrl(url);
+//   } catch (e) {
+//     console.error("PDF generation error:", e);
+//     setReportMsg("Failed to generate PDF");
+//   }
+// };
+
+const handleGenerateReport = () => {
+  try {
+    const doc = new jsPDF();
+    let currentY = 15;
+
+    const selectedRecord = records;
+    const openingBalance = Number(selectedRecord?.openingBalance) || 0;
+
+    const filteredExpenses = getExpensesForDate(selectedDate);
+    const filteredHandloans = getHandloansForDate(selectedDate);
+
+    const { cashInExpenses, cashOutExpenses } =
+      categorizeExpenses(filteredExpenses);
+    const { cashOutHandloans } = categorizeHandloans(filteredHandloans);
+
+    /* ================= HEADER ================= */
+    doc.setFontSize(20);
+    doc.setTextColor(30, 64, 175); // Indigo
+    doc.text("DAY CLOSING REPORT", 105, currentY, { align: "center" });
+
+    currentY += 8;
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text(`Date : ${selectedDate}`, 105, currentY, { align: "center" });
+
+    currentY += 12;
+
+    /* ================= CREDIT / DEBIT ================= */
+
+    // CREDIT
+    const creditRows = [
+      ["OPENING BALANCE", safeToLocaleString(openingBalance)],
+    ];
+    cashInExpenses.forEach((exp) => {
+      creditRows.push([
+        exp.description || exp.expenseSubType || "CASH-IN",
+        safeToLocaleString(exp.amount),
+      ]);
+    });
+
+    const creditTotal = creditRows.reduce(
+      (sum, r) => sum + Number(r[1].replace(/,/g, "")),
+      0
+    );
+    creditRows.push(["TOTAL", safeToLocaleString(creditTotal)]);
+
+    // DEBIT
+    const debitRows = [];
+    cashOutExpenses.forEach((exp) => {
+      debitRows.push([
+        exp.description || exp.expenseSubType || "CASH-OUT",
+        safeToLocaleString(exp.amount),
+      ]);
+    });
+
+    const debitTotal = cashOutExpenses.reduce(
+      (sum, e) => sum + Number(e.amount || 0),
+      0
+    );
+    debitRows.push(["TOTAL", safeToLocaleString(debitTotal)]);
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [["CREDIT", "AMOUNT"]],
+      body: creditRows,
+      theme: "grid",
+      tableWidth: 85,
+      margin: { left: 15 },
+      headStyles: {
+        fillColor: [22, 163, 74], // green
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      styles: { fontSize: 10 },
+      didParseCell(data) {
+        if (data.row.raw?.[0] === "TOTAL") {
+          data.cell.styles.fontStyle = "bold";
+        }
+      },
+    });
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [["DEBIT", "AMOUNT"]],
+      body: debitRows,
+      theme: "grid",
+      tableWidth: 85,
+      margin: { left: 110 },
+      headStyles: {
+        fillColor: [220, 38, 38], // red
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      styles: { fontSize: 10 },
+      didParseCell(data) {
+        if (data.row.raw?.[0] === "TOTAL") {
+          data.cell.styles.fontStyle = "bold";
+        }
+      },
+    });
+
+    currentY = Math.max(doc.lastAutoTable.finalY, currentY) + 12;
+
+    /* ================= HAND LOAN (ONLY IF > 0) ================= */
+    let handLoanTotal = 0;
+
+    const handLoanRows = cashOutHandloans.map((h) => {
+      handLoanTotal += Number(h.loanAmount || 0);
+      return [
+        h.partyName || "N/A",
+        h.handLoanType || "HAND LOAN",
+        selectedDate,
+        safeToLocaleString(h.loanAmount),
+      ];
+    });
+
+    if (handLoanTotal > 0) {
       doc.setFontSize(13);
-      doc.text(`Opening Balance:  ${safeToLocaleString(startingBalance)}`, 158, 40, { align: 'right', marginTop: "20px" });
-      
-      let currentY = 48;
-      if (filteredRecords.length > 0) {
-        const mainTableColumn = [
-          'Closing Date',
-          'Description',
-          'Total Cash-In',
-          'Total Cash-Out'
-        ];
-        
-        const mainTableRows = filteredRecords.map(rec => [
-          records.closingDate || '',
-          records.description || '',
-          records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : '-',
-          records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : '-'
-        ]);
+      doc.setTextColor(30, 64, 175);
+      doc.text("HAND LOAN SUMMARY", 105, currentY, { align: "center" });
 
-        autoTable(doc, {
-          startY: currentY,
-          head: [mainTableColumn],
-          body: mainTableRows,
-          theme: 'grid',
-          headStyles: { fillColor: [11, 59, 114] },
-          styles: { fontSize: 10 }
-        });
+      currentY += 6;
+      handLoanRows.push(["TOTAL", "", "", safeToLocaleString(handLoanTotal)]);
 
-        currentY = doc.lastAutoTable.finalY + 10;
-      }
-
-      // Expenses Section - Side by Side Layout
-      if (filteredExpenses.length > 0) {
-        doc.setFontSize(14);
-        doc.text('EXPENSES SUMMARY', 105, currentY, { align: 'center' });
-        currentY += 10;
-
-        // Create two columns for expenses
-        const pageWidth = doc.internal.pageSize.width;
-        const margin = 20;
-        const columnWidth = (pageWidth - 3 * margin) / 2;
-
-        // Left Column - Cash Out Expenses
-        if (cashInExpenses.length >= 0) {
-          doc.setFontSize(12);
-          doc.text('Cash In Expenses', margin, currentY);
-          
-          const cashInColumns = ['ID', 'Amount', 'Description', 'Type'];
-          const cashInRows = cashInExpenses.map(expense => [
-            expense.id || 'N/A',
-            ` ${safeToLocaleString(expense.amount)}`,
-            expense.description || 'General',
-            expense.expenseSubType || 'CASH-IN'
-          ]);
-
-          autoTable(doc, {
-            startY: currentY + 5,
-            head: [cashInColumns],
-            body: cashInRows,
-            theme: 'grid',
-            headStyles: { fillColor: [34, 139, 34] },
-            styles: { fontSize: 8 },
-            tableWidth: columnWidth,
-            margin: { left: margin }
-          });
-        }
-
-        // Right Column - Cash In Expenses
-        if (cashOutExpenses.length >=0 ) {
-          doc.setFontSize(12);
-          doc.text('Cash Out Expenses', margin + columnWidth + margin, currentY);
-          
-          const cashOutColumns = ['ID', 'Amount', 'Description', 'Type'];
-          const cashOutRows = cashOutExpenses.map(expense => [
-            expense.id || 'N/A',
-            ` ${safeToLocaleString(expense.amount)}`,
-            expense.description || 'General',
-            expense.expenseSubType || 'CASH-OUT'
-          ]);
-
-          autoTable(doc, {
-            startY: currentY + 5,
-            head: [cashOutColumns],
-            body: cashOutRows,
-            theme: 'grid',
-            headStyles: { fillColor: [220, 53, 69] },
-            styles: { fontSize: 8 },
-            tableWidth: columnWidth,
-            margin: { left: margin + columnWidth + margin }
-          });
-        }
-
-        currentY = Math.max(
-          cashOutExpenses.length > 0 ? doc.lastAutoTable.finalY + 10 : currentY,
-          cashInExpenses.length > 0 ? doc.lastAutoTable.finalY + 10 : currentY
-        );
-      }
-
-      // Handloans Section - Side by Side Layout
-      if (filteredHandloans.length > 0) {
-        // Add new page if not enough space
-        if (currentY > 200) {
-          doc.addPage();
-          currentY = 20;
-        }
-
-        doc.setFontSize(14);
-        doc.text('HANDLOANS SUMMARY', 105, currentY, { align: 'center' });
-        currentY += 10;
-
-        const pageWidth = doc.internal.pageSize.width;
-        const margin = 20;
-        const columnWidth = (pageWidth - 3 * margin) / 2;
-
-        if (cashOutHandloans.length >= 0) {
-          doc.setFontSize(12);
-          doc.text('Handloans Given (Cash Out)', margin, currentY);
-          
-          const handloanOutColumns = ['ID', 'Amount', 'Person', ];
-          const handloanOutRows = cashOutHandloans.map(handloan => [
-            handloan.handLoanNumber || 'N/A',
-            ` ${safeToLocaleString(handloan.loanAmount)}`,
-            handloan.partyName || 'N/A',
-            // handloan.narration || 'Handloan'
-          ]);
-
-          autoTable(doc, {
-            startY: currentY + 5,
-            head: [handloanOutColumns],
-            body: handloanOutRows,
-            theme: 'grid',
-            headStyles: { fillColor: [220, 53, 69] },
-            styles: { fontSize: 8 },
-            tableWidth: columnWidth,
-            margin: { left: margin }
-          });
-        }
-
-        // Right Column - Cash In Handloans (Received)
-        if (cashInHandloans.length >= 0) {
-          doc.setFontSize(12);
-          doc.text('Handloans Received (Cash In)', margin + columnWidth + margin, currentY);
-          
-          const handloanInColumns = ['ID', 'Amount', 'Person', ];
-          const handloanInRows = cashInHandloans.map(handloan => [
-            handloan.handLoanNumber|| 'N/A',
-            ` ${safeToLocaleString(handloan.loanAmount)}`,
-            handloan.partyName || 'N/A',
-            // handloan.narration || 'Handloan'
-          ]);
-
-          autoTable(doc, {
-            startY: currentY + 5,
-            head: [handloanInColumns],
-            body: handloanInRows,
-            theme: 'grid',
-            headStyles: { fillColor: [34, 139, 34] },
-            styles: { fontSize: 8 },
-            tableWidth: columnWidth,
-            margin: { left: margin + columnWidth + margin }
-          });
-        }
-
-        currentY = Math.max(
-          cashOutHandloans.length > 0 ? doc.lastAutoTable.finalY + 10 : currentY,
-          cashInHandloans.length > 0 ? doc.lastAutoTable.finalY + 10 : currentY
-        );
-      }
-
-   
-
-      filteredRecords.forEach((rec, index) => {
-        if (index > 0) {
-          // doc.addPage();
-          currentY = 20;
-        }
-
-        if (filteredRecords.length > 0) {
-          doc.setFontSize(12);
-          doc.text(`Day Closing Details - ${records.closingDate}`, 20, currentY);
-          currentY += 10;
-
-          const infoTableData = [
-            ['Description:', records.description || ''],
-            ['Opening Balance:', records.openingBalance ? ` ${safeToLocaleString(records.openingBalance)}` : ' 0'],
-            ['Cash In:', records.cashIn ? ` ${safeToLocaleString(records.cashIn)}` : ' 0'],
-            ['Cash Out:', records.cashOut ? ` ${safeToLocaleString(records.cashOut)}` : ' 0'],
-            ['Closing Balance:', records.closingBalance ? ` ${safeToLocaleString(records.closingBalance)}` : ' 0']
-          ];
-
-          autoTable(doc, {
-            startY: currentY,
-            body: infoTableData,
-            theme: 'grid',
-            styles: { fontSize: 10 },
-            columnStyles: {
-              0: { fontStyle: 'bold', fillColor: [240, 240, 240] }
-            }
-          });
-
-          currentY = doc.lastAutoTable.finalY + 15;
-
-          // Coins and Notes Summary
-          doc.setFontSize(11);
-          doc.text('Coins Summary', 20, currentY);
-          currentY += 8;
-
-          const coinsData = [
-            ['1  Coin', '5  Coin', '10  Coin', '20  Coin'],
-            [
-              records._1CoinCount || 0,
-              records._5CoinCount || 0,
-              records._10CoinCount || 0,
-              records._20CoinCount || 0
-            ]
-          ];
-
-          autoTable(doc, {
-            startY: currentY,
-            head: [coinsData[0]],
-            body: [coinsData[1]],
-            theme: 'grid',
-            headStyles: { fillColor: [11, 59, 114] },
-            styles: { fontSize: 10, halign: 'center' }
-          });
-
-          currentY = doc.lastAutoTable.finalY + 15;
-
-          doc.setFontSize(11);
-          doc.text('Notes Summary', 20, currentY);
-          currentY += 8;
-
-          const notesHead = ['10  Note', '20  Note', '50  Note', '100  Note', '200  Note', '500  Note'];
-          const notesData = [
-            records._10NoteCount || 0,
-            records._20NoteCount || 0,
-            records._50NoteCount || 0,
-            records._100NoteCount || 0,
-            records._200NoteCount || 0,
-            records._500NoteCount || 0
-          ];
-
-          autoTable(doc, {
-            startY: currentY,
-            head: [notesHead],
-            body: [notesData],
-            theme: 'grid',
-            headStyles: { fillColor: [11, 59, 114] },
-            styles: { fontSize: 10, halign: 'center' }
-          });
-
-          currentY = doc.lastAutoTable.finalY + 15;
-
-          doc.setFontSize(11);
-          doc.text('Soiled Notes Summary', 20, currentY);
-          currentY += 8;
-
-          const soiledNotesHead = ['10  Soiled', '20  Soiled', '50  Soiled', '100  Soiled', '200  Soiled', '500  Soiled'];
-          const soiledNotesData = [
-            records._10SoiledNoteCount || 0,
-            records._20SoiledNoteCount || 0,
-            records._50SoiledNoteCount || 0,
-            records._100SoiledNoteCount || 0,
-            records._200SoiledNoteCount || 0,
-            records._500SoiledNoteCount || 0
-          ];
-
-          autoTable(doc, {
-            startY: currentY,
-            head: [soiledNotesHead],
-            body: [soiledNotesData],
-            theme: 'grid',
-            headStyles: { fillColor: [139, 0, 0] },
-            styles: { fontSize: 10, halign: 'center' }
-          });
-        }
+      autoTable(doc, {
+        startY: currentY,
+        head: [["NAME", "TYPE", "DATE", "AMOUNT"]],
+        body: handLoanRows,
+        theme: "grid",
+        headStyles: {
+          fillColor: [2, 132, 199], // blue
+          textColor: 255,
+          fontStyle: "bold",
+        },
+        styles: { fontSize: 9 },
+        didParseCell(data) {
+          if (data.row.raw?.[0] === "TOTAL") {
+            data.cell.styles.fontStyle = "bold";
+          }
+        },
       });
 
-      // Grand Summary Page
-      // doc.addPage();
-      doc.setFontSize(16);
-      
-      const dateCashInTotal = filteredRecords.reduce((sum, rec) => sum + (Number(records.cashIn) || 0), 0);
-      const dateCashOutTotal = filteredRecords.reduce((sum, rec) => sum + (Number(records.cashOut) || 0), 0);
-      
-      const expenseCashInTotal = cashInExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
-      const expenseCashOutTotal = cashOutExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
-
-      const handloanCashInTotal = cashInHandloans.reduce((sum, handloan) => sum + (Number(handloan.loanAmount) || 0), 0);
-      const handloanCashOutTotal = cashOutHandloans.reduce((sum, handloan) => sum + (Number(handloan.loanAmount) || 0), 0);
-
-      const totalCashIn = dateCashInTotal + expenseCashInTotal + handloanCashInTotal;
-      const totalCashOut = dateCashOutTotal + expenseCashOutTotal + handloanCashOutTotal;
-      const netCashFlow = totalCashIn - totalCashOut;
-      const closingBalance = startingBalance + netCashFlow;
-
-      const url = doc.output('bloburl');
-      setPdfUrl(url);  
-
-    } catch (e) {
-      console.error('PDF generation error:', e);
-      setReportMsg('Failed to generate PDF');
+      currentY = doc.lastAutoTable.finalY + 12;
     }
-  };
+
+    /* ================= DENOMINATION ================= */
+    doc.setFontSize(13);
+    doc.setTextColor(30, 64, 175);
+    doc.text("DENOMINATION SUMMARY", 105, currentY, { align: "center" });
+
+    currentY += 6;
+
+    const denominations = [
+      {
+        label: "500",
+        value: 500,
+        good: records._500NoteCount,
+        soiled: records._500SoiledNoteCount,
+      },
+      {
+        label: "200",
+        value: 200,
+        good: records._200NoteCount,
+        soiled: records._200SoiledNoteCount,
+      },
+      {
+        label: "100",
+        value: 100,
+        good: records._100NoteCount,
+        soiled: records._100SoiledNoteCount,
+      },
+      {
+        label: "50",
+        value: 50,
+        good: records._50NoteCount,
+        soiled: records._50SoiledNoteCount,
+      },
+      {
+        label: "20",
+        value: 20,
+        good: records._20NoteCount,
+        soiled: records._20SoiledNoteCount,
+      },
+      {
+        label: "10",
+        value: 10,
+        good: records._10NoteCount,
+        soiled: records._10SoiledNoteCount,
+      },
+    ];
+
+    let denominationTotal = 0;
+
+    const denominationRows = denominations
+      .filter((d) => Number(d.good) > 0 || Number(d.soiled) > 0)
+      .map((d) => {
+        const amount = (Number(d.good) - Number(d.soiled)) * d.value;
+        denominationTotal += amount;
+        return [
+          d.label,
+          d.good || "",
+          d.soiled || "",
+          safeToLocaleString(amount),
+        ];
+      });
+
+    const coinsAmount =
+      (records._1CoinCount || 0) +
+      (records._5CoinCount || 0) +
+      (records._10CoinCount || 0) +
+      (records._20CoinCount || 0);
+
+    if (coinsAmount > 0) {
+      denominationTotal += coinsAmount;
+      denominationRows.push([
+        "COINS",
+        coinsAmount,
+        "",
+        safeToLocaleString(coinsAmount),
+      ]);
+    }
+
+    denominationRows.push([
+      "TOTAL",
+      "",
+      "",
+      safeToLocaleString(denominationTotal),
+    ]);
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [["NOTE", "GOOD", "SOILED", "AMOUNT"]],
+      body: denominationRows,
+      theme: "grid",
+      headStyles: {
+        fillColor: [124, 58, 237], // violet
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      styles: { fontSize: 10, halign: "center" },
+      didParseCell(data) {
+        if (data.row.raw?.[0] === "TOTAL") {
+          data.cell.styles.fontStyle = "bold";
+        }
+      },
+    });
+
+    const url = doc.output("bloburl");
+    setPdfUrl(url);
+  } catch (err) {
+    console.error(err);
+    setReportMsg("Failed to generate report");
+  }
+};
 
   const styles = {
     container: {
@@ -991,9 +1131,6 @@ function DayClosingReport() {
                 <div style={{ ...styles.summaryAmount, color: "#059669" }}>
                   {safeToLocaleString(records.closingBalance)}
                 </div>
-                {/* <div style={{fontSize: '12px', color: '#64748b', marginTop: '8px'}}>
-                  Including Petty Cash, Expenses & Handloans
-                </div> */}
               </div>
             </div>
 
@@ -1012,8 +1149,6 @@ function DayClosingReport() {
                     width: "100%",
                   }}
                 >
-
-                  {/* LEFT: CASH IN EXPENSES */}
                   <div style={{ flex: 1, minWidth: "48%" }}>
                     <h4 style={{ color: "#059669", marginBottom: "10px" }}>
                       Cash In Expenses
@@ -1061,8 +1196,6 @@ function DayClosingReport() {
                       </table>
                     </div>
                   </div>
-
-                  {/* RIGHT: CASH OUT EXPENSES */}
                   <div style={{ flex: 1, minWidth: "48%" }}>
                     <h4 style={{ color: "#dc2626", marginBottom: "10px" }}>
                       Cash Out Expenses
@@ -1113,8 +1246,6 @@ function DayClosingReport() {
                 </div>
               </div>
             )}
-
-            {/* Existing Tables for Day Closing and Notes Summary */}
             <div style={styles.tableContainer}>
               <table className="payroll-table" style={styles.table}>
                 <thead style={styles.tableHeader}>

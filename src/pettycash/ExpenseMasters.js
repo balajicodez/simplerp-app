@@ -38,15 +38,29 @@ function ExpenseMasters() {
     <div>
       <Sidebar isOpen={true} />
       <PageCard title="Expense Category Masters">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:12 }}>         
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 12,
+          }}
+        >
           <div>
-            <button className="btn" onClick={() => navigate('/pettycash/masters/create')}>Create</button>
+            <button
+              className="btn-primary"
+              onClick={() => navigate("/pettycash/masters/create")}
+            >
+              + Create
+            </button>
           </div>
         </div>
-        {loading ? <div className="small">Loading...</div> : (
-          <table className="payroll-table">
+        {loading ? (
+          <div className="small">Loading...</div>
+        ) : (
+          <table className="modern-table">
             <thead>
-              <tr>
+              <tr className="table-row">
                 <th>Description</th>
                 <th>Type</th>
                 <th>Subtype</th>

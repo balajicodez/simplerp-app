@@ -42,16 +42,26 @@ function CreateExpenseMaster() {
     <div>
       <Sidebar isOpen={true} />
       <PageCard title="Create Expense Type Master">
-        {error && <div style={{ color: '#c53030' }}>{error}</div>}
+        {error && <div style={{ color: "#c53030" }}>{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
             <div>
               <label>Description</label>
-              <input name="description" value={form.description} onChange={handleChange} required />
+              <input
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                required
+              />
             </div>
             <div>
               <label>Type</label>
-              <select name="type" value={form.type} onChange={handleChange} required>
+              <select
+                name="type"
+                value={form.type}
+                onChange={handleChange}
+                required
+              >
                 <option value="">Select type</option>
                 <option value="CASH-IN">CASH-IN</option>
                 <option value="CASH-OUT">CASH-OUT</option>
@@ -59,11 +69,21 @@ function CreateExpenseMaster() {
             </div>
             <div>
               <label>Subtype</label>
-              <input name="subtype" value={form.subtype} onChange={handleChange} />
+              <input
+                name="subtype"
+                value={form.subtype}
+                onChange={handleChange}
+              />
             </div>
           </div>
-          <div style={{ marginTop:12 }}>
-            <button className="btn" type="submit" disabled={loading}>{loading ? 'Saving...' : 'Create'}</button>
+          <div style={{ marginTop: 12,padding:"0 2%",display:"flex",justifyContent:"space-between" }}>
+
+            <button className="btn-secondary" type="back" onClick={()=>{navigate("/pettycash/masters")}}>
+              Back
+            </button>
+            <button className="btn-primary" type="submit" disabled={loading}>
+              {loading ? "Saving..." : "Save"}
+            </button>
           </div>
         </form>
       </PageCard>
