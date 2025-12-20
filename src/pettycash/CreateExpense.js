@@ -367,7 +367,7 @@ function CreateExpense() {
         createdByUser,
         createdDate: form.expenseDate,
         referenceNumber: form.referenceNumber || undefined,
-        book: form.book === form.book || undefined,
+        gstapplicable: form.book === form.book || undefined,
         currentBalance:
           getExpenseType() === "CASH-OUT"
             ? Number(form.currentBalance)
@@ -426,7 +426,7 @@ function CreateExpense() {
       organizationId: "",
       organizationName: "",
       currentBalance: "",
-      book: "NO",
+      gstapplicable: "NO",
     });
     setPreviewUrl("");
     setError("");
@@ -536,7 +536,12 @@ function CreateExpense() {
                         Current Balance (₹)
                       </label>
                       <div className="balance-input-wrapper">
-                        <span className="currency-symbol" style={{marginRight:"2px"}}>₹</span>
+                        <span
+                          className="currency-symbol"
+                          style={{ marginRight: "2px" }}
+                        >
+                          ₹
+                        </span>
                         <input
                           name="currentBalance"
                           type="number"
@@ -660,8 +665,8 @@ function CreateExpense() {
                       <option value="" disabled>
                         Select Book
                       </option>
+                      <option value="NO" >No</option>
                       <option value="YES">Yes</option>
-                      <option value="NO">No</option>
                     </select>
                   </div>
 
