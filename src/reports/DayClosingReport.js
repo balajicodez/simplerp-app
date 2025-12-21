@@ -316,7 +316,7 @@
         margin: { left: margin },
         styles: { fontSize: 11, overflow: "linebreak" },
         headStyles: { fillColor: [22, 163, 74], textColor: 255 },
-        columnStyles: { 1: { halign: "right" } },
+        columnStyles: { 1: { halign: "center" } },
       });
 
       /* capture Y */
@@ -375,9 +375,9 @@ currentY = doc.lastAutoTable.finalY + 20;
             fontStyle: "bold",
           },
           columnStyles: {
-            2: { halign: "right" },
-            3: { halign: "right" },
-            4: { halign: "right" },
+            2: { halign: "middle" },
+            3: { halign: "middle" },
+            4: { halign: "middle" },
           },
           pageBreak: "auto",
         });
@@ -704,6 +704,7 @@ currentY = doc.lastAutoTable.finalY + 20;
         background: 'white',
         borderRadius: '12px',
         padding: '10px',
+        height:"350px",
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
       },
       expensesHeader: {
@@ -716,15 +717,15 @@ currentY = doc.lastAutoTable.finalY + 20;
 
       // New styles for loans section
       loansSection: {
-        marginTop: '32px',
+        marginTop: '9px',
         background: 'white',
         borderRadius: '12px',
-        padding: '20px',
+        padding: '5px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
       },
       loansHeader: {
         color: '#1e3a8a',
-        marginBottom: '20px',
+        marginBottom: '10px',
         fontSize: '18px',
         fontWeight: '600',
         textAlign: 'center'
@@ -733,8 +734,8 @@ currentY = doc.lastAutoTable.finalY + 20;
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '15px',
-        marginBottom: '20px',
-        padding: '15px',
+        marginBottom: '10px',
+        padding: '5px',
         backgroundColor: '#f8fafc',
         borderRadius: '8px',
         border: '1px solid #e2e8f0'
@@ -817,7 +818,9 @@ currentY = doc.lastAutoTable.finalY + 20;
               className="btn-primary1"
               // style={styles.generateButton}
               onClick={handleGenerateReport}
-              onMouseOver={(e) => (e.target.style.transform = "translateY(-2px)")}
+              onMouseOver={(e) =>
+                (e.target.style.transform = "translateY(-2px)")
+              }
               onMouseOut={(e) => (e.target.style.transform = "translateY(0)")}
             >
               📊 Generate Report
@@ -944,15 +947,25 @@ currentY = doc.lastAutoTable.finalY + 20;
               {(cashInExpenses.length > 0 || cashOutExpenses.length > 0) && (
                 <div style={styles.expensesSection}>
                   <div
+                    className="hide-scrollbar"
                     style={{
                       display: "flex",
                       flexDirection: "row",
                       justifyContent: "space-between",
                       gap: "20px",
                       width: "100%",
+                      height: "90%",
+                      overflowY: "auto",
                     }}
                   >
-                    <div style={{ flex: 1, minWidth: "48%" }}>
+                    <div
+                      className="hide-scrollbar"
+                      style={{
+                        flex: 1,
+                        minWidth: "48%",
+                        height: "80%",
+                      }}
+                    >
                       <h4 style={{ color: "#059669", marginBottom: "10px" }}>
                         Cash In Expenses
                       </h4>
@@ -960,7 +973,7 @@ currentY = doc.lastAutoTable.finalY + 20;
                         style={{
                           ...styles.tableContainer,
                           width: "100%",
-                          height: UI_HEIGHTS.EXPENSES_TABLE,
+                          height: "100%",
                           overflowY: "auto",
                         }}
                       >
@@ -969,7 +982,9 @@ currentY = doc.lastAutoTable.finalY + 20;
                             <tr>
                               <th style={styles.tableHeaderCell}>ID</th>
                               <th style={styles.tableHeaderCell}>Amount</th>
-                              <th style={styles.tableHeaderCell}>Description</th>
+                              <th style={styles.tableHeaderCell}>
+                                Description
+                              </th>
                               <th style={styles.tableHeaderCell}>Type</th>
                             </tr>
                           </thead>
@@ -1000,7 +1015,12 @@ currentY = doc.lastAutoTable.finalY + 20;
                         </table>
                       </div>
                     </div>
-                    <div style={{ flex: 1, minWidth: "48%" }}>
+                    <div
+                      style={{
+                        flex: 1,
+                        minWidth: "48%",
+                      }}
+                    >
                       <h4 style={{ color: "#dc2626", marginBottom: "10px" }}>
                         Cash Out Expenses
                       </h4>
@@ -1008,7 +1028,7 @@ currentY = doc.lastAutoTable.finalY + 20;
                         style={{
                           ...styles.tableContainer,
                           width: "100%",
-                          height: "auto",
+                          height: "80%",
                         }}
                       >
                         <table style={styles.table}>
@@ -1016,7 +1036,9 @@ currentY = doc.lastAutoTable.finalY + 20;
                             <tr>
                               <th style={styles.tableHeaderCell}>ID</th>
                               <th style={styles.tableHeaderCell}>Amount</th>
-                              <th style={styles.tableHeaderCell}>Description</th>
+                              <th style={styles.tableHeaderCell}>
+                                Description
+                              </th>
                               <th style={styles.tableHeaderCell}>Type</th>
                             </tr>
                           </thead>
