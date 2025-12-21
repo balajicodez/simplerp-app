@@ -375,8 +375,8 @@ currentY = doc.lastAutoTable.finalY + 20;
             fontStyle: "bold",
           },
           columnStyles: {
-            2: { halign: "middle" },
-            3: { halign: "middle" },
+            2: { halign: "right" },
+            3: { halign: "right" },
             4: { halign: "middle" },
           },
           pageBreak: "auto",
