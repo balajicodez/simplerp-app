@@ -528,6 +528,17 @@ function CreateExpense() {
                       ))}
                     </select>
                   </div>
+                  <div className="form-group">
+                    <label className="form-label required">Expense Date</label>
+                    <input
+                      name="expenseDate"
+                      type="date"
+                      value={form.expenseDate}
+                      onChange={handleChange}
+                      className="form-input"
+                      required
+                    />
+                  </div>
 
                   {/* Current Balance (conditional) */}
                   {showCurrentBalanceSection && (
@@ -536,12 +547,12 @@ function CreateExpense() {
                         Current Balance (₹)
                       </label>
                       <div className="balance-input-wrapper">
-                        <span
+                        {/* <span
                           className="currency-symbol"
                           style={{ marginRight: "2px" }}
                         >
                           ₹
-                        </span>
+                        </span> */}
                         <input
                           name="currentBalance"
                           type="number"
@@ -566,24 +577,10 @@ function CreateExpense() {
                     </div>
                   )}
 
-                  {/* Expense Date */}
-                  <div className="form-group">
-                    <label className="form-label required">Expense Date</label>
-                    <input
-                      name="expenseDate"
-                      type="date"
-                      value={form.expenseDate}
-                      onChange={handleChange}
-                      className="form-input"
-                      required
-                    />
-                  </div>
-
-                  {/* Amount */}
                   <div className="form-group">
                     <label className="form-label required">Amount (₹)</label>
                     <div className="amount-input-wrapper">
-                      <span className="currency-symbol">₹</span>
+                      {/* <span className="currency-symbol">₹</span> */}
                       <input
                         name="amount"
                         type="number"
@@ -665,7 +662,7 @@ function CreateExpense() {
                       <option value="" disabled>
                         Select Book
                       </option>
-                      <option value="NO" >No</option>
+                      <option value="NO">No</option>
                       <option value="YES">Yes</option>
                     </select>
                   </div>
