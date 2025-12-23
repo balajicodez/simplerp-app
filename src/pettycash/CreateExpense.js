@@ -250,7 +250,7 @@ function CreateExpense() {
 
     setForm((f) => ({ ...f, type: expenseType }));
     const bearerToken = localStorage.getItem("token");
-    fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`, {
+    fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters?page=0&size=1000`, {
       headers: { Authorization: `Bearer ${bearerToken}` },
     })
       .then((res) => {

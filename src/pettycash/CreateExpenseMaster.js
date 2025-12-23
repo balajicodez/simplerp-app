@@ -28,7 +28,7 @@ function CreateExpenseMaster() {
     setLoading(true);
     try {
       const bearerToken = localStorage.getItem('token');
-      const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`, {
+      const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters?page=0&size=1000`, {
         method: 'POST', headers: {'Content-Type':'application/json','Authorization': `Bearer ${bearerToken}`}, body: JSON.stringify(form)
       });
       if (!res.ok) throw new Error('Failed');

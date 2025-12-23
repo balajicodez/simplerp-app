@@ -24,7 +24,7 @@ function CreateExpense() {
 
   useEffect(() => {
     let mounted = true;
-    fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters`)
+    fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters?page=0&size=1000`)
       .then(res => {
         if (!res.ok) throw new Error('no masters');
         return res.json();
