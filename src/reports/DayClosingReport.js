@@ -254,13 +254,52 @@ function DayClosingReport() {
     return y;
   };
 
+
+const getIssuedAndPartialLoans = () => {
+  const loanMap = new Map();
+
+  handloans.forEach((h) => {
+    if (!h.handLoanNumber) return;
+
+    const loanAmount = Number(h.loanAmount) || 0;
+    const balanceAmount = Number(h.balanceAmount) || 0;
+    const recoveredAmount = loanAmount - balanceAmount;
+
+    // ❌ REMOVE FULLY RECOVERED LOANS HERE
+    if (balanceAmount === 0) return;
+
+    if (!loanMap.has(h.handLoanNumber)) {
+      loanMap.set(h.handLoanNumber, {
+        handLoanNumber: h.handLoanNumber,
+        partyName: h.partyName || "N/A",
+        loanAmount,
+        recoveredAmount,
+        balanceAmount,
+      });
+    } else {
+      const existing = loanMap.get(h.handLoanNumber);
+      existing.balanceAmount = balanceAmount;
+      existing.recoveredAmount = loanAmount - balanceAmount;
+    }
+  });
+
+  return Array.from(loanMap.values()).map((l) => {
+    const status = l.recoveredAmount > 0 ? "PARTIALLY RECOVERED" : "ISSUED";
+
+    return { ...l, status };
+  });
+};
+
+
   const handleGenerateReport = () => {
     try {
       const filteredRecords = new Array(records);
       const filteredExpenses = getExpensesForDate(selectedDate);
 
       // ✅ ALL HANDLOANS (NO DATE FILTER)
-      const filteredHandloans = getAllHandloansWithBalances();
+// const filteredHandloans = getAllHandloansWithBalances();
+const filteredHandloans = getIssuedAndPartialLoans();
+
 
       const { cashInExpenses, cashOutExpenses } =
         categorizeExpenses(filteredExpenses);
@@ -393,32 +432,32 @@ function DayClosingReport() {
           totalBalanceAmount += Number(h.balanceAmount || 0);
         });
 
-        autoTable(doc, {
-          startY: currentY,
-          head: [
-            [
-              "Loan ID",
-              "Party Name",
-              "Total Amount",
-              "Recovered Amount",
-              "Balance Amount",
-            ],
-          ],
-          body: filteredHandloans.map((h) => [
-            h.handLoanNumber,
-            h.partyName,
-            safeToLocaleString(h.loanAmount),
-            safeToLocaleString(h.recoveredAmount),
-            safeToLocaleString(h.balanceAmount),
-          ]),
-          theme: "grid",
-          styles: { fontSize: 11 },
-          headStyles: {
-            fillColor: [30, 58, 138],
-            textColor: 255,
-            fontStyle: "bold",
-          },
-        });
+       autoTable(doc, {
+         startY: currentY,
+         head: [
+           [
+             "Loan ID",
+             "Party Name",
+             "Total Amount",
+             "Recovered Amount",
+             "Balance Amount",
+           ],
+         ],
+         body: filteredHandloans.map((h) => [
+           h.handLoanNumber,
+           h.partyName,
+           safeToLocaleString(h.loanAmount),
+           safeToLocaleString(h.recoveredAmount),
+           safeToLocaleString(h.balanceAmount),
+         ]),
+         theme: "grid",
+         styles: { fontSize: 11 },
+         headStyles: {
+           fillColor: [30, 58, 138],
+           textColor: 255,
+           fontStyle: "bold",
+         },
+       });
 
         currentY = doc.lastAutoTable.finalY + 14;
       }
@@ -866,7 +905,9 @@ function DayClosingReport() {
   );
 
   // Get all handloans with balances for display
-  const allHandloansWithBalances = getAllHandloansWithBalances();
+  // const allHandloansWithBalances = getAllHandloansWithBalances();
+  const allHandloansWithBalances = getIssuedAndPartialLoans();
+
   const totalLoanAmount = allHandloansWithBalances.reduce(
     (sum, h) => sum + h.loanAmount,
     0
@@ -1412,38 +1453,6 @@ function DayClosingReport() {
             {allHandloansWithBalances.length > 0 && (
               <div style={styles.loansSection}>
                 <h4 style={styles.loansHeader}>Hand Loans Details</h4>
-
-                {/* Loans Summary */}
-                <div style={styles.loansSummary}>
-                  <div style={styles.loansSummaryItem}>
-                    <div style={styles.loansSummaryLabel}>Total Loans</div>
-                    <div style={styles.loansSummaryValue}>
-                      {allHandloansWithBalances.length}
-                    </div>
-                  </div>
-                  <div style={styles.loansSummaryItem}>
-                    <div style={styles.loansSummaryLabel}>Total Amount</div>
-                    <div style={styles.loansSummaryValue}>
-                      ₹ {safeToLocaleString(totalLoanAmount)}
-                    </div>
-                  </div>
-                  <div style={styles.loansSummaryItem}>
-                    <div style={styles.loansSummaryLabel}>Recovered</div>
-                    <div
-                      style={{ ...styles.loansSummaryValue, color: "#059669" }}
-                    >
-                      ₹ {safeToLocaleString(totalRecovered)}
-                    </div>
-                  </div>
-                  <div style={styles.loansSummaryItem}>
-                    <div style={styles.loansSummaryLabel}>Balance</div>
-                    <div
-                      style={{ ...styles.loansSummaryValue, color: "#dc2626" }}
-                    >
-                      ₹ {safeToLocaleString(totalBalance)}
-                    </div>
-                  </div>
-                </div>
 
                 <div
                   style={{
