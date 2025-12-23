@@ -700,14 +700,15 @@ function CreateExpense() {
                 className="btn-secondary"
                 onClick={clearForm}
                 disabled={loading}
+                style={{ padding: "2px" }}
               >
-                <span className="btn-icon">🗑️</span>
-                Clear Form
+                ← Back
               </button>
 
               <button
                 type="submit"
-                className={`btn-primary `}
+                style={{ padding: "2px" }}
+                className={`btn-primary`}
                 disabled={
                   loading ||
                   (showCurrentBalanceSection &&

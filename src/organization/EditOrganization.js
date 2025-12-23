@@ -2,10 +2,13 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../Sidebar";
 import PageCard from "../components/PageCard";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "./Organization.css";
 
-function CreateOrganization({ onCreated }) {
+function EditOrganization() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     registrationNo: "",
@@ -16,8 +19,6 @@ function CreateOrganization({ onCreated }) {
     email: "",
     website: "",
     status: "Active",
-
-    // Address
     address: "",
     city: "",
     pincode: "",
@@ -26,22 +27,58 @@ function CreateOrganization({ onCreated }) {
   const [parentOrganizationId, setParentOrganizationId] = useState("");
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const navigate = useNavigate();
 
+  // ✅ LOAD EXISTING ORG
   useEffect(() => {
-    const bearerToken = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+
+    // Fetch all organizations for parent dropdown
     fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-      headers: { Authorization: `Bearer ${bearerToken}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then((data) => {
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         setOrganizations(orgs);
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => {})
+      .finally(() => setFetching(false));
+
+    // Fetch current organization data
+    fetch(`${APP_SERVER_URL_PREFIX}/organizations/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load organization");
+        return res.json();
+      })
+      .then((org) => {
+        setForm({
+          name: org.name || "",
+          registrationNo: org.registrationNo || "",
+          gstn: org.gstn || "",
+          pan: org.pan || "",
+          contact: org.contact || "",
+          fax: org.fax || "",
+          email: org.email || "",
+          website: org.website || "",
+          status: org.status || "Active",
+          address: org.address?.address || "",
+          city: org.address?.city || "",
+          pincode: org.address?.pincode || "",
+        });
+
+        // Set parent organization if exists
+        if (org.parentOrganizationId) {
+          setParentOrganizationId(String(org.parentOrganizationId));
+        }
+      })
+      .catch(() => setError("Failed to load organization"))
+      .finally(() => setFetching(false));
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,6 +93,7 @@ function CreateOrganization({ onCreated }) {
     setError("");
     setSuccess("");
 
+    // Validation
     if (!form.name.trim()) {
       setError("Organization name is required");
       setLoading(false);
@@ -79,7 +117,6 @@ function CreateOrganization({ onCreated }) {
         email: form.email,
         website: form.website,
         status: form.status,
-
         address: {
           address: form.address,
           city: form.city,
@@ -87,32 +124,36 @@ function CreateOrganization({ onCreated }) {
         },
       };
 
+      // Add parent organization if selected
       if (parentOrganizationId) {
         payload.parentOrganizationId = Number(parentOrganizationId);
+      } else {
+        // If no parent selected, ensure we don't send parentOrganizationId
+        // or set it to null if your backend expects it
+        payload.parentOrganizationId = null;
       }
 
-      const bearerToken = localStorage.getItem("token");
-      const res = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-        method: "POST",
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${APP_SERVER_URL_PREFIX}/organizations/${id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${bearerToken}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to create organization");
+        throw new Error(errorData.message || "Failed to update organization");
       }
 
-      setSuccess("Organization created successfully!");
+      setSuccess("Organization updated successfully!");
       setTimeout(() => {
-        if (onCreated) onCreated();
         navigate("/organization");
       }, 1500);
     } catch (err) {
-      setError(err.message || "Failed to create organization");
+      setError(err.message || "Failed to update organization");
     } finally {
       setLoading(false);
     }
@@ -127,10 +168,28 @@ function CreateOrganization({ onCreated }) {
     return null;
   };
 
+  const handleCancel = () => {
+    navigate("/organization");
+  };
+
+  if (fetching) {
+    return (
+      <div className="page-container">
+        <Sidebar isOpen={true} />
+        <PageCard title="Edit Organization">
+          <div className="loading-container">
+            <div className="spinner"></div>
+            <p>Loading organization data...</p>
+          </div>
+        </PageCard>
+      </div>
+    );
+  }
+
   return (
     <div className="page-container">
       <Sidebar isOpen={true} />
-      <PageCard title="Create Organization">
+      <PageCard title="Edit Organization">
         {error && <div className="alert alert-error">⚠️ {error}</div>}
         {success && <div className="alert alert-success">✅ {success}</div>}
 
@@ -151,6 +210,7 @@ function CreateOrganization({ onCreated }) {
                       onChange={handleChange}
                       className="form-input"
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -160,16 +220,22 @@ function CreateOrganization({ onCreated }) {
                       value={parentOrganizationId}
                       onChange={(e) => setParentOrganizationId(e.target.value)}
                       className="form-select"
+                      disabled={loading}
                     >
                       <option value="">No Parent Organization</option>
-                      {organizations.map((org) => {
-                        const id = getOrganizationId(org);
-                        return id ? (
-                          <option key={id} value={id}>
-                            {org.name}
-                          </option>
-                        ) : null;
-                      })}
+                      {organizations
+                        .filter((org) => {
+                          const orgId = getOrganizationId(org);
+                          return orgId && orgId !== id; // Don't allow self as parent
+                        })
+                        .map((org) => {
+                          const id = getOrganizationId(org);
+                          return id ? (
+                            <option key={id} value={id}>
+                              {org.name}
+                            </option>
+                          ) : null;
+                        })}
                     </select>
                   </div>
 
@@ -180,6 +246,7 @@ function CreateOrganization({ onCreated }) {
                       value={form.registrationNo}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={loading}
                     />
                   </div>
 
@@ -191,6 +258,7 @@ function CreateOrganization({ onCreated }) {
                       onChange={handleChange}
                       className="form-select"
                       required
+                      disabled={loading}
                     >
                       <option value="Active">Active</option>
                       <option value="Inactive">Inactive</option>
@@ -204,6 +272,7 @@ function CreateOrganization({ onCreated }) {
                       value={form.gstn}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={loading}
                     />
                   </div>
 
@@ -214,6 +283,7 @@ function CreateOrganization({ onCreated }) {
                       value={form.pan}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={loading}
                     />
                   </div>
 
@@ -224,6 +294,7 @@ function CreateOrganization({ onCreated }) {
                       value={form.address}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={loading}
                     />
                   </div>
 
@@ -234,6 +305,7 @@ function CreateOrganization({ onCreated }) {
                       value={form.city}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={loading}
                     />
                   </div>
 
@@ -244,6 +316,7 @@ function CreateOrganization({ onCreated }) {
                       value={form.pincode}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -263,6 +336,7 @@ function CreateOrganization({ onCreated }) {
                       onChange={handleChange}
                       className="form-input"
                       required
+                      disabled={loading}
                     />
                   </div>
 
@@ -273,6 +347,7 @@ function CreateOrganization({ onCreated }) {
                       value={form.fax}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={loading}
                     />
                   </div>
 
@@ -280,9 +355,11 @@ function CreateOrganization({ onCreated }) {
                     <label className="form-label">Email</label>
                     <input
                       name="email"
+                      type="email"
                       value={form.email}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={loading}
                     />
                   </div>
 
@@ -293,6 +370,7 @@ function CreateOrganization({ onCreated }) {
                       value={form.website}
                       onChange={handleChange}
                       className="form-input"
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -303,12 +381,13 @@ function CreateOrganization({ onCreated }) {
               <button
                 type="button"
                 className="btn-outline"
-                onClick={() => navigate("/organization")}
+                onClick={handleCancel}
+                disabled={loading}
               >
                 ← Cancel
               </button>
-              <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? "Creating..." : "  💾 Save"}
+              <button type="submit" className="btn-primary2" disabled={loading}>
+                {loading ? "Updating..." : "Update Organization"}
               </button>
             </div>
           </form>
@@ -318,4 +397,4 @@ function CreateOrganization({ onCreated }) {
   );
 }
 
-export default CreateOrganization;
+export default EditOrganization;

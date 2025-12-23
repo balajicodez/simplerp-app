@@ -172,19 +172,19 @@ function ExpensesOutward() {
     fetchOrganizations();
   }, []);
 
-   const formatDate = (dateString) => {
-     if (!dateString) return "-";
-     try {
-       const date = new Date(dateString);
-       return date.toLocaleDateString("en-IN", {
-         day: "2-digit",
-         month: "2-digit",
-         year: "numeric",
-       });
-     } catch (e) {
-       return dateString;
-     }
-   };
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "-";
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}-${month}-${year}`;
+};
+
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) return '↕️';
     return sortConfig.direction === 'ascending' ? '↑' : '↓';

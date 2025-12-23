@@ -76,13 +76,25 @@ function CreateExpenseMaster() {
               />
             </div>
           </div>
-          <div style={{ marginTop: 12,padding:"0 2%",display:"flex",justifyContent:"space-between" }}>
-
-            <button className="btn-secondary" type="back" onClick={()=>{navigate("/pettycash/masters")}}>
+          <div
+            style={{
+              marginTop: 12,
+              padding: "0 2%",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <button
+              className="btn-secondary"
+              type="back"
+              onClick={() => {
+                navigate("/pettycash/masters");
+              }}
+            >
               Back
             </button>
             <button className="btn-primary" type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Saving..." : "  💾  Save"}
             </button>
           </div>
         </form>

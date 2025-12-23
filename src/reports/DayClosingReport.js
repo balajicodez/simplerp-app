@@ -10,6 +10,8 @@ function DayClosingReport() {
   const [expenses, setExpenses] = useState([]);
   const [handloans, setHandloans] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedOrganization, setSelectedOrganization] = useState(null);
+
   const [error, setError] = useState("");
   const [reportMsg, setReportMsg] = useState("");
   const [totals, setTotals] = useState({
@@ -235,9 +237,27 @@ function DayClosingReport() {
     setSelectedDate(e.target.value);
   };
 
-  const handleOrgChange = (e) => {
-    setOrganizationId(e.target.value);
-  };
+const handleOrgChange = (e) => {
+  const orgId = e.target.value;
+  setOrganizationId(orgId);
+
+  const org = organizations.find(
+    (o) =>
+      String(o.id || o._links?.self?.href?.split("/").pop()) === String(orgId)
+  );
+
+  setSelectedOrganization(org || null);
+};
+
+
+const getOrganizationAddressText = () => {
+  if (!selectedOrganization?.address) return "";
+
+  const { address, city, pincode } = selectedOrganization.address;
+
+  return [address, city, pincode].filter(Boolean).join(", ");
+};
+
 
   const UI_HEIGHTS = {
     EXPENSES_TABLE: "260px",
@@ -321,10 +341,11 @@ const filteredHandloans = getIssuedAndPartialLoans();
       doc.setFontSize(26);
       doc.text("Sri Divya Sarees Pvt. Ltd.", 105, 18, { align: "center" });
 
-      doc.setFontSize(12);
-      doc.text("Old Temple Road, Gulzar House, Hyderabad 500066", 105, 26, {
-        align: "center",
-      });
+      const orgAddressText = getOrganizationAddressText();
+doc.setFontSize(13);
+      if (orgAddressText) {
+        doc.text(orgAddressText, 105, 26, { align: "center" });
+      }
 
       doc.line(20, 32, 190, 32);
 
@@ -1272,6 +1293,7 @@ const filteredHandloans = getIssuedAndPartialLoans();
                         <th style={styles.tableHeaderCell}>Amount</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       {/* 500 Notes */}
                       {(records._500NoteCount > 0 ||
@@ -1417,36 +1439,71 @@ const filteredHandloans = getIssuedAndPartialLoans();
                         </tr>
                       )}
 
-                      {/* Coins */}
-                      {(records._1CoinCount > 0 ||
-                        records._5CoinCount > 0 ||
-                        records._10CoinCount > 0 ||
-                        records._20CoinCount > 0) && (
+                      {/* ₹1 Coin */}
+                      {records._1CoinCount > 0 && (
                         <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>Coins</td>
+                          <td style={styles.tableCell}>₹ 1 (Coin)</td>
                           <td style={styles.tableCell}>
-                            {records._1CoinCount || 0} (₹1),{" "}
-                            {records._5CoinCount || 0} (₹5),
-                            <br />
-                            {records._10CoinCount || 0} (₹10),{" "}
-                            {records._20CoinCount || 0} (₹20)
+                            {records._1CoinCount}
                           </td>
                           <td style={styles.tableCell}>-</td>
                           <td
                             style={{ ...styles.tableCell, fontWeight: "600" }}
                           >
-                            ₹{" "}
-                            {safeToLocaleString(
-                              (records._1CoinCount || 0) * 1 +
-                                (records._5CoinCount || 0) * 5 +
-                                (records._10CoinCount || 0) * 10 +
-                                (records._20CoinCount || 0) * 20
-                            )}
+                            ₹ {safeToLocaleString(records._1CoinCount * 1)}
                           </td>
                         </tr>
                       )}
 
-                      {/* Total Row */}
+                      {/* ₹5 Coin */}
+                      {records._5CoinCount > 0 && (
+                        <tr style={styles.tableRow}>
+                          <td style={styles.tableCell}>₹ 5 (Coin)</td>
+                          <td style={styles.tableCell}>
+                            {records._5CoinCount}
+                          </td>
+                          <td style={styles.tableCell}>-</td>
+                          <td
+                            style={{ ...styles.tableCell, fontWeight: "600" }}
+                          >
+                            ₹ {safeToLocaleString(records._5CoinCount * 5)}
+                          </td>
+                        </tr>
+                      )}
+
+                      {/* ₹10 Coin */}
+                      {records._10CoinCount > 0 && (
+                        <tr style={styles.tableRow}>
+                          <td style={styles.tableCell}>₹ 10 (Coin)</td>
+                          <td style={styles.tableCell}>
+                            {records._10CoinCount}
+                          </td>
+                          <td style={styles.tableCell}>-</td>
+                          <td
+                            style={{ ...styles.tableCell, fontWeight: "600" }}
+                          >
+                            ₹ {safeToLocaleString(records._10CoinCount * 10)}
+                          </td>
+                        </tr>
+                      )}
+
+                      {/* ₹20 Coin */}
+                      {records._20CoinCount > 0 && (
+                        <tr style={styles.tableRow}>
+                          <td style={styles.tableCell}>₹ 20 (Coin)</td>
+                          <td style={styles.tableCell}>
+                            {records._20CoinCount}
+                          </td>
+                          <td style={styles.tableCell}>-</td>
+                          <td
+                            style={{ ...styles.tableCell, fontWeight: "600" }}
+                          >
+                            ₹ {safeToLocaleString(records._20CoinCount * 20)}
+                          </td>
+                        </tr>
+                      )}
+
+                      {/* TOTAL */}
                       <tr
                         style={{
                           ...styles.tableRow,
@@ -1454,8 +1511,8 @@ const filteredHandloans = getIssuedAndPartialLoans();
                         }}
                       >
                         <td
-                          style={{ ...styles.tableCell, fontWeight: "700" }}
                           colSpan="3"
+                          style={{ ...styles.tableCell, fontWeight: "700" }}
                         >
                           TOTAL
                         </td>

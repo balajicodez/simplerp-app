@@ -410,14 +410,27 @@ const HandLoanManagement = () => {
     }).format(amount || 0);
   };
 
+  // const formatDate = (dateString) => {
+  //   if (!dateString) return 'N/A';
+  //   try {
+  //     return new Date(dateString).toLocaleDateString('en-IN');
+  //   } catch (error) {
+  //     return 'Invalid Date';
+  //   }
+  // };
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    try {
-      return new Date(dateString).toLocaleDateString('en-IN');
-    } catch (error) {
-      return 'Invalid Date';
-    }
-  };
+  if (!dateString) return 'N/A';
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'Invalid Date';
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+
+  return `${day}-${month}-${year}`;
+};
+
 
   const RecoveryProgressBar = ({ loan }) => {
     const recoveredAmount = (loan.loanAmount || 0) - (loan.balanceAmount || 0);
@@ -455,7 +468,7 @@ const HandLoanManagement = () => {
           <div className="header-actions">
             <div className="action-buttons">
               <button
-                className="btn-primary1"
+                className="btn-primary"
                 onClick={handleCreateLoan}
                 title="Create new hand loan"
               >

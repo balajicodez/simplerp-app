@@ -161,15 +161,28 @@ function DayClosing() {
     }).format(amount);
   };
 
+  // const formatDate = (dateString) => {
+  //   if (!dateString) return "N/A";
+  //   const date = new Date(dateString);
+  //   return date.toLocaleDateString("en-IN", {
+  //     day: "2-digit",
+  //     month: "short",
+  //     year: "numeric",
+  //   });
+  // };
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return "-";
+
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+    if (isNaN(date.getTime())) return "-";
+
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    return `${day}-${month}-${year}`;
   };
+
 
   const getExpenseTypeColor = (type) => {
     return type === "CASH-IN" ? "#10b981" : "#ef4444";
