@@ -432,32 +432,58 @@ const filteredHandloans = getIssuedAndPartialLoans();
           totalBalanceAmount += Number(h.balanceAmount || 0);
         });
 
-       autoTable(doc, {
-         startY: currentY,
-         head: [
-           [
-             "Loan ID",
-             "Party Name",
-             "Total Amount",
-             "Recovered Amount",
-             "Balance Amount",
-           ],
-         ],
-         body: filteredHandloans.map((h) => [
-           h.handLoanNumber,
-           h.partyName,
-           safeToLocaleString(h.loanAmount),
-           safeToLocaleString(h.recoveredAmount),
-           safeToLocaleString(h.balanceAmount),
-         ]),
-         theme: "grid",
-         styles: { fontSize: 11 },
-         headStyles: {
-           fillColor: [30, 58, 138],
-           textColor: 255,
-           fontStyle: "bold",
-         },
-       });
+      autoTable(doc, {
+        startY: currentY,
+        head: [
+          [
+            "Loan ID",
+            "Party Name",
+            "Total Amount",
+            "Recovered Amount",
+            "Balance Amount",
+          ],
+        ],
+        body: [
+          ...filteredHandloans.map((h) => [
+            h.handLoanNumber,
+            h.partyName,
+            safeToLocaleString(h.loanAmount),
+            safeToLocaleString(h.recoveredAmount),
+            safeToLocaleString(h.balanceAmount),
+          ]),
+
+          // ✅ TOTAL ROW
+          [
+            "TOTAL",
+            "",
+            safeToLocaleString(totalLoanAmount),
+            safeToLocaleString(totalRecoveredAmount),
+            safeToLocaleString(totalBalanceAmount),
+          ],
+        ],
+        theme: "grid",
+        styles: { fontSize: 11 },
+        headStyles: {
+          fillColor: [30, 58, 138],
+          textColor: 255,
+          fontStyle: "bold",
+        },
+        didParseCell: function (data) {
+          // Style TOTAL row
+          if (
+            data.row.index === filteredHandloans.length &&
+            data.section === "body"
+          ) {
+            data.cell.styles.fontStyle = "bold";
+            data.cell.styles.fillColor = [243, 244, 246]; // light gray
+          }
+        },
+        // columnStyles: {
+        //   2: { halign: "right" },
+        //   3: { halign: "right" },
+        //   4: { halign: "right" },
+        // },
+      });
 
         currentY = doc.lastAutoTable.finalY + 14;
       }
