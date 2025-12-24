@@ -367,7 +367,7 @@ function CreateExpense() {
         createdByUser,
         createdDate: form.expenseDate,
         referenceNumber: form.referenceNumber || undefined,
-        gstapplicable: form.book === form.book || undefined,
+        gstapplicable: form.book === "YES",
         currentBalance:
           getExpenseType() === "CASH-OUT"
             ? Number(form.currentBalance)

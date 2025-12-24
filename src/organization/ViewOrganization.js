@@ -14,6 +14,7 @@ function ViewOrganization() {
 
   useEffect(() => {
     const bearerToken = localStorage.getItem("token");
+    console.log(bearerToken);
     setLoading(true);
     fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
       method: "GET",

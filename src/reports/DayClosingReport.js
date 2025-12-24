@@ -199,6 +199,51 @@ function DayClosingReport() {
     ).padStart(2, "0")}-${date.getFullYear()}`;
   };
 
+  const getIssuedAndPartialLoansByOrg = () => {
+    if (!organizationId) return [];
+
+    const loanMap = new Map();
+
+    handloans.forEach((h) => {
+      // 🔥 FILTER BY ORGANIZATION
+      const loanOrgId =
+        h.organizationId ||
+        h.organization?.id ||
+        h.organization?._links?.self?.href?.split("/").pop();
+
+      if (String(loanOrgId) !== String(organizationId)) return;
+
+      if (!h.handLoanNumber) return;
+
+      const loanAmount = Number(h.loanAmount) || 0;
+      const balanceAmount = Number(h.balanceAmount) || 0;
+      const recoveredAmount = loanAmount - balanceAmount;
+
+      // ❌ Remove fully recovered loans
+      if (balanceAmount === 0) return;
+
+      if (!loanMap.has(h.handLoanNumber)) {
+        loanMap.set(h.handLoanNumber, {
+          handLoanNumber: h.handLoanNumber,
+          partyName: h.partyName || "N/A",
+          loanAmount,
+          recoveredAmount,
+          balanceAmount,
+        });
+      } else {
+        const existing = loanMap.get(h.handLoanNumber);
+        existing.balanceAmount = balanceAmount;
+        existing.recoveredAmount = loanAmount - balanceAmount;
+      }
+    });
+
+    return Array.from(loanMap.values()).map((l) => ({
+      ...l,
+      status: l.recoveredAmount > 0 ? "PARTIALLY RECOVERED" : "ISSUED",
+    }));
+  };
+
+
   const fetchDayClosing = async (closingDate, orgId) => {
     try {
       setLoading(true);
@@ -318,7 +363,9 @@ const getIssuedAndPartialLoans = () => {
 
       // ✅ ALL HANDLOANS (NO DATE FILTER)
 // const filteredHandloans = getAllHandloansWithBalances();
-const filteredHandloans = getIssuedAndPartialLoans();
+// const filteredHandloans = getIssuedAndPartialLoans();
+const filteredHandloans = getIssuedAndPartialLoansByOrg();
+
 
 
       const { cashInExpenses, cashOutExpenses } =
@@ -953,7 +1000,9 @@ doc.setFontSize(13);
 
   // Get all handloans with balances for display
   // const allHandloansWithBalances = getAllHandloansWithBalances();
-  const allHandloansWithBalances = getIssuedAndPartialLoans();
+  // const allHandloansWithBalances = getIssuedAndPartialLoans();
+  const allHandloansWithBalances = getIssuedAndPartialLoansByOrg();
+
 
   const totalLoanAmount = allHandloansWithBalances.reduce(
     (sum, h) => sum + h.loanAmount,
