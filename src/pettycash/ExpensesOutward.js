@@ -289,7 +289,7 @@ const formatDate = (dateString) => {
             <div className="filter-group">
               {/* <label>Organization</label> */}
               <select
-                value={selectedOrgId || localStorage.getItem('organizationId') }
+                value={enableOrgDropDown ? selectedOrgId : localStorage.getItem('organizationId') }
                 onChange={handleOrganizationChange}
                 className="filter-select"
                 disabled={!enableOrgDropDown}

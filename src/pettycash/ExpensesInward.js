@@ -253,7 +253,7 @@ function ExpensesInward() {
           <div className="filters-grid">
             <div className="filter-group">
               <select
-                value={selectedOrgId || localStorage.getItem('organizationId') }
+                value={enableOrgDropDown ? selectedOrgId : localStorage.getItem('organizationId') }
                 onChange={handleOrganizationChange}
                 className="filter-select"
                 disabled={!enableOrgDropDown}
