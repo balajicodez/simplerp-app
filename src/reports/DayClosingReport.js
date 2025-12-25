@@ -386,7 +386,10 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
 
       /* ================= HEADER ================= */
       doc.setFontSize(26);
-      doc.text("Sri Divya Sarees Pvt. Ltd.", 105, 18, { align: "center" });
+     const orgName = selectedOrganization?.name || "Organization";
+
+     doc.text(orgName, 105, 18, { align: "center" });
+
 
       const orgAddressText = getOrganizationAddressText();
 doc.setFontSize(13);
