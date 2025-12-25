@@ -23,6 +23,7 @@ function CreateExpense() {
     expenseDate: "",
     referenceNumber: "",
     file: null,
+    description: "",
     organizationId: "",
     organizationName: "",
     currentBalance: "",
@@ -364,6 +365,7 @@ function CreateExpense() {
         organizationId: form.organizationId || undefined,
         organizationName: form.organizationName || undefined,
         createdByUserId,
+        description: form.description || "",
         createdByUser,
         createdDate: form.expenseDate,
         referenceNumber: form.referenceNumber || undefined,
@@ -373,6 +375,7 @@ function CreateExpense() {
             ? Number(form.currentBalance)
             : undefined, // Only include for CASH-OUT
       };
+      console.log(expensePayload);
 
       const formData = new FormData();
       formData.append(
@@ -427,6 +430,7 @@ function CreateExpense() {
       organizationName: "",
       currentBalance: "",
       gstapplicable: "NO",
+      description: "",
     });
     setPreviewUrl("");
     setError("");
@@ -667,29 +671,46 @@ function CreateExpense() {
                     </select>
                   </div>
 
-                  <div className="mt-0 ">
-                    <label className="">File Upload</label>
-                    <input
-                      name="file"
-                      type="file"
-                      onChange={handleChange}
-                      accept="image/*,.pdf,.doc,.docx,.xlsx"
-                    />
+                  <div className="flex wrap gap-4 w-full">
+                    {/* File Upload */}
+                    <div className="w-1/2">
+                      <label className="">File Upload</label>
+                      <input
+                        name="file"
+                        type="file"
+                        onChange={handleChange}
+                        accept="image/*,.pdf,.doc,.docx,.xlsx"
+                        className="w-full"
+                      />
 
-                    {form.file && (
-                      <div className="file-preview">
-                        <span>{form.file.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setForm((f) => ({ ...f, file: null }));
-                            setPreviewUrl("");
-                          }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    )}
+                      {form.file && (
+                        <div className="file-preview">
+                          <span>{form.file.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setForm((f) => ({ ...f, file: null }));
+                              setPreviewUrl("");
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                  </div>
+                  <div className="w-full">
+                    <label>Narration</label>
+                    <textarea
+                      name="description"
+                      value={form.description}
+                      onChange={handleChange}
+                      className="form-input w-full"
+                      rows="2"
+                      placeholder="Enter narration / notes"
+                    />
                   </div>
                 </div>
               </div>
