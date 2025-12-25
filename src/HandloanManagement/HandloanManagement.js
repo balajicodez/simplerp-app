@@ -1002,7 +1002,7 @@ const CreateHandLoanForm = ({
         loanAmount: loanAmount,
         balanceAmount: loanAmount,
         phoneNo: form.phoneNo || '',
-        narration: form.narration || '',
+        description: form.narration || '',
         handLoanType: 'ISSUE',
         createdDate: form.createdDate || new Date().toISOString()
       };
@@ -1297,7 +1297,7 @@ const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
         balanceAmount: 0,
         partyName: loan.partyName,
         phoneNo: loan.phoneNo || '',
-        narration: form.narration || `Recovery for ${loan.handLoanNumber}`,
+        description: form.narration || `Recovery for ${loan.handLoanNumber}`,
         handLoanType: 'RECOVER',
         createdDate: form.createdDate || new Date().toISOString()
       };
