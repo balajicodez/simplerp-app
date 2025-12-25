@@ -25,6 +25,7 @@ import CreateDayClosing from './pettycash/CreateDayClosing';
 import DayClosingReport from './reports/DayClosingReport';
 import CreateExpense from './pettycash/CreateExpense';
 import ExpenseMasters from './pettycash/ExpenseMasters';
+import EditOrganization from './organization/EditOrganization'
 import ExpenseView from './pettycash/ExpenseView';
 import EditExpense from './pettycash/EditExpense';
 import CreateExpenseMaster from './pettycash/CreateExpenseMaster';
@@ -69,6 +70,8 @@ function App() {
           path="/pettycash/masters/create"
           element={<CreateExpenseMaster />}
         />
+        <Route path="/organization/edit/:id" element={<EditOrganization />} />
+
         <Route path="/organization" element={<ViewOrganization />} />
         <Route path="/organization/create" element={<CreateOrganization />} />
         <Route path="/holidays" element={<HolidayCalendar />} />
