@@ -128,13 +128,26 @@ function ExpensesOutward() {
     }));
   };
 
-  useEffect(() => {
-    const bearerToken = localStorage.getItem('token');
-    const value = selectedOrgId ? selectedOrgId : localStorage.getItem('organizationId');
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`,{
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
-      });
-  }, [pageParam, sizeParam]);
+
+  useEffect(() => {    
+     const bearerToken = localStorage.getItem('token');
+     const value = selectedOrgId;
+     if(!enableOrgDropDown) {
+        fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${localStorage.getItem('organizationId')}`, {
+         headers: { 'Authorization': `Bearer ${bearerToken}` }
+       });
+     } else {
+         if(value) {
+         fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
+           headers: { 'Authorization': `Bearer ${bearerToken}` }
+         });
+       } else {
+         fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN`, {
+           headers: { 'Authorization': `Bearer ${bearerToken}` }
+         });
+       }
+     }
+   }, [pageParam, sizeParam]); 
 
   // Helper function to check if date is today
   const isToday = (dateString) => {
@@ -149,8 +162,7 @@ function ExpensesOutward() {
         itemDate.getMonth() === today.getMonth() &&
         itemDate.getFullYear() === today.getFullYear()
       );
-    } catch (e) {
-      console.error('Invalid date:', dateString, e);
+    } catch (e) {      
       return false;
     }
   };
@@ -165,8 +177,7 @@ function ExpensesOutward() {
         const data = await response.json();
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         setOrganizations(orgs);
-      } catch (error) {
-        console.error('Failed to fetch organizations:', error);
+      } catch (error) {        
       }
     };
     fetchOrganizations();

@@ -48,14 +48,14 @@ function ExpensesInward() {
   const handleOrganizationChange = (e) => {
     const value = e.target.value;
     setSelectedOrgId(value);
-    const bearerToken = localStorage.getItem('token');
+    const bearerToken = localStorage.getItem('token');    
     if (value) {
       fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
       setSearchParams({ page: 0, size: sizeParam });
     } else {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
+      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN`, {
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
       setSearchParams({ page: 0, size: sizeParam });
@@ -159,8 +159,7 @@ function ExpensesInward() {
         itemDate.getMonth() === today.getMonth() &&
         itemDate.getFullYear() === today.getFullYear()
       );
-    } catch (e) {
-      console.error('Invalid date:', dateString, e);
+    } catch (e) {      
       return false;
     }
   };
@@ -172,11 +171,23 @@ function ExpensesInward() {
   };
 
   useEffect(() => {    
-     const bearerToken = localStorage.getItem('token');
-    const value = selectedOrgId ? selectedOrgId : localStorage.getItem('organizationId');
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
+    const bearerToken = localStorage.getItem('token');
+    const value = selectedOrgId;
+    if(!enableOrgDropDown) {
+       fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${localStorage.getItem('organizationId')}`, {
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
+    } else {
+        if(value) {
+        fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
+          headers: { 'Authorization': `Bearer ${bearerToken}` }
+        });
+      } else {
+        fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN`, {
+          headers: { 'Authorization': `Bearer ${bearerToken}` }
+        });
+      }
+    }
   }, [pageParam, sizeParam]);
 
   useEffect(() => {
@@ -190,7 +201,7 @@ function ExpensesInward() {
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         setOrganizations(orgs);
       } catch (error) {
-        console.error('Failed to fetch organizations:', error);
+        
       }
     };
     fetchOrganizations();
@@ -425,6 +436,7 @@ function ExpensesInward() {
                     className="btn-outline"
                     disabled={!(links.prev || pageParam > 0)}
                     onClick={() => {
+                      console.log('Prev Links:', links.prev);
                       if (links.prev) return fetchUrl(links.prev.href);
                       const prev = Math.max(0, pageParam - 1);
                       setSearchParams({ page: prev, size: sizeParam });
@@ -435,7 +447,8 @@ function ExpensesInward() {
                   <button
                     className="btn-outline"
                     disabled={!(links.next || items.length >= sizeParam)}
-                    onClick={() => {
+                    onClick={() => {                      
+                      console.log('Next Links:', links.next);
                       if (links.next) return fetchUrl(links.next.href);
                       const next = pageParam + 1;
                       setSearchParams({ page: next, size: sizeParam });
