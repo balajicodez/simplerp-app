@@ -25,7 +25,7 @@ function ExpensesInward() {
   const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0);
   const totalTransactions = items.length;
   const enableOrgDropDown = Utils.isRoleApplicable('ADMIN');
-  const enableCreate = Utils.isRoleApplicable('ADMIN');
+  const enableCreate = true; //Utils.isRoleApplicable('ADMIN');
 
   const fetchUrl = async (url) => {
     setLoading(true);

@@ -4,6 +4,7 @@ import PageCard from "../components/PageCard";
 import "./pettyCashCreateExpense.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import Utils from '../Utils';
 
 const getLocalDate = () => {
   const today = new Date();
@@ -14,6 +15,7 @@ const getLocalDate = () => {
 };
 
 function CreateExpense() {
+  const enableOrgDropDown = Utils.isRoleApplicable('ADMIN');
   const [form, setForm] = useState({
     transactionDate: getLocalDate(),
     amount: "",
@@ -23,7 +25,7 @@ function CreateExpense() {
     expenseDate: "",
     referenceNumber: "",
     file: null,
-    organizationId: "",
+    organizationId: enableOrgDropDown ? "":localStorage.getItem('organizationId') ,
     organizationName: "",
     currentBalance: "",
   });
@@ -36,7 +38,7 @@ function CreateExpense() {
   const [fetchedBalance, setFetchedBalance] = useState(0);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
+  const location = useLocation();  
 
   const getExpenseType = () => {
     const params = new URLSearchParams(location.search);
@@ -298,7 +300,7 @@ function CreateExpense() {
     e.preventDefault();
     setError("");
     setSuccess("");
-
+    
     // Enhanced validation
     if (!form.organizationId) {
       setError("Please select an organization");
@@ -361,7 +363,7 @@ function CreateExpense() {
         employeeId: form.employeeId ? Number(form.employeeId) : undefined,
         expenseSubType: form.subtype,
         expenseType: form.type,
-        organizationId: form.organizationId || undefined,
+        organizationId: enableOrgDropDown ? form.organizationId  : localStorage.getItem('organizationId'),
         organizationName: form.organizationName || undefined,
         createdByUserId,
         createdByUser,
@@ -513,6 +515,7 @@ function CreateExpense() {
                       value={form.organizationId}
                       onChange={handleChange}
                       className="form-select"
+                      disabled={!enableOrgDropDown}
                       required
                     >
                       <option value="">Select branch</option>
