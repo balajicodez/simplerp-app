@@ -27,6 +27,8 @@ function DayClosingReport() {
   const [organizations, setOrganizations] = useState([]);
   const [organizationId, setOrganizationId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [disableButton, setDisableButton] = useState(true);
+  
 
   // Safe number formatting function
   const safeToLocaleString = (value) => {
@@ -259,10 +261,10 @@ function DayClosingReport() {
         throw new Error("Failed to fetch data");
       }
       const data = await response.json();
-
+      setDisableButton(false);
       setRecords(data);
     } catch (err) {
-      console.log(err);
+      setDisableButton(true);
       setError("No records found for the selected date and organization");
       setRecords(
         JSON.stringify({
@@ -1068,6 +1070,7 @@ doc.setFontSize(13);
             onClick={handleGenerateReport}
             onMouseOver={(e) => (e.target.style.transform = "translateY(-2px)")}
             onMouseOut={(e) => (e.target.style.transform = "translateY(0)")}
+            disabled={disableButton}
           >
             📊 Generate Report
           </button>
