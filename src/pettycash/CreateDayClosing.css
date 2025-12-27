@@ -112,6 +112,19 @@
   margin: 0 auto 16px;
 }
 
+.file-upload-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.file-input {
+  margin-right: 10px;
+}
+
+.remove-file-btn {
+} 
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
