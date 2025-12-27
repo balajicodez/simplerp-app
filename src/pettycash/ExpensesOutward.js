@@ -27,24 +27,54 @@ function ExpensesOutward() {
   const averageExpense = totalTransactions > 0 ? totalAmount / totalTransactions : 0;
   const enableOrgDropDown = Utils.isRoleApplicable('ADMIN');
 
-  const fetchUrl = async (url) => {
-    setLoading(true);
-    try {
-      const bearerToken = localStorage.getItem('token');
-      const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
-      });
-      const json = await res.json();
-      let list = json.content || json._embedded?.expenses || [];
-      list = list.filter(e => e.expenseType === 'CASH-OUT');
-      setItems(list);
-      setLinks(json._links || {});
-    } catch (e) {
-      console.error('Failed to fetch outward expenses:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const fetchUrl = async (url) => {
+  //   setLoading(true);
+  //   try {
+  //     const bearerToken = localStorage.getItem('token');
+  //     const res = await fetch(url, {
+  //       headers: { 'Authorization': `Bearer ${bearerToken}` }
+  //     });
+  //     const json = await res.json();
+  //     let list = json.content || json._embedded?.expenses || [];
+  //     list = list.filter(e => e.expenseType === 'CASH-OUT');
+  //     setItems(list);
+  //     setLinks(json._links || {});
+  //   } catch (e) {
+  //     console.error('Failed to fetch outward expenses:', e);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+    const today = new Date().toISOString().split("T")[0];
+    const last7Days = new Date(Date.now() - 7 * 86400000)
+      .toISOString()
+      .split("T")[0];
+  const [fromDate, setFromDate] = useState(last7Days);
+  const [toDate, setToDate] = useState(today);
+  
+
+const fetchUrl = async () => {
+  setLoading(true);
+  try {
+    const bearerToken = localStorage.getItem("token");
+    const org = selectedOrgId || localStorage.getItem("organizationId");
+
+    const url = `${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&startDate=${fromDate}&endDate=${toDate}&organizationId=${org}`;
+
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${bearerToken}` },
+    });
+
+    const json = await res.json();
+    setItems(json.content || []);
+    setLinks(json._links || {});
+  } catch (e) {
+    console.error("Failed to fetch expenses", e);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleOrganizationChange = (e) => {
     const value = e.target.value;
@@ -129,12 +159,16 @@ function ExpensesOutward() {
   };
 
   useEffect(() => {
-    const bearerToken = localStorage.getItem('token');
-    const value = selectedOrgId ? selectedOrgId : localStorage.getItem('organizationId');
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`,{
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
-      });
-  }, [pageParam, sizeParam]);
+    fetchUrl();
+  }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate]);
+
+  // useEffect(() => {
+  //   const bearerToken = localStorage.getItem('token');
+  //   const value = selectedOrgId ? selectedOrgId : localStorage.getItem('organizationId');
+  //   fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`,{
+  //       headers: { 'Authorization': `Bearer ${bearerToken}` }
+  //     });
+  // }, [pageParam, sizeParam]);
 
   // Helper function to check if date is today
   const isToday = (dateString) => {
@@ -171,6 +205,8 @@ function ExpensesOutward() {
     };
     fetchOrganizations();
   }, []);
+
+
 
 const formatDate = (dateString) => {
   if (!dateString) return "-";
@@ -266,30 +302,14 @@ const formatDate = (dateString) => {
         {/* Filters and Search Section */}
         <div className="filters-section1">
           <div className="filters-grid">
-            <div className="search-box">
-              <div className="search-icon">🔍</div>
-              <input
-                type="text"
-                placeholder="Search expenses by description, employee, type, or amount..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="search-input"
-              />
-              {searchTerm && (
-                <button
-                  className="clear-search"
-                  onClick={() => setSearchTerm("")}
-                  title="Clear search"
-                >
-                  ×
-                </button>
-              )}
-            </div>
-
             <div className="filter-group">
               {/* <label>Organization</label> */}
               <select
-                value={enableOrgDropDown ? selectedOrgId : localStorage.getItem('organizationId') }
+                value={
+                  enableOrgDropDown
+                    ? selectedOrgId
+                    : localStorage.getItem("organizationId")
+                }
                 onChange={handleOrganizationChange}
                 className="filter-select"
                 disabled={!enableOrgDropDown}
@@ -304,6 +324,29 @@ const formatDate = (dateString) => {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="filter-group">
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setSearchParams({ page: 0, size: sizeParam });
+                }}
+                className="filter-select"
+              />
+            </div>
+
+            <div className="filter-group">
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setSearchParams({ page: 0, size: sizeParam });
+                }}
+                className="filter-select"
+              />
             </div>
 
             <div className="filter-group">

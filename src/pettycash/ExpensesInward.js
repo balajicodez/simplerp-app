@@ -13,53 +13,77 @@ function ExpensesInward() {
   const [modalFile, setModalFile] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [organizations, setOrganizations] = useState([]);
-  const [selectedOrgId, setSelectedOrgId] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
+  const [selectedOrgId, setSelectedOrgId] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
 
   const navigate = useNavigate();
-  const pageParam = Number(searchParams.get('page') || 0);
-  const sizeParam = Number(searchParams.get('size') || 20);
+  const pageParam = Number(searchParams.get("page") || 0);
+  const sizeParam = Number(searchParams.get("size") || 20);
 
   // Calculate statistics
   const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0);
   const totalTransactions = items.length;
-  const enableOrgDropDown = Utils.isRoleApplicable('ADMIN');
-  const enableCreate = Utils.isRoleApplicable('ADMIN');
+  const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
+  const enableCreate = Utils.isRoleApplicable("ADMIN");
 
-  const fetchUrl = async (url) => {
-    setLoading(true);
-    try {
-      const bearerToken = localStorage.getItem('token');
-      const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
-      });
-      const json = await res.json();
-      const list = json.content || json._embedded?.expenses || [];
-      setItems(list.filter(e => e.expenseType === 'CASH-IN'));
-      setLinks(json._links || {});
-    } catch (e) {
-      console.error('Failed to fetch expenses:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchUrl = async () => {
+   setLoading(true);
+   try {
+     const bearerToken = localStorage.getItem("token");
+     const org = selectedOrgId || localStorage.getItem("organizationId");
+
+     const url =
+       `${APP_SERVER_URL_PREFIX}/expenses?` +
+       `page=${pageParam}&size=${sizeParam}` +
+       `&expenseType=CASH-IN` +
+       `&organizationId=${org}` +
+       `&startDate=${fromDate}` +
+       `&endDate=${toDate}`;
+
+     const res = await fetch(url, {
+       headers: { Authorization: `Bearer ${bearerToken}` },
+     });
+
+     const json = await res.json();
+     const list = json.content || json._embedded?.expenses || [];
+
+     setItems(list.filter((e) => e.expenseType === "CASH-IN"));
+     setLinks(json._links || {});
+   } catch (e) {
+     console.error("Failed to fetch expenses:", e);
+   } finally {
+     setLoading(false);
+   }
+ };
+
+  // const handleOrganizationChange = (e) => {
+  //   const value = e.target.value;
+  //   setSelectedOrgId(value);
+  //   const bearerToken = localStorage.getItem("token");
+  //   if (value) {
+  //     fetchUrl(
+  //       `${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`,
+  //       {
+  //         headers: { Authorization: `Bearer ${bearerToken}` },
+  //       }
+  //     );
+  //     setSearchParams({ page: 0, size: sizeParam });
+  //   } else {
+  //     fetchUrl(
+  //       `${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`,
+  //       {
+  //         headers: { Authorization: `Bearer ${bearerToken}` },
+  //       }
+  //     );
+  //     setSearchParams({ page: 0, size: sizeParam });
+  //   }
+  // };
 
   const handleOrganizationChange = (e) => {
     const value = e.target.value;
     setSelectedOrgId(value);
-    const bearerToken = localStorage.getItem('token');
-    if (value) {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
-      });
-      setSearchParams({ page: 0, size: sizeParam });
-    } else {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
-      });
-      setSearchParams({ page: 0, size: sizeParam });
-    }
+    setSearchParams({ page: 0, size: sizeParam });
   };
 
   const handleSearch = (e) => {
@@ -68,9 +92,9 @@ function ExpensesInward() {
 
   // Safe string conversion function
   const safeToString = (value) => {
-    if (value === null || value === undefined) return '';
-    if (typeof value === 'number') return value.toString();
-    if (typeof value === 'string') return value;
+    if (value === null || value === undefined) return "";
+    if (typeof value === "number") return value.toString();
+    if (typeof value === "string") return value;
     return String(value);
   };
 
@@ -87,10 +111,17 @@ function ExpensesInward() {
 
     return `${day}-${month}-${year}`;
   };
-
+  // Default = last 30 days
+  // const getToday = () => new Date().toISOString().split("T")[0];
+   const today = new Date().toISOString().split("T")[0];
+      const last7Days = new Date(Date.now() - 7 * 86400000)
+        .toISOString()
+        .split("T")[0];
+    const [fromDate, setFromDate] = useState(last7Days);
+  const [toDate, setToDate] = useState(today);
 
   // Filter items based on search term
-  const filteredItems = items.filter(item => {
+  const filteredItems = items.filter((item) => {
     if (!searchTerm) return true;
 
     const searchLower = safeToString(searchTerm).toLowerCase();
@@ -102,11 +133,11 @@ function ExpensesInward() {
       safeToString(item.amount).includes(searchTerm) || // Direct number comparison without toLowerCase
       safeToString(item.expenseDate).toLowerCase().includes(searchLower) ||
       safeToString(item.createdDate).toLowerCase().includes(searchLower) ||
-      safeToString(item.referenceNumber).toLowerCase().includes(searchLower)||
+      safeToString(item.referenceNumber).toLowerCase().includes(searchLower) ||
       safeToString(item.gstapplicable).toLowerCase().includes(searchLower)
     );
   });
-
+  
   // Sort items
   const sortedItems = React.useMemo(() => {
     if (!sortConfig.key) return filteredItems;
@@ -117,19 +148,23 @@ function ExpensesInward() {
 
       // Handle null/undefined values
       if (aValue == null && bValue == null) return 0;
-      if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
-      if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
+      if (aValue == null) return sortConfig.direction === "ascending" ? -1 : 1;
+      if (bValue == null) return sortConfig.direction === "ascending" ? 1 : -1;
 
       // Handle date sorting
-      if (sortConfig.key.includes('Date')) {
+      if (sortConfig.key.includes("Date")) {
         const aDate = new Date(aValue);
         const bDate = new Date(bValue);
-        return sortConfig.direction === 'ascending' ? aDate - bDate : bDate - aDate;
+        return sortConfig.direction === "ascending"
+          ? aDate - bDate
+          : bDate - aDate;
       }
 
       // Handle different data types
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortConfig.direction === "ascending"
+          ? aValue - bValue
+          : bValue - aValue;
       }
 
       // String comparison
@@ -137,10 +172,10 @@ function ExpensesInward() {
       const bString = safeToString(bValue).toLowerCase();
 
       if (aString < bString) {
-        return sortConfig.direction === 'ascending' ? -1 : 1;
+        return sortConfig.direction === "ascending" ? -1 : 1;
       }
       if (aString > bString) {
-        return sortConfig.direction === 'ascending' ? 1 : -1;
+        return sortConfig.direction === "ascending" ? 1 : -1;
       }
       return 0;
     });
@@ -160,45 +195,58 @@ function ExpensesInward() {
         itemDate.getFullYear() === today.getFullYear()
       );
     } catch (e) {
-      console.error('Invalid date:', dateString, e);
+      console.error("Invalid date:", dateString, e);
       return false;
     }
   };
   const handleSort = (key) => {
-    setSortConfig(current => ({
+    setSortConfig((current) => ({
       key,
-      direction: current.key === key && current.direction === 'ascending' ? 'descending' : 'ascending'
+      direction:
+        current.key === key && current.direction === "ascending"
+          ? "descending"
+          : "ascending",
     }));
   };
 
-  useEffect(() => {    
-     const bearerToken = localStorage.getItem('token');
-    const value = selectedOrgId ? selectedOrgId : localStorage.getItem('organizationId');
-    fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`, {
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
-      });
-  }, [pageParam, sizeParam]);
+  // useEffect(() => {
+  //   const bearerToken = localStorage.getItem("token");
+  //   const value = selectedOrgId
+  //     ? selectedOrgId
+  //     : localStorage.getItem("organizationId");
+  //   fetchUrl(
+  //     `${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`,
+  //     {
+  //       headers: { Authorization: `Bearer ${bearerToken}` },
+  //     }
+  //   );
+  // }, [pageParam, sizeParam]);
+
+  useEffect(() => {
+    fetchUrl();
+  }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate]);
+
 
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
-        const bearerToken = localStorage.getItem('token');
+        const bearerToken = localStorage.getItem("token");
         const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-          headers: { 'Authorization': `Bearer ${bearerToken}` }
+          headers: { Authorization: `Bearer ${bearerToken}` },
         });
         const data = await response.json();
         const orgs = data._embedded ? data._embedded.organizations || [] : data;
         setOrganizations(orgs);
       } catch (error) {
-        console.error('Failed to fetch organizations:', error);
+        console.error("Failed to fetch organizations:", error);
       }
     };
     fetchOrganizations();
   }, []);
 
   const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return '↕️';
-    return sortConfig.direction === 'ascending' ? '↑' : '↓';
+    if (sortConfig.key !== key) return "↕️";
+    return sortConfig.direction === "ascending" ? "↑" : "↓";
   };
 
   return (
@@ -253,7 +301,11 @@ function ExpensesInward() {
           <div className="filters-grid">
             <div className="filter-group">
               <select
-                value={enableOrgDropDown ? selectedOrgId : localStorage.getItem('organizationId') }
+                value={
+                  enableOrgDropDown
+                    ? selectedOrgId
+                    : localStorage.getItem("organizationId")
+                }
                 onChange={handleOrganizationChange}
                 className="filter-select"
                 disabled={!enableOrgDropDown}
@@ -268,6 +320,31 @@ function ExpensesInward() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="filter-group">
+              <label>From Date</label>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setSearchParams({ page: 0, size: sizeParam });
+                }}
+                className="filter-select"
+              />
+            </div>
+
+            <div className="filter-group">
+              <label>To Date</label>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setSearchParams({ page: 0, size: sizeParam });
+                }}
+                className="filter-select"
+              />
             </div>
 
             <div className="filter-group">
