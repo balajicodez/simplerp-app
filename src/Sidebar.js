@@ -173,6 +173,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </ul>
         </li>
 
+      {isAdmin && (
         <li>
           <NavLink
             to="/organization"
@@ -181,7 +182,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           >
             <span>🏢 Organization</span>
           </NavLink>
-        </li>
+        </li>)}
 
         {/* <li>
           <NavLink 
@@ -192,6 +193,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <span>📅 Holiday Calendar</span>
           </NavLink>
         </li> */}
+         {isAdmin && (
         <li>
           <NavLink
             to="/download"
@@ -200,7 +202,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           >
             <span>⬇️ Downloads</span>
           </NavLink>
-        </li>
+        </li>)}
         <li>
           <NavLink
             to="/about"
