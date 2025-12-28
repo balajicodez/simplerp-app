@@ -205,6 +205,14 @@
   width: 300px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
+.search-input1 {
+  padding: 12px 40px 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 240px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
 
 .search-input:focus {
   outline: none;

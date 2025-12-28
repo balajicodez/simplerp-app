@@ -4,6 +4,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './login/Login';
 import Signup from "./login/Signup";
+import Users from "./login/Users";
+import Permissions from "./login/Permissions";
 import Dashboard from './dashboard/Dashboard';
 import Upload from './uploads/Upload';
 import Download from './download/Download';
@@ -13,6 +15,8 @@ import JobDetail from './jobdetail/JobDetail';
 import ReportHTML from './generated/ReportHTML';
 import SchemaEditor from './editors/SchemaEditor';
 import PythonEditor from './editors/PythonEditor';
+import Register from "./login/Register";
+import Roles from "./login/Roles";
 import Employees from './employees/Employees';
 import CreateEmployee from './employees/CreateEmployee';
 import EmployeeView from './employees/EmployeeView';
@@ -52,6 +56,17 @@ function App() {
         <Route path="/employees/:id/edit" element={<EditEmployee />} />
         <Route path="/pettycash/expenses" element={<Expenses />} />
         <Route path="/pettycash/expenses-inward" element={<ExpensesInward />} />
+        <Route path="/login/register" element={<Register />} />
+        <Route path="/login/roles" element={<Roles />} />
+        <Route path="/login/users" element={<Users />} />
+        <Route
+          path="/permissions"
+          element={
+            
+              <Permissions />
+          }
+        />
+
         <Route
           path="/pettycash/expenses-outward"
           element={<ExpensesOutward />}
