@@ -11,7 +11,7 @@ function DayClosingReport() {
   const [handloans, setHandloans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedOrganization, setSelectedOrganization] = useState(null);
-
+  const [modalFile, setModalFile] = useState(null);
   const [error, setError] = useState("");
   const [reportMsg, setReportMsg] = useState("");
   const [totals, setTotals] = useState({
@@ -27,6 +27,7 @@ function DayClosingReport() {
   const [organizations, setOrganizations] = useState([]);
   const [organizationId, setOrganizationId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [attachments , setAttachments] = useState([]);
 
   // Safe number formatting function
   const safeToLocaleString = (value) => {
@@ -259,11 +260,26 @@ function DayClosingReport() {
         throw new Error("Failed to fetch data");
       }
       const data = await response.json();
-
       setRecords(data);
+      console.log("Day Closing Data:", data._links.pettyCashDayClosingAttachment.href);
+      const response2 = await fetch(
+        data._links.pettyCashDayClosingAttachment.href,
+        {
+          headers: { Authorization: `Bearer ${bearerToken}` },
+        }
+      );
+      if (!response2.ok) {
+        throw new Error("Failed to fetch data");
+      }
+      const attachmentData = await response2.json();
+      console.log("Attachments Data:", attachmentData);
+
+      attachmentData._embedded ? setAttachments(attachmentData._embedded.pettyCashDayClosingAttachments || []) : setAttachments(attachmentData || []);
+
     } catch (err) {
       console.log(err);
-      setError("No records found for the selected date and organization");
+      setAttachments([])
+      setError("Day Closing not found for the selected date");
       setRecords(
         JSON.stringify({
           cashIn: 0,
@@ -392,7 +408,7 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
 
 
       const orgAddressText = getOrganizationAddressText();
-doc.setFontSize(13);
+  doc.setFontSize(13);  
       if (orgAddressText) {
         doc.text(orgAddressText, 105, 26, { align: "center" });
       }
@@ -1188,6 +1204,52 @@ doc.setFontSize(13);
                 </div>
               </div>
             </div>
+            {/* Attachments Section */}
+            {attachments.length > 0 && (
+              <div style={styles.attachmentsSection}>
+                <h4 style={{ color: "#059669", marginBottom: "10px" }}>
+                  Attachments
+                </h4>
+                <div
+                  style={{
+                    ...styles.tableContainer,
+                    width: "100%",
+                    height: "100%",
+                    overflowY: "auto",
+                  }}
+                >
+                  <table style={styles.table}>
+                    <thead style={styles.tableHeader}>
+                      <tr>                        
+                        <th style={styles.tableHeaderCell}>Description</th>
+                        <th style={styles.tableHeaderCell}>File</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {attachments.map((item, idx) => (
+                        <tr key={idx} style={styles.tableRow}>                         
+                          <td style={styles.tableCell}>{item.description || "General"}</td>
+                          <td style={styles.tableCell}>{item.imageData || item.fileUrl || item.file ? (
+                            <button
+                              className="btn-outline view-btn"
+                              onClick={() =>
+                                setModalFile(
+                                  item.imageData || item.fileUrl || item.file
+                                )
+                              }
+                            >
+                              👁️ View
+                            </button>
+                          ) : (
+                            <span className="no-receipt">(No receipt)</span>
+                          )}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {/* Existing Expenses Section */}
             {(cashInExpenses.length > 0 || cashOutExpenses.length > 0) && (
@@ -1583,7 +1645,6 @@ doc.setFontSize(13);
                 </div>
               </div>
             )}
-
             {/* Hand Loans Section */}
             {allHandloansWithBalances.length > 0 && (
               <div style={styles.loansSection}>
@@ -1645,6 +1706,45 @@ doc.setFontSize(13);
               </div>
             )}
           </>
+        )}
+         {/* Receipt Modal */}
+        {modalFile && (
+          <div className="modal-overlay" onClick={() => setModalFile(null)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Receipt Preview</h3>
+                <button
+                  className="modal-close"
+                  onClick={() => setModalFile(null)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="modal-body">
+                {modalFile.startsWith("data:image") ? (
+                  <img
+                    src={modalFile}
+                    alt="Expense Receipt"
+                    className="receipt-image"
+                  />
+                ) : (
+                  <img
+                    src={`data:image/png;base64,${modalFile}`}
+                    alt="Expense Receipt"
+                    className="receipt-image"
+                  />
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn-primary"
+                  onClick={() => setModalFile(null)}
+                >
+                  Close Preview
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </PageCard>
     </div>
