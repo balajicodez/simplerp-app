@@ -11,10 +11,6 @@ import Upload from './uploads/Upload';
 import Download from './download/Download';
 import About from './About';
 import Report from './reports/Report';
-import JobDetail from './jobdetail/JobDetail';
-import ReportHTML from './generated/ReportHTML';
-import SchemaEditor from './editors/SchemaEditor';
-import PythonEditor from './editors/PythonEditor';
 import Register from "./login/Register";
 import Roles from "./login/Roles";
 import Employees from './employees/Employees';
@@ -46,10 +42,6 @@ function App() {
         <Route path="/reports" element={<Report />} />
         <Route path="/download" element={<Download />} />
         <Route path="/about" element={<About />} />
-        <Route path="/jobdetail" element={<JobDetail />} />
-        <Route path="/reportgen" element={<ReportHTML />} />
-        <Route path="/schemaeditor" element={<SchemaEditor />} />
-        <Route path="/pythoneditor" element={<PythonEditor />} />
         <Route path="/employees" element={<Employees />} />
         <Route path="/employees/create" element={<CreateEmployee />} />
         <Route path="/employees/:id" element={<EmployeeView />} />
