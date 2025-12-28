@@ -54,20 +54,74 @@ function ExpensesOutward() {
   const [toDate, setToDate] = useState(today);
   
 
-const fetchUrl = async () => {
+// const fetchUrl = async () => {
+//   setLoading(true);
+//   try {
+//     const bearerToken = localStorage.getItem("token");
+//     const org = selectedOrgId || localStorage.getItem("organizationId");
+
+//     const url = `${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&startDate=${fromDate}&endDate=${toDate}&organizationId=${org}`;
+
+//     const res = await fetch(url, {
+//       headers: { Authorization: `Bearer ${bearerToken}` },
+//     });
+
+//     const json = await res.json();
+//     setItems(json.content || []);
+//     setLinks(json._links || {});
+//   } catch (e) {
+//     console.error("Failed to fetch expenses", e);
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+const fetchUrl = async (directUrl = null) => {
   setLoading(true);
   try {
     const bearerToken = localStorage.getItem("token");
-    const org = selectedOrgId || localStorage.getItem("organizationId");
 
-    const url = `${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&startDate=${fromDate}&endDate=${toDate}&organizationId=${org}`;
+    let url = "";
+
+    // When clicking pagination links
+    if (directUrl) {
+      url = directUrl;
+    } else {
+      let orgId = null;
+
+      // Non-admin → fixed org
+      if (!enableOrgDropDown) {
+        orgId = localStorage.getItem("organizationId");
+      }
+      // Admin
+      else {
+        if (selectedOrgId) {
+          orgId = selectedOrgId; // selected sub-org
+        } else {
+          orgId = null; // all orgs
+        }
+      }
+
+      url =
+        `${APP_SERVER_URL_PREFIX}/expenses?` +
+        `page=${pageParam}&size=${sizeParam}` +
+        `&expenseType=CASH-OUT` +
+        `&startDate=${fromDate}` +
+        `&endDate=${toDate}`;
+
+      if (orgId) {
+        url += `&organizationId=${orgId}`;
+      }
+    }
 
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${bearerToken}` },
     });
 
     const json = await res.json();
-    setItems(json.content || []);
+    const list = json.content || json._embedded?.expenses || [];
+
+    setItems(list);
     setLinks(json._links || {});
   } catch (e) {
     console.error("Failed to fetch expenses", e);
@@ -76,21 +130,27 @@ const fetchUrl = async () => {
   }
 };
 
+  // const handleOrganizationChange = (e) => {
+  //   const value = e.target.value;
+  //   setSelectedOrgId(value);
+  //   const bearerToken = localStorage.getItem('token');
+  //   if (value) {
+  //     fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`, {
+  //       headers: { 'Authorization': `Bearer ${bearerToken}` }
+  //     });
+  //     setSearchParams({ page: 0, size: sizeParam });
+  //   } else {
+  //     fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT`, {
+  //       headers: { 'Authorization': `Bearer ${bearerToken}` }
+  //     });
+  //     setSearchParams({ page: 0, size: sizeParam });
+  //   }
+  // };
+
   const handleOrganizationChange = (e) => {
     const value = e.target.value;
     setSelectedOrgId(value);
-    const bearerToken = localStorage.getItem('token');
-    if (value) {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`, {
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
-      });
-      setSearchParams({ page: 0, size: sizeParam });
-    } else {
-      fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT`, {
-        headers: { 'Authorization': `Bearer ${bearerToken}` }
-      });
-      setSearchParams({ page: 0, size: sizeParam });
-    }
+    setSearchParams({ page: 0, size: sizeParam });
   };
 
   const handleSearch = (e) => {
@@ -157,20 +217,10 @@ const fetchUrl = async () => {
       direction: current.key === key && current.direction === 'ascending' ? 'descending' : 'ascending'
     }));
   };
+useEffect(() => {
+  fetchUrl();
+}, [pageParam, sizeParam, selectedOrgId, fromDate, toDate, enableOrgDropDown]);
 
-  useEffect(() => {
-    fetchUrl();
-  }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate]);
-
-  // useEffect(() => {
-  //   const bearerToken = localStorage.getItem('token');
-  //   const value = selectedOrgId ? selectedOrgId : localStorage.getItem('organizationId');
-  //   fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`,{
-  //       headers: { 'Authorization': `Bearer ${bearerToken}` }
-  //     });
-  // }, [pageParam, sizeParam]);
-
-  // Helper function to check if date is today
   const isToday = (dateString) => {
     if (!dateString) return false;
 

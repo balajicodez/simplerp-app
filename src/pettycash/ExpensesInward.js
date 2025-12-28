@@ -27,35 +27,35 @@ function ExpensesInward() {
   const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
   const enableCreate = Utils.isRoleApplicable("ADMIN");
 
- const fetchUrl = async () => {
-   setLoading(true);
-   try {
-     const bearerToken = localStorage.getItem("token");
-     const org = selectedOrgId || localStorage.getItem("organizationId");
+//  const fetchUrl = async () => {
+//    setLoading(true);
+//    try {
+//      const bearerToken = localStorage.getItem("token");
+//      const org = selectedOrgId || localStorage.getItem("organizationId");
 
-     const url =
-       `${APP_SERVER_URL_PREFIX}/expenses?` +
-       `page=${pageParam}&size=${sizeParam}` +
-       `&expenseType=CASH-IN` +
-       `&organizationId=${org}` +
-       `&startDate=${fromDate}` +
-       `&endDate=${toDate}`;
+//      const url =
+//        `${APP_SERVER_URL_PREFIX}/expenses?` +
+//        `page=${pageParam}&size=${sizeParam}` +
+//        `&expenseType=CASH-IN` +
+//        `&organizationId=${org}` +
+//        `&startDate=${fromDate}` +
+//        `&endDate=${toDate}`;
 
-     const res = await fetch(url, {
-       headers: { Authorization: `Bearer ${bearerToken}` },
-     });
+//      const res = await fetch(url, {
+//        headers: { Authorization: `Bearer ${bearerToken}` },
+//      });
 
-     const json = await res.json();
-     const list = json.content || json._embedded?.expenses || [];
+//      const json = await res.json();
+//      const list = json.content || json._embedded?.expenses || [];
 
-     setItems(list.filter((e) => e.expenseType === "CASH-IN"));
-     setLinks(json._links || {});
-   } catch (e) {
-     console.error("Failed to fetch expenses:", e);
-   } finally {
-     setLoading(false);
-   }
- };
+//      setItems(list.filter((e) => e.expenseType === "CASH-IN"));
+//      setLinks(json._links || {});
+//    } catch (e) {
+//      console.error("Failed to fetch expenses:", e);
+//    } finally {
+//      setLoading(false);
+//    }
+//  };
 
   // const handleOrganizationChange = (e) => {
   //   const value = e.target.value;
@@ -79,6 +79,54 @@ function ExpensesInward() {
   //     setSearchParams({ page: 0, size: sizeParam });
   //   }
   // };
+
+  const fetchUrl = async () => {
+    setLoading(true);
+    try {
+      const bearerToken = localStorage.getItem("token");
+
+      let orgId = null;
+
+      // 👇 If NOT admin → always use logged-in org
+      if (!enableOrgDropDown) {
+        orgId = localStorage.getItem("organizationId");
+      }
+      // 👇 If admin
+      else {
+        if (selectedOrgId) {
+          orgId = selectedOrgId;
+        } else {
+          orgId = null; // fetch ALL orgs
+        }
+      }
+
+      let url =
+        `${APP_SERVER_URL_PREFIX}/expenses?` +
+        `page=${pageParam}&size=${sizeParam}` +
+        `&expenseType=CASH-IN` +
+        `&startDate=${fromDate}` +
+        `&endDate=${toDate}`;
+
+      // add orgId only when required
+      if (orgId) {
+        url += `&organizationId=${orgId}`;
+      }
+
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${bearerToken}` },
+      });
+
+      const json = await res.json();
+      const list = json.content || json._embedded?.expenses || [];
+
+      setItems(list);
+      setLinks(json._links || {});
+    } catch (e) {
+      console.error("Failed to fetch expenses:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleOrganizationChange = (e) => {
     const value = e.target.value;
@@ -209,22 +257,9 @@ function ExpensesInward() {
     }));
   };
 
-  // useEffect(() => {
-  //   const bearerToken = localStorage.getItem("token");
-  //   const value = selectedOrgId
-  //     ? selectedOrgId
-  //     : localStorage.getItem("organizationId");
-  //   fetchUrl(
-  //     `${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`,
-  //     {
-  //       headers: { Authorization: `Bearer ${bearerToken}` },
-  //     }
-  //   );
-  // }, [pageParam, sizeParam]);
-
-  useEffect(() => {
-    fetchUrl();
-  }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate]);
+ useEffect(() => {
+   fetchUrl();
+ }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate, enableOrgDropDown]);
 
 
   useEffect(() => {
