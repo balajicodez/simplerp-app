@@ -14,6 +14,23 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  function getUserRoles() {
+    const token = localStorage.getItem("token");
+    if (!token) return [];
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.authorities || payload.roles || [];
+    } catch {
+      return [];
+    }
+  }
+
+  const roles = getUserRoles();
+  console.log(roles)
+  const isAdmin = roles.includes("ADMIN");
+
+
   const toggleGroup = (groupName) => {
     setExpandedGroups(prev => ({
       ...prev,
@@ -22,15 +39,19 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   };
 
   return (
-    <div className={`sidebar ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
+    <div
+      className={`sidebar ${isOpen ? "open" : ""} ${
+        collapsed ? "collapsed" : ""
+      }`}
+    >
       <div className="sidebar-logo">
         <img src={logo} alt="Logo" />
         <button
           className="sidebar-toggle"
-          onClick={() => setCollapsed(c => !c)}
+          onClick={() => setCollapsed((c) => !c)}
           aria-label="Toggle sidebar"
         >
-          {collapsed ? '→' : '←'}
+          {collapsed ? "→" : "←"}
         </button>
       </div>
 
@@ -38,7 +59,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <li>
           <NavLink
             to="/dashboard"
-            className={({ isActive }) => isActive ? 'active' : ''}
+            className={({ isActive }) => (isActive ? "active" : "")}
             data-icon="🏠"
           >
             <span>🏠 Home</span>
@@ -66,17 +87,22 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
         <li className="group1">
           <div
-            className={`group-header ${expandedGroups.pettycash ? 'expanded' : ''}`}
-            onClick={() => toggleGroup('pettycash')}
+            className={`group-header ${
+              expandedGroups.pettycash ? "expanded" : ""
+            }`}
+            onClick={() => toggleGroup("pettycash")}
             data-icon="💵"
           >
             <span>💵 Petty Cash</span>
           </div>
-          <ul className="sublist" style={{ maxHeight: expandedGroups.pettycash ? '500px' : '0' }}>
+          <ul
+            className="sublist"
+            style={{ maxHeight: expandedGroups.pettycash ? "500px" : "0" }}
+          >
             <li className="subitem">
               <NavLink
                 to="/pettycash/expenses-inward"
-                className={({ isActive }) => isActive ? 'active' : ''}
+                className={({ isActive }) => (isActive ? "active" : "")}
                 data-icon="📥"
               >
                 📥 Cash Flow - Inward
@@ -85,7 +111,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <li className="subitem">
               <NavLink
                 to="/pettycash/expenses-outward"
-                className={({ isActive }) => isActive ? 'active' : ''}
+                className={({ isActive }) => (isActive ? "active" : "")}
                 data-icon="📤"
               >
                 📤 Cash Flow- Outward
@@ -94,7 +120,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <li className="subitem">
               <NavLink
                 to="/pettycash/masters"
-                className={({ isActive }) => isActive ? 'active' : ''}
+                className={({ isActive }) => (isActive ? "active" : "")}
                 data-icon="⚙️"
               >
                 ⚙️ Expenses - Masters
@@ -103,7 +129,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <li className="subitem">
               <NavLink
                 to="/handloans"
-                className={({ isActive }) => isActive ? 'active' : ''}
+                className={({ isActive }) => (isActive ? "active" : "")}
                 data-icon="🏢"
               >
                 <span>🏢 Hand Loans</span>
@@ -112,7 +138,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <li className="subitem">
               <NavLink
                 to="/pettycash/day-closing"
-                className={({ isActive }) => isActive ? 'active' : ''}
+                className={({ isActive }) => (isActive ? "active" : "")}
                 data-icon="📊"
               >
                 📊 Day Closing
@@ -123,17 +149,22 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
         <li className="group">
           <div
-            className={`group-header ${expandedGroups.reports ? 'expanded' : ''}`}
-            onClick={() => toggleGroup('reports')}
+            className={`group-header ${
+              expandedGroups.reports ? "expanded" : ""
+            }`}
+            onClick={() => toggleGroup("reports")}
             data-icon="📈"
           >
             <span>📈 Reports</span>
           </div>
-          <ul className="sublist" style={{ maxHeight: expandedGroups.reports ? '500px' : '0' }}>
+          <ul
+            className="sublist"
+            style={{ maxHeight: expandedGroups.reports ? "500px" : "0" }}
+          >
             <li className="subitem">
               <NavLink
                 to="/reports/day-closing"
-                className={({ isActive }) => isActive ? 'active' : ''}
+                className={({ isActive }) => (isActive ? "active" : "")}
                 data-icon="📋"
               >
                 📋 Day Closing Report
@@ -145,7 +176,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <li>
           <NavLink
             to="/organization"
-            className={({ isActive }) => isActive ? 'active' : ''}
+            className={({ isActive }) => (isActive ? "active" : "")}
             data-icon="🏢"
           >
             <span>🏢 Organization</span>
@@ -164,7 +195,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <li>
           <NavLink
             to="/download"
-            className={({ isActive }) => isActive ? 'active' : ''}
+            className={({ isActive }) => (isActive ? "active" : "")}
             data-icon="⬇️"
           >
             <span>⬇️ Downloads</span>
@@ -173,16 +204,32 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <li>
           <NavLink
             to="/about"
-            className={({ isActive }) => isActive ? 'active' : ''}
+            className={({ isActive }) => (isActive ? "active" : "")}
             data-icon="ℹ️"
           >
             <span>ℹ️ About</span>
           </NavLink>
         </li>
+        {isAdmin && (
+          <>
+            <li>
+              <NavLink to="/login/users" data-icon="➕">
+                <span>➕ Create User</span>
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink to="/login/roles" data-icon="🛡">
+                <span>🛡 Manage Roles</span>
+              </NavLink>
+            </li>
+          </>
+        )}
+
         <li>
           <NavLink
             to="/logout"
-            className={({ isActive }) => isActive ? 'active' : ''}
+            className={({ isActive }) => (isActive ? "active" : "")}
             data-icon="🚪"
           >
             <span>🚪 Logout</span>
@@ -192,11 +239,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
       <div className="user-info">
         <span className="username">
-          {localStorage.getItem('userName') || 'Guest User'} {/* Or from context or state */}
+          {localStorage.getItem("userName") || "Guest User"}{" "}
+          {/* Or from context or state */}
         </span>
-      </div>       
+      </div>
     </div>
-     
   );
 };
 

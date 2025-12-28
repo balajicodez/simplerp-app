@@ -521,7 +521,7 @@ const HandLoanManagement = () => {
                   onChange={handleSearch}
                   className="search-input"
                 />
-                <span className="search-icon">🔍</span>
+                {/* <span className="search-icon">🔍</span> */}
               </div>
             </div>
           </div>
