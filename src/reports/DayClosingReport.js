@@ -4,6 +4,7 @@ import autoTable from "jspdf-autotable";
 import Sidebar from "../Sidebar";
 import PageCard from "../components/PageCard";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import Utils from '../Utils';
 
 function DayClosingReport() {
   const [records, setRecords] = useState([]);
@@ -28,6 +29,7 @@ function DayClosingReport() {
   const [organizationId, setOrganizationId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [attachments , setAttachments] = useState([]);
+  const isAdminRole = Utils.isRoleApplicable('ADMIN');
 
   // Safe number formatting function
   const safeToLocaleString = (value) => {
@@ -142,6 +144,9 @@ function DayClosingReport() {
   };
 
   useEffect(() => {
+    if(!isAdminRole) {
+      setOrganizationId(localStorage.getItem('organizationId'));
+    }
     if (!selectedDate || !organizationId) return;
 
     const fetchAllData = async () => {
@@ -1054,10 +1059,14 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
           </div>
           <div className="form-group">
             <select
-              value={organizationId}
+              value={
+                  isAdminRole
+                    ? organizationId
+                    : localStorage.getItem("organizationId")
+                }
               onChange={handleOrgChange}
               className="form-select"
-              disabled={!selectedDate}
+              disabled={isAdminRole ? !selectedDate : true}
               required
             >
               <option value="">Select organization</option>

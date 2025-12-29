@@ -27,7 +27,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   }
 
   const roles = getUserRoles();
-  console.log(roles)
   const isAdmin = roles.includes("ADMIN");
 
 
