@@ -4,6 +4,7 @@ import PageCard from "../components/PageCard";
 import "./CreateDayClosing.css";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import Utils from '../Utils';
 
 function DayClosing() {
   const [items, setItems] = useState([]);
@@ -23,18 +24,18 @@ function DayClosing() {
   const sizeParam = Number(searchParams.get("size") || 20);
   const dateParam =
     searchParams.get("date") || new Date().toISOString().slice(0, 10);
+  const isAdminRole = Utils.isRoleApplicable('ADMIN');
 
   // Initialize selectedDate from URL params
-  useEffect(() => {
-    if (dateParam) {
-      setSelectedDate(dateParam);
-    }
-  }, [dateParam]);
+  // useEffect(() => {
+  //   if (dateParam) {
+  //     setSelectedDate(dateParam);
+  //   }
+  // }, [dateParam]);
 
   // Calculate statistics
-  const filteredItems = items.filter(
-    (item) => item.createdDate === selectedDate
-  );
+  const filteredItems = items;
+  
   const totalInward = filteredItems
     .filter((item) => item.expenseType === "CASH-IN")
     .reduce((sum, item) => sum + (item.amount || 0), 0);
@@ -55,13 +56,6 @@ function DayClosing() {
       const json = await res.json();
       let list = json.content || json._embedded?.expenses || [];
 
-      // Filter by organization if selected
-      if (selectedOrgId) {
-        list = list.filter(
-          (e) => String(e.organizationId) === String(selectedOrgId)
-        );
-      }
-
       setItems(list);
       setLinks(json._links || {});
     } catch (e) {
@@ -71,17 +65,31 @@ function DayClosing() {
     setLoading(false);
   };
 
-  useEffect(() => {
+  useEffect(() => {    
     const bearerToken = localStorage.getItem("token");
-    let url = `${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`;
-
+    let url = `${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}`;    
     // Add organization filter if selected
-    if (selectedOrgId) {
-      url += `&organizationId=${selectedOrgId}`;
+    if(!isAdminRole) {
+      const orgId = localStorage.getItem("organizationId");
+      setSelectedOrgId(orgId);
+      url += `&organizationId=${orgId}`;
+      if (selectedDate) {
+        url += `&createdDate=${selectedDate}`;
+      }else{
+        url += `&createdDate=${new Date().toISOString().slice(0, 10)}`;
+      }
+    } else {
+      if (selectedOrgId) {
+        url += `&organizationId=${selectedOrgId}`;
+      }
+      if (selectedDate) {
+        url += `&createdDate=${selectedDate}`;
+      }else{
+        url += `&createdDate=${new Date().toISOString().slice(0, 10)}`;
+      }
     }
-
     fetchUrl(url);
-  }, [pageParam, sizeParam, selectedOrgId]);
+  }, [pageParam, sizeParam, selectedOrgId,selectedDate]);
 
   useEffect(() => {
     // Fetch organizations for dropdown
@@ -245,9 +253,14 @@ function DayClosing() {
             <div className="filter-group">
               {/* <label className="filter-label">Organization</label> */}
               <select
-                value={selectedOrgId}
+                value={
+                  isAdminRole
+                    ? selectedOrgId
+                    : localStorage.getItem("organizationId")
+                }
                 onChange={handleOrganizationChange}
                 className="filter-select"
+                disabled={!isAdminRole}
               >
                 <option value="">All Organizations</option>
                 {organizations.map((org) => (

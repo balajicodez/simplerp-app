@@ -4,6 +4,7 @@ import PageCard from '../components/PageCard';
 import './CreateDayClosing.css';
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
 import { useNavigate } from 'react-router-dom';
+import Utils from '../Utils';
 
 function CreateDayClosing() {
   const [description, setDescription] = useState('Day Closing');
@@ -32,7 +33,8 @@ function CreateDayClosing() {
   const createdTime = new Date().toISOString();
   const [fileUploads, setFileUploads] = useState([]); // State for dynamic file uploads
   const [fileDescription, setFileDescription] = useState([]);
-
+  const isAdminRole = Utils.isRoleApplicable('ADMIN');
+  
   // Handle file input change
   const handleFileChange = (index, event) => {
     const updatedFiles = [...fileUploads];
@@ -105,6 +107,10 @@ function CreateDayClosing() {
         setOrganizations(orgs);
       })
       .catch(() => { });
+    if(!isAdminRole) {
+      const orgId = localStorage.getItem("organizationId");
+      setOrganizationId(orgId);
+    } 
   }, []);
 
   const handleChange = async (e) => {
@@ -397,10 +403,15 @@ function CreateDayClosing() {
               <div className="form-group">
                 <label className="form-label">Organization</label>
                 <select
-                  value={organizationId}
+                  value={
+                  isAdminRole
+                    ? organizationId
+                    : localStorage.getItem("organizationId")
+                }
                   onChange={handleChange}
                   className="form-select"
                   required
+                  disabled={!isAdminRole}
                 >
                   <option value="">Select organization</option>
                   {organizations.map((org) => (
