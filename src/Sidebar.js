@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
-import logo from './assets/images/logo.jpg';
+import logo from './assets/images/logo_clear.jpg';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [collapsed, setCollapsed] = useState(false);
