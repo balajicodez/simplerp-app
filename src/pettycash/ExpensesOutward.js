@@ -353,7 +353,7 @@ const formatDate = (dateString) => {
         <div className="filters-section1">
           <div className="filters-grid">
             <div className="filter-group">
-              {/* <label>Organization</label> */}
+              <label>Branch</label>
               <select
                 value={
                   enableOrgDropDown
@@ -364,7 +364,7 @@ const formatDate = (dateString) => {
                 className="filter-select"
                 disabled={!enableOrgDropDown}
               >
-                <option value="">All Organizations</option>
+                <option value="">All Branches</option>
                 {organizations.map((org) => (
                   <option
                     key={org.id || org._links?.self?.href}
@@ -376,6 +376,7 @@ const formatDate = (dateString) => {
               </select>
             </div>
             <div className="filter-group">
+              <label>From Date</label>
               <input
                 type="date"
                 value={fromDate}
@@ -388,6 +389,7 @@ const formatDate = (dateString) => {
             </div>
 
             <div className="filter-group">
+              <label>To Date</label>
               <input
                 type="date"
                 value={toDate}
@@ -400,7 +402,7 @@ const formatDate = (dateString) => {
             </div>
 
             <div className="filter-group">
-              {/* <label>Items per page</label> */}
+              <label>Items per page</label>
               <select
                 value={sizeParam}
                 onChange={(e) =>

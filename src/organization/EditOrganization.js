@@ -35,7 +35,7 @@ function EditOrganization() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // Fetch all organizations for parent dropdown
+    // Fetch All Branches for parent dropdown
     fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
       headers: { Authorization: `Bearer ${token}` },
     })

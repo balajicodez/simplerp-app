@@ -236,7 +236,7 @@ const UsersPage = () => {
                 onChange={handleOrganizationChange}
                 className="filter-select"
               >
-                <option value="">All Organizations</option>
+                <option value="">All Branches</option>
                 {organizations.map((org) => (
                   <option
                     key={org.id || org._links?.self?.href}

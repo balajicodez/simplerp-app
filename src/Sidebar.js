@@ -115,16 +115,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               >
                 📤 Cash Flow- Outward
               </NavLink>
-            </li>
-            <li className="subitem">
-              <NavLink
-                to="/pettycash/masters"
-                className={({ isActive }) => (isActive ? "active" : "")}
-                data-icon="⚙️"
-              >
-                ⚙️ Expenses - Masters
-              </NavLink>
-            </li>
+            </li>            
             <li className="subitem">
               <NavLink
                 to="/handloans"
@@ -141,6 +132,15 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 data-icon="📊"
               >
                 📊 Day Closing
+              </NavLink>
+            </li>
+            <li className="subitem">
+              <NavLink
+                to="/pettycash/masters"
+                className={({ isActive }) => (isActive ? "active" : "")}
+                data-icon="⚙️"
+              >
+                ⚙️ Expenses - Masters
               </NavLink>
             </li>
           </ul>
