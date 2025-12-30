@@ -34,9 +34,8 @@
 }
 
 .sidebar-logo img {
-  max-width: 340px;
-  width: 180px;
-  height: 90px;
+  width: 120px;
+  height: 120px;
   object-fit: fill;
   transition: all 0.3s ease;
   border-radius: 6px;
