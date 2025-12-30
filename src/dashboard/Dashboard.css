@@ -1,0 +1,32 @@
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.insights-section {
+    margin-top: 40px;
+    padding: 20px;
+    background: linear-gradient(45deg, #f5f7fa 0%, #F4F4F4 100%);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.dash-employees-card {
+    background: linear-gradient(45deg, #91C6BC 0%, #F4F4F4 100%);
+}
+
+.dash-loans-card {
+    background: linear-gradient(45deg, #BDE8F5 0%, #F4F4F4 100%);
+}
+
+.dash-cashin-card {
+    background: linear-gradient(45deg, #d0c5f3 0%, #F4F4F4 100%);
+}
+
+.dash-cashout-card {
+    background: linear-gradient(45deg, #fff0dc 0%, #F4F4F4 100%);
+}
+

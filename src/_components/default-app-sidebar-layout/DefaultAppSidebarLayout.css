@@ -1,0 +1,64 @@
+
+
+.sidebar-header {
+    position: relative;
+    padding-block: 1rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.08);
+    margin: auto auto 1rem;
+}
+
+.sidebar-header .sider-button {
+    position: absolute;
+    bottom: -1rem;
+    right: 0;
+    z-index: 100;
+}
+
+.sidebar-header .sidebar-header-logo {
+    width: 120px;
+    height: 120px;
+    object-fit: fill;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+}
+
+.sidebar-header .sidebar-header-title {
+    color: white;
+}
+
+.default-app-sidebar-layout-header {
+    display: flex;
+}
+
+.default-app-sidebar-layout-header .left-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.default-app-sidebar-layout-header .page-title {
+    margin: 0;
+}
+
+.default-app-sidebar-layout-header .right-section {
+    display: flex;
+    align-items: center;
+}
+
+
+.default-app-sidebar-layout-header .user-menu {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    padding: 0 1rem;
+}
+
+.user-menu:hover {
+    background: #f3f4f6;
+}
