@@ -35,11 +35,13 @@ import HandLoanManagement from './HandloanManagement/HandloanManagement';
 import {ProtectedRoute} from "./components/protected/ProtectedRoute";
 import {AuthProvider} from "./hooks/useAuth";
 import LogoutPage from "./pages/logout/LogoutPage";
+import NotFoundPage from "./pages/not-found/NotFoundPage";
 
 function App() {
     return (
         <AuthProvider>
             <Routes>
+                <Route path='*' element={<NotFoundPage />} />
                 <Route path="/login" element={<LoginPage/>}/>
                 <Route path="/logout" element={<LogoutPage/>}/>
 
