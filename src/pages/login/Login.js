@@ -11,7 +11,7 @@ import {Alert, Button, Card, Checkbox, Divider, Form, Image, Input, Typography} 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [remember, setRemember] = useState(false);
 
@@ -40,7 +40,9 @@ function Login() {
             localStorage.setItem('organizationId', data.organizationId);
             localStorage.setItem('roles', decodedPayload.roles);
         } catch (err) {
-            setError('Login failed. Please enter a valid username and password.');
+            setError({
+                title: 'Login failed. Please enter a valid username and password.'
+            });
         } finally {
             setLoading(false);
         }
@@ -68,7 +70,11 @@ function Login() {
 
                 <Divider/>
 
-                {error && <Alert className="login-error-message" title={error} type="error" showIcon/>}
+                {error && <Alert className="login-error-message"
+                                 title={error.title}
+                                 description={error.description}
+                                 type="error"
+                                 showIcon/>}
 
                 <Form
                     name="login"
@@ -84,6 +90,7 @@ function Login() {
                     >
                         <Input value={email}
                                prefix={<UserOutlined/>}
+                               onChange={(e) => setEmail(e.target.value)}
                                placeholder="Username"
                                disabled={loading}/>
                     </Form.Item>
@@ -97,6 +104,7 @@ function Login() {
                         <Input.Password
                             value={password}
                             prefix={<LockOutlined/>}
+                            onChange={(e) => setPassword(e.target.value)}
                             placeholder="Password"
                             disabled={loading}/>
                     </Form.Item>
