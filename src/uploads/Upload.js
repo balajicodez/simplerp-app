@@ -3,12 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-import Sidebar from './../Sidebar';
-import './../App.css';
+import Sidebar from '../_components/sidebar/Sidebar';
 import { APP_SERVER_URL_PREFIX } from "./../constants.js";
 import LoadSpinner from './../LoadSpinner';
 import axios from "axios";
-import PageCard from '../components/PageCard';
+import PageCard from '../_components/PageCard';
 
 var jobId;
 

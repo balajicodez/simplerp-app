@@ -5,13 +5,14 @@
   justify-content: center;
   flex-direction: column;
   gap: 1rem;
+  background: var(--md-sys-color-surface-container);
 }
 
 .login-page .login-card {
   width: calc(100% - 2rem);
   max-width: 27rem;
   margin-inline: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 }
 
 .login-page .login-card .brand-img {

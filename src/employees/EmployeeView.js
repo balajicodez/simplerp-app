@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from './../Sidebar';
-import PageCard from '../components/PageCard';
+import Sidebar from '../_components/sidebar/Sidebar';
+import PageCard from '../_components/PageCard';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import './Employees.css';
 

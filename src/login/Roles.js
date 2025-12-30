@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { APP_SERVER_URL_PREFIX } from "../constants";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../Sidebar";
-import PageCard from "../components/PageCard";
+import Sidebar from "../_components/sidebar/Sidebar";
+import PageCard from "../_components/PageCard";
 import "./Roles.css";
 
 export default function Roles() {

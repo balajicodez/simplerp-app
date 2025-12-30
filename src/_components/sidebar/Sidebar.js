@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {NavLink} from 'react-router-dom';
 import './Sidebar.css';
-import logo from './assets/images/logo_clear.jpg';
-import {useAuth} from "./hooks/useAuth";
+import logo from '../../assets/images/logo_clear.jpg';
+import {useAuth} from "../../hooks/useAuth";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -60,7 +60,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       <ul>
         <li>
           <NavLink
-            to="/dashboard"
+            to="/"
             className={({ isActive }) => (isActive ? "active" : "")}
             data-icon="🏠"
           >
@@ -195,25 +195,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <span>📅 Holiday Calendar</span>
           </NavLink>
         </li> */}
-         {isAdmin && (
-        <li>
-          <NavLink
-            to="/download"
-            className={({ isActive }) => (isActive ? "active" : "")}
-            data-icon="⬇️"
-          >
-            <span>⬇️ Downloads</span>
-          </NavLink>
-        </li>)}
-        <li>
-          <NavLink
-            to="/about"
-            className={({ isActive }) => (isActive ? "active" : "")}
-            data-icon="ℹ️"
-          >
-            <span>ℹ️ About</span>
-          </NavLink>
-        </li>
+
         {isAdmin && (
           <>
             <li>
