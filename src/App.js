@@ -1,9 +1,9 @@
 import ViewOrganization from './organization/ViewOrganization';
 import CreateOrganization from './organization/CreateOrganization';
 import React from 'react';
-import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import {Route, Routes} from 'react-router-dom';
 
-import Login from './pages/login/Login';
+import LoginPage from './pages/login/LoginPage';
 import Signup from "./login/Signup";
 import Users from "./login/Users";
 import Permissions from "./login/Permissions";
@@ -32,74 +32,69 @@ import EditExpense from './pettycash/EditExpense';
 import CreateExpenseMaster from './pettycash/CreateExpenseMaster';
 import HolidayCalendar from './holidays/HolidayCalendar';
 import HandLoanManagement from './HandloanManagement/HandloanManagement';
-import {ConfigProvider, App as AntApp} from "antd";
+import {ProtectedRoute} from "./components/protected/ProtectedRoute";
+import {AuthProvider} from "./hooks/useAuth";
+import LogoutPage from "./pages/logout/LogoutPage";
 
 function App() {
     return (
-        <ConfigProvider
-            theme={{
-                token: {
-                    fontFamily: 'Noto Sans, monospace',
-                },
-            }}
-        >
-            <AntApp>
-                <Router>
-                    <Routes>
-                        <Route path="/" element={<Login/>}/>
-                        <Route path="/dashboard" element={<Dashboard/>}/>
-                        <Route path="/upload" element={<Upload/>}/>
-                        <Route path="/reports" element={<Report/>}/>
-                        <Route path="/download" element={<Download/>}/>
-                        <Route path="/about" element={<About/>}/>
-                        <Route path="/employees" element={<Employees/>}/>
-                        <Route path="/employees/create" element={<CreateEmployee/>}/>
-                        <Route path="/employees/:id" element={<EmployeeView/>}/>
-                        <Route path="/employees/:id/edit" element={<EditEmployee/>}/>
-                        <Route path="/pettycash/expenses" element={<Expenses/>}/>
-                        <Route path="/pettycash/expenses-inward" element={<ExpensesInward/>}/>
-                        <Route path="/login/register" element={<Register/>}/>
-                        <Route path="/login/roles" element={<Roles/>}/>
-                        <Route path="/login/users" element={<Users/>}/>
-                        <Route
-                            path="/permissions"
-                            element={
+        <AuthProvider>
+            <Routes>
+                <Route path="/login" element={<LoginPage/>}/>
+                <Route path="/logout" element={<LogoutPage/>}/>
 
-                                <Permissions/>
-                            }
-                        />
 
-                        <Route
-                            path="/pettycash/expenses-outward"
-                            element={<ExpensesOutward/>}
-                        />
-                        <Route path="/pettycash/day-closing" element={<DayClosing/>}/>
-                        <Route
-                            path="/pettycash/day-closing/create"
-                            element={<CreateDayClosing/>}
-                        />
-                        <Route path="/reports/day-closing" element={<DayClosingReport/>}/>
-                        <Route path="/pettycash/expenses/create" element={<CreateExpense/>}/>
-                        <Route path="/pettycash/expenses/:id" element={<ExpenseView/>}/>
-                        <Route path="/pettycash/expenses/:id/edit" element={<EditExpense/>}/>
-                        <Route path="/pettycash/masters" element={<ExpenseMasters/>}/>
-                        <Route
-                            path="/pettycash/masters/create"
-                            element={<CreateExpenseMaster/>}
-                        />
-                        <Route path="/organization/edit/:id" element={<EditOrganization/>}/>
+                <Route path="/" element={<Dashboard/>}/>
+                <Route path="/upload" element={<ProtectedRoute><Upload/></ProtectedRoute>}/>
+                <Route path="/reports" element={<Report/>}/>
+                <Route path="/download" element={<Download/>}/>
+                <Route path="/about" element={<About/>}/>
+                <Route path="/employees" element={<Employees/>}/>
+                <Route path="/employees/create" element={<CreateEmployee/>}/>
+                <Route path="/employees/:id" element={<EmployeeView/>}/>
+                <Route path="/employees/:id/edit" element={<EditEmployee/>}/>
+                <Route path="/pettycash/expenses" element={<Expenses/>}/>
+                <Route path="/pettycash/expenses-inward" element={<ExpensesInward/>}/>
+                <Route path="/login/register" element={<Register/>}/>
+                <Route path="/login/roles" element={<Roles/>}/>
+                <Route path="/login/users" element={<Users/>}/>
+                <Route
+                    path="/permissions"
+                    element={
 
-                        <Route path="/organization" element={<ViewOrganization/>}/>
-                        <Route path="/organization/create" element={<CreateOrganization/>}/>
-                        <Route path="/holidays" element={<HolidayCalendar/>}/>
-                        <Route path="/signup" element={<Signup/>}/>
-                        <Route path="handloans" element={<HandLoanManagement/>}/>
+                        <Permissions/>
+                    }
+                />
 
-                        <Route path="/logout" element={<Login/>}/>
-                    </Routes>
-                </Router>
-            </AntApp>
-        </ConfigProvider>
+                <Route
+                    path="/pettycash/expenses-outward"
+                    element={<ExpensesOutward/>}
+                />
+                <Route path="/pettycash/day-closing" element={<DayClosing/>}/>
+                <Route
+                    path="/pettycash/day-closing/create"
+                    element={<CreateDayClosing/>}
+                />
+                <Route path="/reports/day-closing" element={<DayClosingReport/>}/>
+                <Route path="/pettycash/expenses/create" element={<CreateExpense/>}/>
+                <Route path="/pettycash/expenses/:id" element={<ExpenseView/>}/>
+                <Route path="/pettycash/expenses/:id/edit" element={<EditExpense/>}/>
+                <Route path="/pettycash/masters" element={<ExpenseMasters/>}/>
+                <Route
+                    path="/pettycash/masters/create"
+                    element={<CreateExpenseMaster/>}
+                />
+                <Route path="/organization/edit/:id" element={<EditOrganization/>}/>
+
+                <Route path="/organization" element={<ViewOrganization/>}/>
+                <Route path="/organization/create" element={<CreateOrganization/>}/>
+                <Route path="/holidays" element={<HolidayCalendar/>}/>
+                <Route path="/signup" element={<Signup/>}/>
+                <Route path="handloans" element={<HandLoanManagement/>}/>
+
+                <Route path="/logout" element={<LoginPage/>}/>
+            </Routes>
+        </AuthProvider>
     );
 }
 

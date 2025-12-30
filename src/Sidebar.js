@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {NavLink} from 'react-router-dom';
 import './Sidebar.css';
 import logo from './assets/images/logo_clear.jpg';
+import {useAuth} from "./hooks/useAuth";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({});
+
+  const { logout } = useAuth();
 
   useEffect(() => {
     const onResize = () => setCollapsed(window.innerWidth < 900);
@@ -115,7 +118,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               >
                 📤 Cash Flow- Outward
               </NavLink>
-            </li>            
+            </li>
             <li className="subitem">
               <NavLink
                 to="/handloans"
@@ -228,9 +231,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         )}
 
         <li>
-          <NavLink
-            to="/logout"
-            className={({ isActive }) => (isActive ? "active" : "")}
+          <NavLink to="/logout"
+            onClick={(e) => {e.preventDefault(); logout()}}
+                   className={({ isActive }) => (isActive ? "active" : "")}
             data-icon="🚪"
           >
             <span>🚪 Logout</span>

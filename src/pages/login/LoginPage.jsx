@@ -1,21 +1,20 @@
 import React, {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
 import {APP_SERVER_URL_PREFIX, APP_TITLE} from "../../constants.js";
 import logo from './../../assets/images/logo_clear.jpg';
-import './Login.css';
+import './LoginPage.css';
 import {jwtDecode} from "jwt-decode";
 import {LockOutlined, UserOutlined} from '@ant-design/icons';
 import {Alert, Button, Card, Checkbox, Divider, Form, Image, Input, Typography} from 'antd';
+import {useAuth} from "../../hooks/useAuth";
 
 
-function Login() {
+export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [remember, setRemember] = useState(false);
-
-    const navigate = useNavigate();
+    const {login} = useAuth();
 
 
     const handleSubmit = async (e) => {
@@ -33,12 +32,13 @@ function Login() {
             const data = await res.json();
 
             if (!res.ok) throw new Error('Failed to login');
-            navigate('/dashboard');
             const decodedPayload = jwtDecode(data.token);
             localStorage.setItem('token', data.token);
             localStorage.setItem('userName', data.userName);
             localStorage.setItem('organizationId', data.organizationId);
             localStorage.setItem('roles', decodedPayload.roles);
+            login(data);
+
         } catch (err) {
             setError({
                 title: 'Login failed. Please enter a valid username and password.'
@@ -129,5 +129,3 @@ function Login() {
         </div>
     );
 }
-
-export default Login;
