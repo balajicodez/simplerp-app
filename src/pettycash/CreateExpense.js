@@ -4,6 +4,7 @@ import PageCard from "../components/PageCard";
 import "./pettyCashCreateExpense.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import Utils from '../Utils';
 
 const getLocalDate = () => {
   const today = new Date();
@@ -38,6 +39,7 @@ function CreateExpense() {
   const [balanceLoading, setBalanceLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
 
   const getExpenseType = () => {
     const params = new URLSearchParams(location.search);
@@ -250,6 +252,10 @@ function CreateExpense() {
     const expenseType = getExpenseType();
 
     setForm((f) => ({ ...f, type: expenseType }));
+    if(!enableOrgDropDown) {
+      form.organizationId = localStorage.getItem("organizationId");
+    }
+
     const bearerToken = localStorage.getItem("token");
     fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters?page=0&size=1000`, {
       headers: { Authorization: `Bearer ${bearerToken}` },
@@ -300,6 +306,10 @@ function CreateExpense() {
     setError("");
     setSuccess("");
 
+     if(!enableOrgDropDown) {
+      form.organizationId = localStorage.getItem("organizationId");
+    }
+    
     // Enhanced validation
     if (!form.organizationId) {
       setError("Please select an organization");
@@ -514,10 +524,15 @@ function CreateExpense() {
                     <label className="form-label required">Branch</label>
                     <select
                       name="organizationId"
-                      value={form.organizationId}
+                      value={
+                        enableOrgDropDown
+                          ? form.organizationId
+                          : localStorage.getItem("organizationId")
+                      }
                       onChange={handleChange}
                       className="form-select"
                       required
+                      disabled={!enableOrgDropDown}
                     >
                       <option value="">Select branch</option>
                       {organizations.map((org) => (
