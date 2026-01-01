@@ -12,6 +12,7 @@ const HandLoanManagement = () => {
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [viewMode, setViewMode] = useState('ISSUED'); // ISSUED, RECOVERED, ALL
   const [showCreateForm, setShowCreateForm] = useState(false);
+const [totalPages, setTotalPages] = useState(0);
   const [showRecoverForm, setShowRecoverForm] = useState(false);
   const [showLoanDetails, setShowLoanDetails] = useState(false);
   const [organizations, setOrganizations] = useState([]);
@@ -243,7 +244,8 @@ const HandLoanManagement = () => {
           };
         });
         
-        setLoans(processedLoans);
+setLoans(processedLoans);
+setTotalPages(data.totalPages || 0);
       } else {
         const errorText = await response.text();
         throw new Error(`Failed to fetch loans: ${response.status} ${response.statusText} - ${errorText}`);
@@ -461,20 +463,21 @@ const HandLoanManagement = () => {
           viewMode={viewMode}
           selectedLoan={selectedLoan}
           recoveredLoansCount={recoveredLoansForMainLoan.length}
+          onCreateLoan={handleCreateLoan}
         />
 
         {/* Header Section */}
         <div className="handloan-header">
           <div className="header-actions">
             <div className="action-buttons">
-              <button
+              {/* <button
                 className="btn-primary"
                 onClick={handleCreateLoan}
                 title="Create new hand loan"
               >
                 <span className="btn-icon">+</span>
                 New Loan
-              </button>
+              </button> */}
               {selectedLoan?.status !== "RECOVERED" && (
                 <button
                   className="btn-secondary"
@@ -636,28 +639,55 @@ const HandLoanManagement = () => {
             formatDate={formatDate}
           />
         ) : (
-          <LoanDataTable
-            loans={
-              viewMode === "RECOVERED" && recoveredLoansForMainLoan.length > 0
-                ? recoveredLoansForMainLoan
-                : filteredLoans
-            }
-            loading={
-              loading || (viewMode === "RECOVERED" && loadingRecoveredLoans)
-            }
-            selectedLoan={selectedLoan}
-            onLoanSelect={handleLoanSelect}
-            onViewDetails={handleViewLoanDetails}
-            getStatusBadge={getStatusBadge}
-            formatCurrency={formatCurrency}
-            formatDate={formatDate}
-            RecoveryProgressBar={RecoveryProgressBar}
-            viewMode={viewMode}
-            isRecoveredLoansView={
-              viewMode === "RECOVERED" && recoveredLoansForMainLoan.length > 0
-            }
-            mainLoan={selectedLoan}
-          />
+          <>
+            <LoanDataTable
+              loans={
+                viewMode === "RECOVERED" && recoveredLoansForMainLoan.length > 0
+                  ? recoveredLoansForMainLoan
+                  : filteredLoans
+              }
+              loading={
+                loading || (viewMode === "RECOVERED" && loadingRecoveredLoans)
+              }
+              selectedLoan={selectedLoan}
+              onLoanSelect={handleLoanSelect}
+              onViewDetails={handleViewLoanDetails}
+              getStatusBadge={getStatusBadge}
+              formatCurrency={formatCurrency}
+              formatDate={formatDate}
+              RecoveryProgressBar={RecoveryProgressBar}
+              viewMode={viewMode}
+              isRecoveredLoansView={
+                viewMode === "RECOVERED" && recoveredLoansForMainLoan.length > 0
+              }
+              mainLoan={selectedLoan}
+            />
+            {viewMode !== "RECOVERED" && loans.length > 0 && (
+              <div className="pagination-section">
+                <div className="pagination-info">
+                  Showing {loans.length} results • Page {currentPage + 1}
+                </div>
+
+                <div className="pagination-controls">
+                  <button
+                    className="btn-outline"
+                    disabled={currentPage === 0}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
+                  >
+                    ← Previous
+                  </button>
+
+                  <button
+                    className="btn-outline"
+                    disabled={currentPage + 1 >= totalPages}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </PageCard>
     </div>
@@ -665,22 +695,37 @@ const HandLoanManagement = () => {
 };
 
 // Updated Loan Summary Dashboard Component
-const LoanSummaryDashboard = ({ summary, viewMode, selectedLoan, recoveredLoansCount }) => {
+const LoanSummaryDashboard = ({
+  summary,
+  viewMode,
+  selectedLoan,
+  recoveredLoansCount,
+  onCreateLoan,
+}) => {
   const getViewModeTitle = () => {
     switch (viewMode) {
-      case 'ISSUED': return 'Issued Loans';
-      case 'RECOVERED': 
+      case "ISSUED":
+        return "Issued Loans";
+      case "RECOVERED":
         if (selectedLoan) {
           return `Recovered Loans for ${selectedLoan.handLoanNumber}`;
         }
-        return 'Recovered Loans';
-      case 'ALL': return 'All Loans';
-      default: return 'Loans';
+        return "Recovered Loans";
+      case "ALL":
+        return "All Loans";
+      default:
+        return "Loans";
     }
   };
 
   return (
     <div className="dashboard-header1">
+      <div className="header-content">
+        <div></div>
+        <button className="btn-primary1" onClick={onCreateLoan}>
+          <span className="btn-icon">+</span> New Loan
+        </button>
+      </div>
       {/* <div className="dashboard-header">
         <h3>{getViewModeTitle()} Summary</h3>
         {viewMode === 'RECOVERED' && selectedLoan && (
@@ -700,14 +745,18 @@ const LoanSummaryDashboard = ({ summary, viewMode, selectedLoan, recoveredLoansC
         <div className="stat-card">
           {/* <div className="stat-icon">💰</div> */}
           <div className="stat-info">
-            <div className="stat-value">{formatCurrency(summary.totalIssued)}</div>
+            <div className="stat-value">
+              {formatCurrency(summary.totalIssued)}
+            </div>
             <div className="stat-label">Total Issued</div>
           </div>
         </div>
         <div className="stat-card">
           {/* <div className="stat-icon">⚖️</div> */}
           <div className="stat-info">
-            <div className="stat-value pending">{formatCurrency(summary.totalBalance)}</div>
+            <div className="stat-value pending">
+              {formatCurrency(summary.totalBalance)}
+            </div>
             <div className="stat-label">Pending Balance</div>
           </div>
         </div>
