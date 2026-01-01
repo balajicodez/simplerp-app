@@ -103,6 +103,11 @@ function CreateExpense() {
   // Auto-fetch balance when both organization and date are selected for CASH-OUT
   // Fetch balance ONLY when organizationId + expenseDate are selected
   useEffect(() => {
+
+    if(!enableOrgDropDown) {
+      form.organizationId = localStorage.getItem("organizationId");
+    }
+    
     if (
       getExpenseType() === "CASH-OUT" &&
       form.organizationId &&
