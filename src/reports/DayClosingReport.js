@@ -160,7 +160,7 @@ function DayClosingReport() {
 
         // Expenses
         const expensesResponse = await fetch(
-          `${APP_SERVER_URL_PREFIX}/expenses?page=0&size=20&organizationId=${organizationId}&createdDate=${selectedDate}`,
+          `${APP_SERVER_URL_PREFIX}/expenses?page=0&size=1000&organizationId=${organizationId}&createdDate=${selectedDate}`,
           { headers: { Authorization: `Bearer ${bearerToken}` } }
         );
 
