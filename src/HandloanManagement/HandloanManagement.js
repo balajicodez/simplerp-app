@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Sidebar from './../Sidebar';
 import PageCard from '../components/PageCard';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import './HandLoans.css';
+import Utils from '../Utils';
 
 const HandLoanManagement = () => {
   const [loans, setLoans] = useState([]);
@@ -12,7 +13,8 @@ const HandLoanManagement = () => {
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [viewMode, setViewMode] = useState('ISSUED'); // ISSUED, RECOVERED, ALL
   const [showCreateForm, setShowCreateForm] = useState(false);
-const [totalPages, setTotalPages] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showRecoverForm, setShowRecoverForm] = useState(false);
   const [showLoanDetails, setShowLoanDetails] = useState(false);
   const [organizations, setOrganizations] = useState([]);
@@ -23,9 +25,12 @@ const [totalPages, setTotalPages] = useState(0);
   const [fetchedBalance, setFetchedBalance] = useState(0);
   const [recoveredLoansForMainLoan, setRecoveredLoansForMainLoan] = useState([]);
   const [loadingRecoveredLoans, setLoadingRecoveredLoans] = useState(false);
+  const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
+  const [selectedOrgId, setSelectedOrgId] = useState("");
+  const navigate = useNavigate();  const pageSize = 10;
 
-  const navigate = useNavigate();
-  const pageSize = 10;
+  const pageParam = Number(searchParams.get("page") || 0);
+  const sizeParam = Number(searchParams.get("size") || 20);
 
   // Fetch organizations
   useEffect(() => {
@@ -36,6 +41,11 @@ const [totalPages, setTotalPages] = useState(0);
   useEffect(() => {
     fetchLoans();
   }, [viewMode, currentPage]);
+
+ useEffect(() => {
+   fetchLoans();
+ }, [pageParam, sizeParam, selectedOrgId, enableOrgDropDown]);
+
 
   const fetchOrganizations = async () => {
     try {
@@ -57,6 +67,12 @@ const [totalPages, setTotalPages] = useState(0);
     } catch (err) {
       console.error('Error fetching organizations:', err);
     }
+  };
+
+   const handleOrganizationChange = (e) => {
+    const value = e.target.value;
+    setSelectedOrgId(value);
+    setSearchParams({ page: 0, size: sizeParam });
   };
 
   // Fetch recovered loans for a specific main loan
@@ -183,17 +199,34 @@ const [totalPages, setTotalPages] = useState(0);
     setError('');
     try {
       let url;
-      
+      let orgId = null;
+
       // Use different endpoints based on view mode
       if (viewMode === 'ALL') {
-        url = `${APP_SERVER_URL_PREFIX}/handloans/all?page=${currentPage}&size=${pageSize}`;
+        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgId?page=${currentPage}&size=${pageSize}`;
       } else if (viewMode === 'RECOVERED') {
         // For recovered loans view, we show all CLOSED loans
-        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByStatus?page=${currentPage}&size=${pageSize}&status=CLOSED`;
+        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgId?page=${currentPage}&size=${pageSize}&status=CLOSED`;
       } else {
-        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByStatus?page=${currentPage}&size=${pageSize}`;
+        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgId?page=${currentPage}&size=${pageSize}`;
       }
       
+            // 👇 If NOT admin → always use logged-in org
+      if (!enableOrgDropDown) {
+        orgId = localStorage.getItem("organizationId");
+      }
+      // 👇 If admin
+      else {
+        if (selectedOrgId) {
+          orgId = selectedOrgId;
+        } else {
+          orgId = null; // fetch ALL orgs
+        }
+      }
+      if (orgId) {
+        url += `&organizationId=${orgId}`;
+      }
+
       const bearerToken = localStorage.getItem('token');
       const response = await fetch(url, {
         headers: { 'Authorization': `Bearer ${bearerToken}` }
@@ -412,14 +445,6 @@ setTotalPages(data.totalPages || 0);
     }).format(amount || 0);
   };
 
-  // const formatDate = (dateString) => {
-  //   if (!dateString) return 'N/A';
-  //   try {
-  //     return new Date(dateString).toLocaleDateString('en-IN');
-  //   } catch (error) {
-  //     return 'Invalid Date';
-  //   }
-  // };
   const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
 
@@ -432,6 +457,23 @@ setTotalPages(data.totalPages || 0);
 
   return `${day}-${month}-${year}`;
 };
+
+  useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        const bearerToken = localStorage.getItem("token");
+        const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
+          headers: { Authorization: `Bearer ${bearerToken}` },
+        });
+        const data = await response.json();
+        const orgs = data._embedded ? data._embedded.organizations || [] : data;
+        setOrganizations(orgs);
+      } catch (error) {
+        console.error("Failed to fetch organizations:", error);
+      }
+    };
+    fetchOrganizations();
+  }, []);
 
 
   const RecoveryProgressBar = ({ loan }) => {
@@ -514,7 +556,26 @@ setTotalPages(data.totalPages || 0);
                   : "Recovered Loans"}
               </button>
             </div>
+            <select
+                value={
+                  enableOrgDropDown
+                    ? selectedOrgId
+                    : localStorage.getItem("organizationId")
+                }
+                onChange={handleOrganizationChange}
+                className="filter-select"
+                disabled={!enableOrgDropDown}
+              ><option value="">All Branches</option>
+                {organizations.map((org) => (
+                  <option
+                    key={org.id || org._links?.self?.href}
+                    value={org.id || org._links?.self?.href.split("/").pop()}
+                  >
+                    {org.name}
+                  </option>
+                ))}
 
+              </select>
             <div className="search-section">
               <div className="search-box">
                 <input
@@ -595,9 +656,6 @@ setTotalPages(data.totalPages || 0);
           <div className="alert alert-error">
             <div className="alert-content">
               <strong>Error:</strong> {error}
-              <button className="retry-btn" onClick={fetchLoans}>
-                Try Again
-              </button>
             </div>
           </div>
         )}

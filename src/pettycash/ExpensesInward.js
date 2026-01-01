@@ -27,59 +27,6 @@ function ExpensesInward() {
   const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
   const enableCreate = Utils.isRoleApplicable("ADMIN") || Utils.isRoleApplicable("CASHASSISTANT");
 
-//  const fetchUrl = async () => {
-//    setLoading(true);
-//    try {
-//      const bearerToken = localStorage.getItem("token");
-//      const org = selectedOrgId || localStorage.getItem("organizationId");
-
-//      const url =
-//        `${APP_SERVER_URL_PREFIX}/expenses?` +
-//        `page=${pageParam}&size=${sizeParam}` +
-//        `&expenseType=CASH-IN` +
-//        `&organizationId=${org}` +
-//        `&startDate=${fromDate}` +
-//        `&endDate=${toDate}`;
-
-//      const res = await fetch(url, {
-//        headers: { Authorization: `Bearer ${bearerToken}` },
-//      });
-
-//      const json = await res.json();
-//      const list = json.content || json._embedded?.expenses || [];
-
-//      setItems(list.filter((e) => e.expenseType === "CASH-IN"));
-//      setLinks(json._links || {});
-//    } catch (e) {
-//      console.error("Failed to fetch expenses:", e);
-//    } finally {
-//      setLoading(false);
-//    }
-//  };
-
-  // const handleOrganizationChange = (e) => {
-  //   const value = e.target.value;
-  //   setSelectedOrgId(value);
-  //   const bearerToken = localStorage.getItem("token");
-  //   if (value) {
-  //     fetchUrl(
-  //       `${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`,
-  //       {
-  //         headers: { Authorization: `Bearer ${bearerToken}` },
-  //       }
-  //     );
-  //     setSearchParams({ page: 0, size: sizeParam });
-  //   } else {
-  //     fetchUrl(
-  //       `${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-IN&organizationId=${value}`,
-  //       {
-  //         headers: { Authorization: `Bearer ${bearerToken}` },
-  //       }
-  //     );
-  //     setSearchParams({ page: 0, size: sizeParam });
-  //   }
-  // };
-
   const fetchUrl = async () => {
     setLoading(true);
     try {
