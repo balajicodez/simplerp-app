@@ -441,24 +441,26 @@ function DayClosingReport() {
 
             let currentY = 48;
 
-            /* ================= DAY CLOSING ================= */
-            autoTable(doc, {
-                startY: currentY,
-                head: [["Closing Date", "Description", "Cash In", "Cash Out"]],
-                body: filteredRecords.map(() => [
-                    formatDateDDMMYYYY(records.closingDate),
-                    records.description || "-",
-                    safeToLocaleString(records.cashIn),
-                    safeToLocaleString(records.cashOut),
-                ]),
-                theme: "grid",
-                styles: { fontSize: 11 },
-                columnStyles: {
-                    2: { halign: "right" },
-                    3: { halign: "right" },
-                },
-                pageBreak: "auto",
-            });
+      /* ================= DAY CLOSING ================= */
+      autoTable(doc, {
+        startY: currentY,
+        head: [["Closing Date", "Description", "Cash In", "Cash Out", "Closing Balance"]],
+        body: filteredRecords.map(() => [
+          formatDateDDMMYYYY(records.closingDate),
+          records.description || "-",
+          safeToLocaleString(records.cashIn),
+          safeToLocaleString(records.cashOut),
+          safeToLocaleString(records.openingBalance+records.cashIn-records.cashOut),
+        ]),
+        theme: "grid",
+        styles: { fontSize: 11 },
+        columnStyles: {
+          2: { halign: "right" },
+          3: { halign: "right" },
+          4: { halign: "right" }
+        },
+        pageBreak: "auto",
+      });
 
             currentY = doc.lastAutoTable.finalY + 12;
 
