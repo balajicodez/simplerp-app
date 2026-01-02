@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../_components/sidebar/Sidebar";
 import PageCard from "../_components/PageCard";
 import "./Permissions.css"
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 export default function Permissions() {
   const navigate = useNavigate();

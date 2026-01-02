@@ -4,7 +4,7 @@ import PageCard from "../_components/PageCard";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import { useNavigate, useParams } from "react-router-dom";
 import "./Organization.css";
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function EditOrganization() {
   const { id } = useParams();

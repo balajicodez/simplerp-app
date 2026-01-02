@@ -5,7 +5,7 @@ import {APP_SERVER_URL_PREFIX} from '../../../constants.js';
 import DefaultAppSidebarLayout from "../../../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {Button, Form, Input, notification, Select, Typography} from "antd";
 import {DollarOutlined, LeftOutlined} from "@ant-design/icons";
-import {PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
+import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
 import {createExpenseTypeMaster} from "./expenseTypeMasterApiService";
 
 export default function ExpenseMasterCreatePage() {
@@ -39,7 +39,7 @@ export default function ExpenseMasterCreatePage() {
     };
 
     return (
-        <DefaultAppSidebarLayout pageTitle={<span><DollarOutlined/> Petty Cash</span>}>
+        <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
 
 
             <Form
@@ -69,7 +69,7 @@ export default function ExpenseMasterCreatePage() {
                     <div className={'page-title-section'}>
 
 
-                        <Typography.Title className='page-title' level={4}>Create Expense Type Master</Typography.Title>
+                        <Typography.Title className='page-title' level={4}>Create Expense Master</Typography.Title>
                     </div>
 
 

@@ -3,7 +3,7 @@ import { APP_SERVER_URL_PREFIX } from "../constants";
 import Sidebar from "../_components/sidebar/Sidebar";
 import PageCard from "../_components/PageCard";
 import "./Register.css";
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 const RegisterPage = ({ onSuccess, onCancel }) => {
   const token = localStorage.getItem("token");

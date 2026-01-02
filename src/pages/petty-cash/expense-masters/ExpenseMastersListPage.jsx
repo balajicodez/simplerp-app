@@ -10,6 +10,11 @@ import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 
 const columns = [
     {
+        title: 'Sub-Type',
+        dataIndex: 'subtype',
+        key: 'subtype',
+    },
+    {
         title: 'Description',
         dataIndex: 'description',
         key: 'description',
@@ -18,12 +23,7 @@ const columns = [
         title: 'Type',
         dataIndex: 'type',
         key: 'type',
-    },
-    {
-        title: 'Sub-Type',
-        dataIndex: 'subtype',
-        key: 'subtype',
-    },
+    }
 ];
 
 
@@ -53,7 +53,7 @@ function ExpenseMastersListPage() {
 
             <div className='list-page-header'>
                 <div className={'page-title-section'}>
-                    <Typography.Title className='page-title' level={4}>Expense Category Masters</Typography.Title>
+                    <Typography.Title className='page-title' level={4}>Expense Masters</Typography.Title>
                 </div>
 
                 <div className={'page-actions'}>

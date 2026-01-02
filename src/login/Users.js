@@ -5,7 +5,7 @@ import PageCard from "../_components/PageCard";
 import RegisterPage from "./Register";
 import { APP_SERVER_URL_PREFIX } from "../constants";
 import "./Users.css";
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 const UsersPage = () => {
   const navigate = useNavigate();

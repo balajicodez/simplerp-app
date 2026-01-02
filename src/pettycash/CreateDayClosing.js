@@ -6,7 +6,7 @@ import { APP_SERVER_URL_PREFIX } from '../constants.js';
 import { useNavigate } from 'react-router-dom';
 import Utils from '../Utils';
 import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function CreateDayClosing() {
   const [description, setDescription] = useState('Day Closing');

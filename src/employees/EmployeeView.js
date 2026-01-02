@@ -4,7 +4,7 @@ import Sidebar from '../_components/sidebar/Sidebar';
 import PageCard from '../_components/PageCard';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import './Employees.css';
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function EmployeeView() {
   const { id } = useParams();
