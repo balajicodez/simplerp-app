@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../_components/sidebar/Sidebar";
-import PageCard from "../_components/PageCard";
+import Sidebar from "../Sidebar";
+import PageCard from "../components/PageCard";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import { useNavigate } from "react-router-dom";
 import "./Organization.css";
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function ViewOrganization() {
   const [orgs, setOrgs] = useState([]);
@@ -47,8 +46,9 @@ function ViewOrganization() {
   const getOrgId = (org) => org.id || org._links?.self?.href?.split("/").pop();
 
   return (
-      <DefaultAppSidebarLayout pageTitle={"User Administration"}>
-      <PageCard title="Organizations Management">
+    <div className="page-container">
+      <Sidebar isOpen={true} />
+      <PageCard title="Branch Management">
         <div className="dashboard-header1">
           <div className="header-content">
             <div></div>
@@ -57,7 +57,7 @@ function ViewOrganization() {
               onClick={() => navigate("/organization/create")}
             >
               <span className="btn-icon">+</span>
-              Create Organization
+              Create Branch
             </button>
           </div>
           
@@ -67,7 +67,7 @@ function ViewOrganization() {
               {/* <div className="stat-icon">🏢</div> */}
               <div className="stat-content">
                 <div className="stat-value">{orgs.length}</div>
-                <div className="stat-label">Total Organizations</div>
+                <div className="stat-label">Total Branches</div>
               </div>
             </div>
             <div className="stat-card">
@@ -94,7 +94,7 @@ function ViewOrganization() {
         <div className="filters-section">
           <input
             type="text"
-            placeholder="Search organizations..."
+            placeholder="Search Branches..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -154,7 +154,7 @@ function ViewOrganization() {
           </div>
         )}
       </PageCard>
-      </DefaultAppSidebarLayout>
+    </div>
   );
 }
 

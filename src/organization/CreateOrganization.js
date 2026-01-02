@@ -140,11 +140,11 @@ function CreateOrganization({ onCreated }) {
             <div className="form-sections">
               {/* ================= SECTION 1 ================= */}
               <div className="form-section">
-                <h3 className="section-title">🏢 Organization Details</h3>
+                <h3 className="section-title">🏢 Branch Details</h3>
                 <div className="form-grid enhanced-grid">
                   <div className="form-group">
                     <label className="form-label required">
-                      Organization Name
+                      Branch Name
                     </label>
                     <input
                       name="name"
@@ -156,7 +156,7 @@ function CreateOrganization({ onCreated }) {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Parent Organization</label>
+                    <label className="form-label">Parent Branch</label>
                     <select
                       value={parentOrganizationId}
                       onChange={(e) => setParentOrganizationId(e.target.value)}
