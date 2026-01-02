@@ -122,6 +122,7 @@
 .form-page-header {
     display: flex;
     align-items: center;
+    margin-top: 1rem;
     margin-bottom: 1rem;
     max-width: 960px;
 }
@@ -140,7 +141,9 @@
 .form-page-fields-section {
     max-width: 960px;
     background: white;
-    padding-block: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--elevate-1);
 }
 
 .form-page-fields-section-footer {
@@ -148,5 +151,22 @@
 }
 
 .form-page-fields-section .form-section-title {
-    margin: 0 2rem 2rem 2rem;
+    margin-bottom: 2rem;
+    margin-top: 1rem;
+}
+
+.form-page-footer {
+    max-width: 960px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.form-page-footer .page-actions {
+
+    display: flex;
+    gap: 1rem;
+    align-self: end;
 }

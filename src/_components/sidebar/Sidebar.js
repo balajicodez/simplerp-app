@@ -139,7 +139,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </li>
             <li className="subitem">
               <NavLink
-                to="/pettycash/masters"
+                to="/pettycash/expense-masters"
                 className={({ isActive }) => (isActive ? "active" : "")}
                 data-icon="⚙️"
               >

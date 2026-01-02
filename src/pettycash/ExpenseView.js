@@ -5,7 +5,7 @@ import PageCard from '../_components/PageCard';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import './EditExpense.css';
 import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
-import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function ExpenseView() {
   const { id } = useParams();

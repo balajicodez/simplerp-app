@@ -39,17 +39,20 @@ function getSideBarMenu(userRoles = []) {
             },  {
                 key: 'pettycash-day-closing',
                 label: 'Day Closing',
-                path: '/pettycash/day-closing'
+                path: '/pettycash/day-closing',
+                roles: ["ADMIN","CASHASSISTANT"]
             }, {
                 key: 'pettycash-masters',
                 label: 'Expenses - Masters',
-                path: '/pettycash/masters'
+                path: '/pettycash/expense-masters',
+                roles: ["ADMIN","CASHASSISTANT"]
             }]
         },
         {
             key: 'reports',
             label: 'Reports',
             icon: <LineChartOutlined />,
+            roles: ["ADMIN","CASHASSISTANT"],
             children: [{
                 key: 'reports-day-closing',
                 label: 'Day Closing Report',
@@ -183,7 +186,7 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
 
                     <img className='sidebar-header-logo' src={logo} alt="Logo"/>
 
-                    { !collapsed &&  <Typography.Title level={3} className="sidebar-header-title">{APP_TITLE}</Typography.Title>}
+                    { !collapsed &&  <Typography.Title level={4} className="sidebar-header-title">{APP_TITLE}</Typography.Title>}
 
 
                 </div>
@@ -217,7 +220,7 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
                 <Header className={'default-app-sidebar-layout-header'}>
 
                     <div className={'left-section'}>
-                        <Typography.Title level={3} className="page-title">{pageTitle}</Typography.Title>
+                        <Typography.Title level={4} className="page-title">{pageTitle}</Typography.Title>
                     </div>
 
                     <div className={'right-section'}>
@@ -237,8 +240,9 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
                     </div>
                 </Header>
                 <Content style={{
-                    margin: '24px 40px 0',
-                    overflow: 'initial'
+                    padding: '2rem 3rem',
+                    overflow: 'auto',
+                    maxHeight: 'calc(100vh - 64px)',
                 }}>
                     {children}
                 </Content>
