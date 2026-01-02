@@ -556,7 +556,7 @@ setTotalPages(data.totalPages || 0);
                   : "Recovered Loans"}
               </button>
             </div>
-            <select
+            {/* <select
                 value={
                   enableOrgDropDown
                     ? selectedOrgId
@@ -575,7 +575,7 @@ setTotalPages(data.totalPages || 0);
                   </option>
                 ))}
 
-              </select>
+              </select> */}
             <div className="search-section">
               <div className="search-box">
                 <input
@@ -1052,8 +1052,12 @@ const CreateHandLoanForm = ({
   onDateChange,
   balanceLoading 
 }) => {
+
+  const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
+  const [selectedOrgId, setSelectedOrgId] = useState("");
+
   const [form, setForm] = useState({
-    organizationId: "",
+    organizationId: enableOrgDropDown ? "" : localStorage.getItem("organizationId"),
     partyName: "",
     loanAmount: "",
     phoneNo: "",
@@ -1064,6 +1068,12 @@ const CreateHandLoanForm = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  
+  useEffect(() => {
+    onDateChange(form.organizationId, form.createdDate);
+  }, [form.organizationId, form.createdDate]);
+
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
@@ -1140,7 +1150,13 @@ const CreateHandLoanForm = ({
     }
   };
 
-  const isAmountExceedingBalance = form.loanAmount > fetchedBalance;
+   const isAmountExceedingBalance = form.loanAmount > fetchedBalance;
+
+   const handleOrganizationChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+    setSelectedOrgId(value);    
+  };
 
   return (
     <div className="form-container1">
@@ -1187,20 +1203,28 @@ const CreateHandLoanForm = ({
         <div className="enhanced-grid1" style={{ padding: "4px" }}>
           {/* Organization */}
           <div className="form-group">
-            <label>Organization *</label>
-            <select
-              name="organizationId"
-              value={form.organizationId}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select Organization</option>
-              {organizations.map((org) => (
-                <option key={org.id} value={org.id}>
-                  {org.name}
-                </option>
-              ))}
-            </select>
+            <label>Branch *</label>
+             <select
+                name="organizationId"
+                value={
+                  enableOrgDropDown
+                    ? form.organizationId
+                    : localStorage.getItem("organizationId")
+                }
+                onChange={handleChange}
+                className="filter-select"
+                disabled={!enableOrgDropDown}
+              ><option value="">All Branches</option>
+                {organizations.map((org) => (
+                  <option
+                    key={org.id || org._links?.self?.href}
+                    value={org.id || org._links?.self?.href.split("/").pop()}
+                  >
+                    {org.name}
+                  </option>
+                ))}
+
+              </select>
           </div>
 
           {/* Loan Date */}
@@ -1347,6 +1371,7 @@ const CreateHandLoanForm = ({
       </form>
     </div>
   );
+
 };
 
 // FIXED: Recover Hand Loan Form Component - Remove status field
