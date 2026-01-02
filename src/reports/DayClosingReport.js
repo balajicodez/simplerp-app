@@ -1095,6 +1095,7 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
             onClick={handleGenerateReport}
             onMouseOver={(e) => (e.target.style.transform = "translateY(-2px)")}
             onMouseOut={(e) => (e.target.style.transform = "translateY(0)")}
+            disabled={!selectedDate || !organizationId}
           >
             📊 Generate Report
           </button>
