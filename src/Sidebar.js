@@ -179,7 +179,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             className={({ isActive }) => (isActive ? "active" : "")}
             data-icon="🏢"
           >
-            <span>🏢 Organization</span>
+            <span>🏢 Branch</span>
           </NavLink>
         </li>)}
 

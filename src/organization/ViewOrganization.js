@@ -48,7 +48,7 @@ function ViewOrganization() {
   return (
     <div className="page-container">
       <Sidebar isOpen={true} />
-      <PageCard title="Organizations Management">
+      <PageCard title="Branch Management">
         <div className="dashboard-header1">
           <div className="header-content">
             <div></div>
@@ -57,7 +57,7 @@ function ViewOrganization() {
               onClick={() => navigate("/organization/create")}
             >
               <span className="btn-icon">+</span>
-              Create Organization
+              Create Branch
             </button>
           </div>
           
@@ -67,7 +67,7 @@ function ViewOrganization() {
               {/* <div className="stat-icon">🏢</div> */}
               <div className="stat-content">
                 <div className="stat-value">{orgs.length}</div>
-                <div className="stat-label">Total Organizations</div>
+                <div className="stat-label">Total Branches</div>
               </div>
             </div>
             <div className="stat-card">
@@ -94,7 +94,7 @@ function ViewOrganization() {
         <div className="filters-section">
           <input
             type="text"
-            placeholder="Search organizations..."
+            placeholder="Search Branches..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
