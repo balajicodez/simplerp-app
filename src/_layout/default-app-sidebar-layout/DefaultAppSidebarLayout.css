@@ -92,81 +92,25 @@
 }
 
 
-.list-page-header {
+
+
+@import "FormPage.css";
+@import "ListPage.css";
+
+.report-page-header {
     display: flex;
     align-items: center;
+    margin-top: 1rem;
     margin-bottom: 1rem;
 }
 
-.list-page-header .page-title-section {
-    flex: 1;
-}
-
-.list-page-header .page-title {
-    margin: 0;
-}
-
-.list-page-header .page-title-section {
+.report-page-header .page-title-section {
     flex: 1;
     display: flex;
     align-items: center;
     gap: .5rem;
 }
 
-.list-page-table {
-    border-radius: 8px;
-    box-shadow: var(--elevate-1);
-}
-
-
-.form-page-header {
-    display: flex;
-    align-items: center;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    max-width: 960px;
-}
-
-.form-page-header .page-title {
+.report-page-header .page-title {
     margin: 0;
-}
-
-.form-page-header .page-title-section {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-}
-
-.form-page-fields-section {
-    max-width: 960px;
-    background: white;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    box-shadow: var(--elevate-1);
-}
-
-.form-page-fields-section-footer {
-    max-width: 960px;
-}
-
-.form-page-fields-section .form-section-title {
-    margin-bottom: 2rem;
-    margin-top: 1rem;
-}
-
-.form-page-footer {
-    max-width: 960px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.form-page-footer .page-actions {
-
-    display: flex;
-    gap: 1rem;
-    align-self: end;
 }

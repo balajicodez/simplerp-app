@@ -8,8 +8,6 @@ import {fetchExpenseMaterTypes} from "./expenseTypeMasterApiService";
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 
 
-
-
 const PAGE_SIZE = 10;
 
 
@@ -47,7 +45,9 @@ export default function ExpenseMastersListPage() {
             width: 100,
             render: (item) => {
                 return <Tooltip title={'Edit Expense Master'}>
-                    <Button icon={<EditOutlined/>} aria-label='Edit' onClick={() => navigate(`/pettycash/expense-master/${item.id}`)} variant={'outlined'} color={'default'}/>
+                    <Button icon={<EditOutlined/>} aria-label='Edit'
+                            onClick={() => navigate(`/pettycash/expense-master/${item.id}`)} variant={'outlined'}
+                            color={'default'}/>
                 </Tooltip>
             },
         }
@@ -92,32 +92,34 @@ export default function ExpenseMastersListPage() {
     return (
         <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
 
-            <div className='list-page-header'>
-                <div className={'page-title-section'}>
-                    <Typography.Title className='page-title' level={2}>Expense Masters</Typography.Title>
+            <div className="list-page">
+                <div className='list-page-header'>
+                    <div className={'page-title-section'}>
+                        <Typography.Title className='page-title' level={2}>Expense Masters</Typography.Title>
+                    </div>
+
+                    <div className={'page-actions'}>
+                        <Button type={'primary'}
+                                size={'large'}
+                                onClick={() => navigate("/pettycash/expense-master")} icon={<PlusOutlined/>}>
+                            Create
+                        </Button>
+                    </div>
+
                 </div>
 
-                <div className={'page-actions'}>
-                    <Button type={'primary'}
-                            size={'large'}
-                            onClick={() => navigate("/pettycash/expense-master")} icon={<PlusOutlined/>}>
-                        Create
-                    </Button>
-                </div>
-
+                <Table
+                    className={'list-page-table'}
+                    size={'large'}
+                    dataSource={items}
+                    columns={columns}
+                    onChange={handleTableChange}
+                    pagination={{
+                        ...pagination,
+                        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
+                    }}
+                    loading={loading}/>
             </div>
-
-            <Table
-                className={'list-page-table'}
-                size={'large'}
-                dataSource={items}
-                columns={columns}
-                onChange={handleTableChange}
-                pagination={{
-                    ...pagination,
-                    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
-                }}
-                loading={loading}/>
         </DefaultAppSidebarLayout>
     );
 }

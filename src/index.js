@@ -13,7 +13,6 @@ import Users from "./login/Users";
 import Permissions from "./login/Permissions";
 import DashboardPage from './pages/dashboard/DashboardPage';
 import Upload from './uploads/Upload';
-import Report from './reports/Report';
 import Register from "./login/Register";
 import Roles from "./login/Roles";
 import Employees from './employees/Employees';
@@ -25,7 +24,7 @@ import ExpensesInward from './pettycash/ExpensesInward';
 import ExpensesOutward from './pettycash/ExpensesOutward';
 import DayClosing from './pettycash/DayClosing';
 import CreateDayClosing from './pettycash/CreateDayClosing';
-import DayClosingReport from './reports/DayClosingReport';
+import DayClosingReportPage from './pages/reports/day-closing/DayClosingReportPage';
 import CreateExpense from './pettycash/CreateExpense';
 import ExpenseMastersListPage from './pages/petty-cash/expense-masters/ExpenseMastersListPage';
 import EditOrganization from './organization/EditOrganization'
@@ -61,7 +60,6 @@ root.render(
 
 
                             <Route path="/upload" element={<ProtectedRoute><Upload/></ProtectedRoute>}/>
-                            <Route path="/reports" element={<Report/>}/>
 
                             <Route path="/employees" element={<Employees/>}/>
                             <Route path="/employees/create" element={<CreateEmployee/>}/>
@@ -116,7 +114,7 @@ root.render(
                                 path="/pettycash/day-closing/create"
                                 element={<CreateDayClosing/>}
                             />
-                            <Route path="/reports/day-closing" element={<DayClosingReport/>}/>
+                            <Route path="/reports/day-closing" element={<DayClosingReportPage/>}/>
                             <Route path="/pettycash/expenses/create" element={<CreateExpense/>}/>
                             <Route path="/pettycash/expenses/:id" element={<ExpenseView/>}/>
                             <Route path="/pettycash/expenses/:id/edit" element={<EditExpense/>}/>

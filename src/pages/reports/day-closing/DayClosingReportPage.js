@@ -1,14 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, {useEffect, useState} from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import Sidebar from "../_components/sidebar/Sidebar";
-import PageCard from "../_components/PageCard";
-import { APP_SERVER_URL_PREFIX } from "../constants.js";
-import Utils from '../Utils';
-import {DollarOutlined} from "@ant-design/icons";
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import {APP_SERVER_URL_PREFIX} from "../../../constants.js";
+import Utils from '../../../Utils';
+import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import {Button, Form, Typography, DatePicker, Select} from "antd";
+import './DayClosingReportPage.css';
+import {useAuth} from "../../../hooks/useAuth";
 
-function DayClosingReport() {
+function DayClosingReportPage() {
+    const {session} = useAuth();
+    const isAdmin = session?.roles?.includes('ADMIN');
+
+    const [form] = Form.useForm();
+
     const [records, setRecords] = useState([]);
     const [expenses, setExpenses] = useState([]);
     const [handloans, setHandloans] = useState([]);
@@ -30,8 +35,9 @@ function DayClosingReport() {
     const [organizations, setOrganizations] = useState([]);
     const [organizationId, setOrganizationId] = useState("");
     const [selectedDate, setSelectedDate] = useState("");
-    const [attachments , setAttachments] = useState([]);
-    const isAdminRole = Utils.isRoleApplicable('ADMIN');
+    const [attachments, setAttachments] = useState([]);
+
+
 
     // Safe number formatting function
     const safeToLocaleString = (value) => {
@@ -44,14 +50,15 @@ function DayClosingReport() {
     useEffect(() => {
         const bearerToken = localStorage.getItem("token");
         fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-            headers: { Authorization: `Bearer ${bearerToken}` },
+            headers: {Authorization: `Bearer ${bearerToken}`},
         })
             .then((res) => res.json())
             .then((data) => {
                 const orgs = data._embedded ? data._embedded.organizations || [] : data;
                 setOrganizations(orgs);
             })
-            .catch(() => {});
+            .catch(() => {
+            });
     }, []);
 
     // Date filtering for expenses
@@ -127,7 +134,7 @@ function DayClosingReport() {
             (expense) => expense.expenseType === "CASH-OUT"
         );
 
-        return { cashInExpenses, cashOutExpenses };
+        return {cashInExpenses, cashOutExpenses};
     };
 
     // Handloan categorization - UPDATED
@@ -142,11 +149,11 @@ function DayClosingReport() {
                 handloan.handLoanType === "ISSUE" || handloan.handLoanType === "GIVEN"
         );
 
-        return { cashInHandloans, cashOutHandloans };
+        return {cashInHandloans, cashOutHandloans};
     };
 
     useEffect(() => {
-        if(!isAdminRole) {
+        if (!isAdmin) {
             setOrganizationId(localStorage.getItem('organizationId'));
         }
         if (!selectedDate || !organizationId) return;
@@ -158,12 +165,12 @@ function DayClosingReport() {
                 const bearerToken = localStorage.getItem("token");
 
                 // Day closing
-                await fetchDayClosing(selectedDate, organizationId);
+                await previewDayClosing(selectedDate, organizationId);
 
                 // Expenses
                 const expensesResponse = await fetch(
                     `${APP_SERVER_URL_PREFIX}/expenses/report?organizationId=${organizationId}&createdDate=${selectedDate}`,
-                    { headers: { Authorization: `Bearer ${bearerToken}` } }
+                    {headers: {Authorization: `Bearer ${bearerToken}`}}
                 );
 
                 if (expensesResponse.ok) {
@@ -176,7 +183,7 @@ function DayClosingReport() {
                 // Handloans
                 const handloansResponse = await fetch(
                     `${APP_SERVER_URL_PREFIX}/handloans/all?page=${currentPage}&size=${pageSize}`,
-                    { headers: { Authorization: `Bearer ${bearerToken}` } }
+                    {headers: {Authorization: `Bearer ${bearerToken}`}}
                 );
 
                 if (handloansResponse.ok) {
@@ -252,15 +259,24 @@ function DayClosingReport() {
     };
 
 
-    const fetchDayClosing = async (closingDate, orgId) => {
+    const previewDayClosing = async () => {
+        const formValues = form.getFieldsValue();
+        const closingDate = formValues.closingDate?.format("YYYY-MM-DD");
+        const organizationId = formValues.organizationId;
+
+        if (!closingDate || !organizationId) {
+            setRecords([]);
+            return;
+        }
+
         try {
             setLoading(true);
             setError("");
             const bearerToken = localStorage.getItem("token");
             const response = await fetch(
-                `${APP_SERVER_URL_PREFIX}/pettyCashDayClosings/search/findByClosingDateAndOrganizationId?closingDate=${closingDate}&organizationId=${orgId}`,
+                `${APP_SERVER_URL_PREFIX}/pettyCashDayClosings/search/findByClosingDateAndOrganizationId?closingDate=${closingDate}&organizationId=${organizationId}`,
                 {
-                    headers: { Authorization: `Bearer ${bearerToken}` },
+                    headers: {Authorization: `Bearer ${bearerToken}`},
                 }
             );
             if (!response.ok) {
@@ -272,7 +288,7 @@ function DayClosingReport() {
             const response2 = await fetch(
                 data._links.pettyCashDayClosingAttachment.href,
                 {
-                    headers: { Authorization: `Bearer ${bearerToken}` },
+                    headers: {Authorization: `Bearer ${bearerToken}`},
                 }
             );
             if (!response2.ok) {
@@ -321,7 +337,7 @@ function DayClosingReport() {
     const getOrganizationAddressText = () => {
         if (!selectedOrganization?.address) return "";
 
-        const { address, city, pincode } = selectedOrganization.address;
+        const {address, city, pincode} = selectedOrganization.address;
 
         return [address, city, pincode].filter(Boolean).join(", ");
     };
@@ -374,13 +390,19 @@ function DayClosingReport() {
         return Array.from(loanMap.values()).map((l) => {
             const status = l.recoveredAmount > 0 ? "PARTIALLY RECOVERED" : "ISSUED";
 
-            return { ...l, status };
+            return {...l, status};
         });
     };
 
 
-    const handleGenerateReport = () => {
+    const handleGenerateReport = async (e) => {
+        const formValues = form.getFieldsValue();
+        const selectedDate = formValues.closingDate.format("YYYY-MM-DD");
+        const organizationId = formValues.organizationId;
         try {
+            debugger;
+            await previewDayClosing(selectedDate, organizationId);
+
             const filteredRecords = new Array(records);
             const filteredExpenses = getExpensesForDate(selectedDate);
 
@@ -390,8 +412,7 @@ function DayClosingReport() {
             const filteredHandloans = getIssuedAndPartialLoansByOrg();
 
 
-
-            const { cashInExpenses, cashOutExpenses } =
+            const {cashInExpenses, cashOutExpenses} =
                 categorizeExpenses(filteredExpenses);
 
             if (
@@ -411,13 +432,13 @@ function DayClosingReport() {
             doc.setFontSize(26);
             const orgName = selectedOrganization?.name || "Organization";
 
-            doc.text(orgName, 105, 18, { align: "center" });
+            doc.text(orgName, 105, 18, {align: "center"});
 
 
             const orgAddressText = getOrganizationAddressText();
             doc.setFontSize(13);
             if (orgAddressText) {
-                doc.text(orgAddressText, 105, 26, { align: "center" });
+                doc.text(orgAddressText, 105, 26, {align: "center"});
             }
 
             doc.line(20, 32, 190, 32);
@@ -436,7 +457,7 @@ function DayClosingReport() {
                 `Opening Balance: ${safeToLocaleString(startingBalance)}`,
                 190,
                 40,
-                { align: "right" }
+                {align: "right"}
             );
 
             let currentY = 48;
@@ -452,10 +473,10 @@ function DayClosingReport() {
                     safeToLocaleString(records.cashOut),
                 ]),
                 theme: "grid",
-                styles: { fontSize: 11 },
+                styles: {fontSize: 11},
                 columnStyles: {
-                    2: { halign: "right" },
-                    3: { halign: "right" },
+                    2: {halign: "right"},
+                    3: {halign: "right"},
                 },
                 pageBreak: "auto",
             });
@@ -464,7 +485,7 @@ function DayClosingReport() {
 
             /* ================= EXPENSES ================= */
             doc.setFontSize(14);
-            doc.text("EXPENSES SUMMARY", 105, currentY, { align: "center" });
+            doc.text("EXPENSES SUMMARY", 105, currentY, {align: "center"});
             currentY += 10;
 
             currentY = ensurePageSpace(doc, currentY, 60);
@@ -483,10 +504,10 @@ function DayClosingReport() {
                     e.description || "General",
                 ]),
                 tableWidth: colWidth,
-                margin: { left: margin },
-                styles: { fontSize: 11, overflow: "linebreak" },
-                headStyles: { fillColor: [22, 163, 74], textColor: 255 },
-                columnStyles: { 1: { halign: "center" } },
+                margin: {left: margin},
+                styles: {fontSize: 11, overflow: "linebreak"},
+                headStyles: {fillColor: [22, 163, 74], textColor: 255},
+                columnStyles: {1: {halign: "center"}},
             });
 
             /* capture Y */
@@ -502,10 +523,10 @@ function DayClosingReport() {
                     e.description || "General",
                 ]),
                 tableWidth: colWidth,
-                margin: { left: margin + colWidth + margin },
-                styles: { fontSize: 11, overflow: "linebreak" },
-                headStyles: { fillColor: [185, 28, 28], textColor: 255 },
-                columnStyles: { 1: { halign: "right" } },
+                margin: {left: margin + colWidth + margin},
+                styles: {fontSize: 11, overflow: "linebreak"},
+                headStyles: {fillColor: [185, 28, 28], textColor: 255},
+                columnStyles: {1: {halign: "right"}},
             });
 
             currentY = doc.lastAutoTable.finalY + 20;
@@ -514,7 +535,7 @@ function DayClosingReport() {
             currentY = Math.max(cashInEndY, cashOutEndY) + 25;
             if (filteredHandloans.length > 0) {
                 doc.setFontSize(14);
-                doc.text("HANDLOANS DETAILS", 105, currentY, { align: "center" });
+                doc.text("HANDLOANS DETAILS", 105, currentY, {align: "center"});
                 currentY += 8;
                 let totalLoanAmount = 0;
                 let totalRecoveredAmount = 0;
@@ -556,7 +577,7 @@ function DayClosingReport() {
                         ],
                     ],
                     theme: "grid",
-                    styles: { fontSize: 11 },
+                    styles: {fontSize: 11},
                     headStyles: {
                         fillColor: [30, 58, 138],
                         textColor: 255,
@@ -667,8 +688,8 @@ function DayClosingReport() {
                 head: [["Note", "Good", "Soiled", "Amount"]],
                 body: denominationRows,
                 theme: "grid",
-                styles: { fontSize: 11 },
-                columnStyles: { 3: { halign: "right" } },
+                styles: {fontSize: 11},
+                columnStyles: {3: {halign: "right"}},
                 pageBreak: "auto",
             });
 
@@ -1017,10 +1038,10 @@ function DayClosingReport() {
 
     const expensesForSelectedDate = getExpensesForDate(selectedDate);
     const handloansForSelectedDate = getHandloansForDate(selectedDate);
-    const { cashInExpenses, cashOutExpenses } = categorizeExpenses(
+    const {cashInExpenses, cashOutExpenses} = categorizeExpenses(
         expensesForSelectedDate
     );
-    const { cashInHandloans, cashOutHandloans } = categorizeHandloans(
+    const {cashInHandloans, cashOutHandloans} = categorizeHandloans(
         handloansForSelectedDate
     );
 
@@ -1045,59 +1066,57 @@ function DayClosingReport() {
 
     return (
         <DefaultAppSidebarLayout pageTitle={'Reports'}>
-            <PageCard title="Day Closing Report">
-                <div style={styles.headerSection}>
-                    <div style={styles.dateSelector}>
-                        <label style={styles.dateLabel}>
-                            Select Date To Generate Report:
-                        </label>
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={handleDateChange}
-                            style={styles.dateInput}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <select
-                            value={
-                                isAdminRole
-                                    ? organizationId
-                                    : localStorage.getItem("organizationId")
-                            }
-                            onChange={handleOrgChange}
-                            className="form-select"
-                            disabled={isAdminRole ? !selectedDate : true}
-                            required
-                        >
-                            <option value="">Select organization</option>
-                            {organizations.map((org) => (
-                                <option
-                                    key={
-                                        org.id ||
-                                        (org._links && org._links.self && org._links.self.href)
-                                    }
-                                    value={
-                                        org.id ||
-                                        (org._links &&
-                                            org._links.self &&
-                                            org._links.self.href.split("/").pop())
-                                    }
-                                >
-                                    {org.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <button
-                        className="btn-primary1"
-                        onClick={handleGenerateReport}
-                        onMouseOver={(e) => (e.target.style.transform = "translateY(-2px)")}
-                        onMouseOut={(e) => (e.target.style.transform = "translateY(0)")}
-                    >
-                        📊 Generate Report
-                    </button>
+
+            <div className="day-closing-report-page">
+
+            <div className='report-page-header'>
+                <div className={'page-title-section'}>
+                    <Typography.Title className='page-title' level={2}>
+                        Day Closing Report
+                    </Typography.Title>
                 </div>
+                <div className={'page-actions'}></div>
+            </div>
+
+            <Form className="report-form"
+                  form={form}
+                  layout={'inline'}
+                  onFieldsChange={previewDayClosing}>
+
+                <Form.Item
+                    label={"Organization"}
+                    name={"organizationId"}
+                    size={'large'}
+                    rules={[{required: true, message: 'Please select an organization'}]}>
+                    <Select
+                        placeholder="Select Organization"
+                        options={organizations.map((org) => ({label: org.name, value: org.id}))}
+                        disabled={!isAdmin}
+                    />
+                </Form.Item>
+
+
+                <Form.Item
+                    label={'Select Closing Date'}
+                    name={'closingDate'}
+                    size={'large'}
+                    rules={[{required: true, message: 'Please select a date'}]}
+                >
+                    <DatePicker
+                        value={selectedDate}
+                        format={'DD-MM-YYYY'}
+                    />
+                </Form.Item>
+
+                <Button
+                    htmlType={'submit'}
+                    type="primary"
+                >
+                    Generate PDF
+                </Button>
+            </Form>
+
+
 
                 {pdfUrl && (
                     <div style={styles.pdfModal}>
@@ -1120,7 +1139,7 @@ function DayClosingReport() {
                                     borderRadius: "8px",
                                 }}
                             />
-                            <div style={{ textAlign: "right", marginTop: "16px" }}>
+                            <div style={{textAlign: "right", marginTop: "16px"}}>
                                 <a
                                     href={pdfUrl}
                                     download={`DayClosingReport_${selectedDate}.pdf`}
@@ -1157,7 +1176,7 @@ function DayClosingReport() {
                 ) : (
                     <>
                         <div style={styles.summaryContainer}>
-                            <div style={{ ...styles.summaryCard }}>
+                            <div style={{...styles.summaryCard}}>
                                 <div
                                     style={{
                                         color: "#2563eb",
@@ -1167,11 +1186,11 @@ function DayClosingReport() {
                                 >
                                     Opening Balance
                                 </div>
-                                <div style={{ ...styles.openingBalance, color: "#2563eb" }}>
+                                <div style={{...styles.openingBalance, color: "#2563eb"}}>
                                     {safeToLocaleString(records.openingBalance)}
                                 </div>
                             </div>
-                            <div style={{ ...styles.summaryCard }}>
+                            <div style={{...styles.summaryCard}}>
                                 <div
                                     style={{
                                         color: "#2563eb",
@@ -1181,11 +1200,11 @@ function DayClosingReport() {
                                 >
                                     Total Cash-In
                                 </div>
-                                <div style={{ ...styles.summaryAmount, color: "#2563eb" }}>
+                                <div style={{...styles.summaryAmount, color: "#2563eb"}}>
                                     {safeToLocaleString(records.cashIn)}
                                 </div>
                             </div>
-                            <div style={{ ...styles.summaryCard }}>
+                            <div style={{...styles.summaryCard}}>
                                 <div
                                     style={{
                                         color: "#dc2626",
@@ -1195,11 +1214,11 @@ function DayClosingReport() {
                                 >
                                     Total Cash-Out
                                 </div>
-                                <div style={{ ...styles.summaryAmount, color: "#dc2626" }}>
+                                <div style={{...styles.summaryAmount, color: "#dc2626"}}>
                                     {safeToLocaleString(records.cashOut)}
                                 </div>
                             </div>
-                            <div style={{ ...styles.summaryCard }}>
+                            <div style={{...styles.summaryCard}}>
                                 <div
                                     style={{
                                         color: "#059669",
@@ -1209,7 +1228,7 @@ function DayClosingReport() {
                                 >
                                     Net Balance
                                 </div>
-                                <div style={{ ...styles.summaryAmount, color: "#059669" }}>
+                                <div style={{...styles.summaryAmount, color: "#059669"}}>
                                     {safeToLocaleString(records.closingBalance)}
                                 </div>
                             </div>
@@ -1217,7 +1236,7 @@ function DayClosingReport() {
                         {/* Attachments Section */}
                         {attachments.length > 0 && (
                             <div style={styles.attachmentsSection}>
-                                <h4 style={{ color: "#059669", marginBottom: "10px" }}>
+                                <h4 style={{color: "#059669", marginBottom: "10px"}}>
                                     Attachments
                                 </h4>
                                 <div
@@ -1284,7 +1303,7 @@ function DayClosingReport() {
                                             height: "80%",
                                         }}
                                     >
-                                        <h4 style={{ color: "#059669", marginBottom: "10px" }}>
+                                        <h4 style={{color: "#059669", marginBottom: "10px"}}>
                                             Cash In Expenses
                                         </h4>
                                         <div
@@ -1337,7 +1356,7 @@ function DayClosingReport() {
                                             minWidth: "48%",
                                         }}
                                     >
-                                        <h4 style={{ color: "#dc2626", marginBottom: "10px" }}>
+                                        <h4 style={{color: "#dc2626", marginBottom: "10px"}}>
                                             Cash Out Expenses
                                         </h4>
                                         <div
@@ -1431,7 +1450,7 @@ function DayClosingReport() {
                                                     {records._500SoiledNoteCount || 0}
                                                 </td>
                                                 <td
-                                                    style={{ ...styles.tableCell, fontWeight: "600" }}
+                                                    style={{...styles.tableCell, fontWeight: "600"}}
                                                 >
                                                     ₹{" "}
                                                     {safeToLocaleString(
@@ -1455,7 +1474,7 @@ function DayClosingReport() {
                                                     {records._200SoiledNoteCount || 0}
                                                 </td>
                                                 <td
-                                                    style={{ ...styles.tableCell, fontWeight: "600" }}
+                                                    style={{...styles.tableCell, fontWeight: "600"}}
                                                 >
                                                     ₹{" "}
                                                     {safeToLocaleString(
@@ -1479,7 +1498,7 @@ function DayClosingReport() {
                                                     {records._100SoiledNoteCount || 0}
                                                 </td>
                                                 <td
-                                                    style={{ ...styles.tableCell, fontWeight: "600" }}
+                                                    style={{...styles.tableCell, fontWeight: "600"}}
                                                 >
                                                     ₹{" "}
                                                     {safeToLocaleString(
@@ -1503,7 +1522,7 @@ function DayClosingReport() {
                                                     {records._50SoiledNoteCount || 0}
                                                 </td>
                                                 <td
-                                                    style={{ ...styles.tableCell, fontWeight: "600" }}
+                                                    style={{...styles.tableCell, fontWeight: "600"}}
                                                 >
                                                     ₹{" "}
                                                     {safeToLocaleString(
@@ -1527,7 +1546,7 @@ function DayClosingReport() {
                                                     {records._20SoiledNoteCount || 0}
                                                 </td>
                                                 <td
-                                                    style={{ ...styles.tableCell, fontWeight: "600" }}
+                                                    style={{...styles.tableCell, fontWeight: "600"}}
                                                 >
                                                     ₹{" "}
                                                     {safeToLocaleString(
@@ -1551,7 +1570,7 @@ function DayClosingReport() {
                                                     {records._10SoiledNoteCount || 0}
                                                 </td>
                                                 <td
-                                                    style={{ ...styles.tableCell, fontWeight: "600" }}
+                                                    style={{...styles.tableCell, fontWeight: "600"}}
                                                 >
                                                     ₹{" "}
                                                     {safeToLocaleString(
@@ -1572,7 +1591,7 @@ function DayClosingReport() {
                                                 </td>
                                                 <td style={styles.tableCell}>-</td>
                                                 <td
-                                                    style={{ ...styles.tableCell, fontWeight: "600" }}
+                                                    style={{...styles.tableCell, fontWeight: "600"}}
                                                 >
                                                     ₹ {safeToLocaleString(records._1CoinCount * 1)}
                                                 </td>
@@ -1588,7 +1607,7 @@ function DayClosingReport() {
                                                 </td>
                                                 <td style={styles.tableCell}>-</td>
                                                 <td
-                                                    style={{ ...styles.tableCell, fontWeight: "600" }}
+                                                    style={{...styles.tableCell, fontWeight: "600"}}
                                                 >
                                                     ₹ {safeToLocaleString(records._5CoinCount * 5)}
                                                 </td>
@@ -1604,7 +1623,7 @@ function DayClosingReport() {
                                                 </td>
                                                 <td style={styles.tableCell}>-</td>
                                                 <td
-                                                    style={{ ...styles.tableCell, fontWeight: "600" }}
+                                                    style={{...styles.tableCell, fontWeight: "600"}}
                                                 >
                                                     ₹ {safeToLocaleString(records._10CoinCount * 10)}
                                                 </td>
@@ -1620,7 +1639,7 @@ function DayClosingReport() {
                                                 </td>
                                                 <td style={styles.tableCell}>-</td>
                                                 <td
-                                                    style={{ ...styles.tableCell, fontWeight: "600" }}
+                                                    style={{...styles.tableCell, fontWeight: "600"}}
                                                 >
                                                     ₹ {safeToLocaleString(records._20CoinCount * 20)}
                                                 </td>
@@ -1636,7 +1655,7 @@ function DayClosingReport() {
                                         >
                                             <td
                                                 colSpan="3"
-                                                style={{ ...styles.tableCell, fontWeight: "700" }}
+                                                style={{...styles.tableCell, fontWeight: "700"}}
                                             >
                                                 TOTAL
                                             </td>
@@ -1756,9 +1775,9 @@ function DayClosingReport() {
                         </div>
                     </div>
                 )}
-            </PageCard>
+            </div>
         </DefaultAppSidebarLayout>
     );
 }
 
-export default DayClosingReport;
+export default DayClosingReportPage;

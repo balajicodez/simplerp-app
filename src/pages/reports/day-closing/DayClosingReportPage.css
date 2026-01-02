@@ -1,0 +1,8 @@
+
+.day-closing-report-page .report-form {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--elevate-1);
+    margin-bottom: 2rem;
+}

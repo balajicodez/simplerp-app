@@ -1,0 +1,21 @@
+.list-page .list-page-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.list-page .list-page-header .page-title-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.list-page .list-page-header .page-title {
+    margin: 0;
+}
+
+.list-page .list-page-table {
+    border-radius: 8px;
+    box-shadow: var(--elevate-1);
+}
