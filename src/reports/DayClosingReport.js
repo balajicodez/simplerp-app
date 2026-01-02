@@ -1071,7 +1071,7 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
               disabled={isAdminRole ? !selectedDate : true}
               required
             >
-              <option value="">Select organization</option>
+              <option value="">Select Branch</option>
               {organizations.map((org) => (
                 <option
                   key={
