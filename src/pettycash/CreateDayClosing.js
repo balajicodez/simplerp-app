@@ -88,11 +88,11 @@ function CreateDayClosing() {
     { value: 1, label: '1c Coin', type: 'Coin' }
   ];
 
-  React.useEffect(() => {
-    import('../organization/organizationApi').then(mod => {
-      mod.fetchOrganizations().then(setOrganizations).catch(() => { });
-    });
-  }, []);
+  // React.useEffect(() => {
+  //   import('../organization/organizationApi').then(mod => {
+  //     mod.fetchOrganizations().then(setOrganizations).catch(() => { });
+  //   });
+  // }, []);
 
   
   React.useEffect(() => {
@@ -369,6 +369,11 @@ function CreateDayClosing() {
         const data = await res.text();
         setError(data);
       } else {
+        const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=9740665561&dvariables=RSH,${date},${cashIn},${cashOut},${closingBalance}`, {
+        method: 'POST'
+      });
+        
+
         setSuccess('Day closing created successfully!');
         setTimeout(() => navigate('/pettycash/day-closing'), 1200);
       }

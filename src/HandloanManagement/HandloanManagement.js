@@ -203,12 +203,12 @@ const HandLoanManagement = () => {
 
       // Use different endpoints based on view mode
       if (viewMode === 'ALL') {
-        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgId?page=${currentPage}&size=${pageSize}`;
+        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgIdAndStatus?page=${currentPage}&size=${pageSize}`;
       } else if (viewMode === 'RECOVERED') {
         // For recovered loans view, we show all CLOSED loans
-        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgId?page=${currentPage}&size=${pageSize}&status=CLOSED`;
+        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgIdAndStatus?page=${currentPage}&size=${pageSize}&status=CLOSED`;
       } else {
-        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgId?page=${currentPage}&size=${pageSize}`;
+        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgIdAndStatus?page=${currentPage}&size=${pageSize}&status=ISSUED,PARTIALLY RECOVERED`;
       }
       
             // 👇 If NOT admin → always use logged-in org
@@ -224,7 +224,7 @@ const HandLoanManagement = () => {
         }
       }
       if (orgId) {
-        url += `&organizationId=${orgId}`;
+       // url += `&organizationId=${orgId}`;
       }
 
       const bearerToken = localStorage.getItem('token');
@@ -1073,7 +1073,7 @@ const CreateHandLoanForm = ({
     onDateChange(form.organizationId, form.createdDate);
   }, [form.organizationId, form.createdDate]);
 
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
@@ -1123,8 +1123,7 @@ const CreateHandLoanForm = ({
         handLoanType: 'ISSUE',
         createdDate: form.createdDate || new Date().toISOString()
       };
-
-      console.log('Creating loan with data:', requestData);
+     
       const bearerToken = localStorage.getItem('token');
       const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans`, {
         method: 'POST',
@@ -1213,7 +1212,7 @@ const CreateHandLoanForm = ({
                 }
                 onChange={handleChange}
                 className="filter-select"
-                disabled={!enableOrgDropDown}
+                disabled={true}
               ><option value="">All Branches</option>
                 {organizations.map((org) => (
                   <option
@@ -1376,8 +1375,11 @@ const CreateHandLoanForm = ({
 
 // FIXED: Recover Hand Loan Form Component - Remove status field
 const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
+
+  const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
+
   const [form, setForm] = useState({
-    organizationId: '',
+    organizationId: enableOrgDropDown ? "" : localStorage.getItem("organizationId"),
     recoverAmount: '',
     narration: '',
     createdDate: new Date().toISOString().split('T')[0] // Default to today
@@ -1394,6 +1396,7 @@ const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
     }
   }, [loan]);
 
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
@@ -1433,8 +1436,7 @@ const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
         handLoanType: 'RECOVER',
         createdDate: form.createdDate || new Date().toISOString()
       };
-
-      console.log('Recovering loan with data:', requestData);
+     
       const bearerToken = localStorage.getItem('token');
       const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans`, {
         method: 'POST',
@@ -1499,19 +1501,26 @@ const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
       <form onSubmit={handleSubmit}>
         <div className="form-grid">
           <div className="form-group">
-            <label>Organization *</label>
+            <label>Branch *</label>
             <select
               name="organizationId"
-              value={form.organizationId}
+              value={
+                  enableOrgDropDown
+                    ? form.organizationId
+                    : localStorage.getItem("organizationId")
+                }
               onChange={handleChange}
               required
-            >
-              <option value="">Select Organization</option>
-              {organizations.map(org => (
-                <option key={org.id} value={org.id}>
-                  {org.name}
-                </option>
-              ))}
+              disabled={true}>
+              <option value="">Select Branch</option>
+              {organizations.map((org) => (
+                  <option
+                    key={org.id || org._links?.self?.href}
+                    value={org.id || org._links?.self?.href.split("/").pop()}
+                  >
+                    {org.name}
+                  </option>
+                ))}
             </select>
           </div>
 
