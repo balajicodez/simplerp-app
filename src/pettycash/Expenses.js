@@ -5,6 +5,8 @@ import './PettyCash.css';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Utils from '../Utils';
+import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 const API_PREFIX = '/simplerp/api';
 
@@ -39,8 +41,7 @@ function Expenses() {
   }, [pageParam, sizeParam]);
 
   return (
-    <div>
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
       <PageCard title="Expenses">
         if(Utils.isRoleApplicable('ADMIN') || Utils.accessAllowed('EXPENSES_OR_PETTYCASH')) {
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -113,7 +114,7 @@ function Expenses() {
           </>
         )}
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

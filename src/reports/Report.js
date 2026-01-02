@@ -4,6 +4,8 @@ import Sidebar from '../_components/sidebar/Sidebar';
 import { APP_SERVER_URL_PREFIX } from "./../constants.js";
 import LoadSpinner from './../LoadSpinner';
 import PageCard from '../_components/PageCard';
+import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function Report() {
 
@@ -88,8 +90,7 @@ function Report() {
     }
 
     return (
-        <div>
-            <Sidebar isOpen={true} />
+        <DefaultAppSidebarLayout pageTitle={'Reports'}>
             {loading ? <LoadSpinner /> :
                 <PageCard title="Job History">
                     <table >
@@ -126,7 +127,7 @@ function Report() {
                         })}
                     </table>
                 </PageCard>}
-        </div>
+        </DefaultAppSidebarLayout>
     );
 }
 export default Report;

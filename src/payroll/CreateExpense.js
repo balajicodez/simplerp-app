@@ -4,6 +4,7 @@ import PageCard from '../_components/PageCard';
 import '../pettycash/PettyCash.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function CreateExpense() {
   const [form, setForm] = useState({ description: '', amount: '', employeeId: '', subtype: '', type: '', expenseDate: '', referenceNumber: '', file: null });
@@ -101,8 +102,7 @@ function CreateExpense() {
   };
 
   return (
-    <div>
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={'Payroll'}>
   <PageCard title={location.pathname.includes('expenses-inward') || location.search.includes('type=CASH-IN') ? 'Create Expense - Inward' : location.pathname.includes('expenses-outward') || location.search.includes('type=CASH-OUT') ? 'Create Expense - Outward' : 'Create Expense'}>
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
         <form onSubmit={handleSubmit} encType="multipart/form-data">
@@ -144,7 +144,7 @@ function CreateExpense() {
           </div>
         </form>
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

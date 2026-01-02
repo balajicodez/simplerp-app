@@ -4,6 +4,7 @@ import Sidebar from '../_components/sidebar/Sidebar';
 import PageCard from '../_components/PageCard';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import './Employees.css';
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function EmployeeView() {
   const { id } = useParams();
@@ -26,8 +27,7 @@ function EmployeeView() {
   }, [id]);
 
   return (
-    <div>
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={"Employee Management"}>
       <PageCard title={employee ? employee.name : 'Employee Details'}>
         {loading && <div className="small">Loading...</div>}
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
@@ -77,7 +77,7 @@ function EmployeeView() {
           </div>
         )}
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

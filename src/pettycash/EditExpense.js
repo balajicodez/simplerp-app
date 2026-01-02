@@ -4,6 +4,8 @@ import Sidebar from '../_components/sidebar/Sidebar';
 import PageCard from '../_components/PageCard';
 import './EditExpense.css'; 
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
+import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function EditExpense() {
   const { id } = useParams();
@@ -176,8 +178,7 @@ function EditExpense() {
   const organizationCount = Array.isArray(organizations) ? organizations.length : 0;
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
       <PageCard title={`Edit Expense`}>
         
         
@@ -380,7 +381,7 @@ function EditExpense() {
           )}
         </div>
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

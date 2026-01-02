@@ -5,6 +5,8 @@ import './CreateDayClosing.css';
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
 import { useNavigate } from 'react-router-dom';
 import Utils from '../Utils';
+import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function CreateDayClosing() {
   const [description, setDescription] = useState('Day Closing');
@@ -16,7 +18,7 @@ function CreateDayClosing() {
   const [outward, setOutward] = useState('');
   const [closingBalance, setClosingBalance] = useState('');
   const [openingBalance, setOpeningBalance] = useState('');
-  
+
   // Simplified denomination state
   const [selectedDenomination, setSelectedDenomination] = useState('');
   const [goodCount, setGoodCount] = useState('');
@@ -34,7 +36,7 @@ function CreateDayClosing() {
   const [fileUploads, setFileUploads] = useState([]); // State for dynamic file uploads
   const [fileDescription, setFileDescription] = useState([]);
   const isAdminRole = Utils.isRoleApplicable('ADMIN');
-  
+
   // Handle file input change
   const handleFileChange = (index, event) => {
     const updatedFiles = [...fileUploads];
@@ -44,8 +46,8 @@ function CreateDayClosing() {
 
    // Handle file description change
   const handleFileDescriptionChange = (index, desc) => {
-    const description = [...fileDescription];    
-    description[index] = desc; // Store the selected file   
+    const description = [...fileDescription];
+    description[index] = desc; // Store the selected file
     setFileDescription(description);
   };
 
@@ -57,7 +59,7 @@ function CreateDayClosing() {
   // Remove a file upload input
   const removeFileUpload = (index) => {
     const updatedFiles = fileUploads.filter((_, i) => i !== index); // Remove the file input by index
-    const updatedDescriptions = fileDescription.filter((_, i) => i !== index);    
+    const updatedDescriptions = fileDescription.filter((_, i) => i !== index);
     setFileDescription(updatedDescriptions);
     setFileUploads(updatedFiles);
   };
@@ -94,7 +96,7 @@ function CreateDayClosing() {
     });
   }, []);
 
-  
+
   React.useEffect(() => {
     const bearerToken = localStorage.getItem('token');
     fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
@@ -111,7 +113,7 @@ function CreateDayClosing() {
       setOrganizationId(orgId);
       setDate(new Date().toISOString().slice(0, 10));
       fetchBalanceData(date, orgId);
-    } 
+    }
   }, []);
 
   const handleChange = async (e) => {
@@ -119,14 +121,14 @@ function CreateDayClosing() {
     if (type === 'select-one') {
       const selectedOrgId = e.target.value;
       setOrganizationId(selectedOrgId);
-      
+
       if (selectedOrgId && date) {
         await fetchBalanceData(date, selectedOrgId);
       }
     } else if (type === 'date') {
       const selectedDate = e.target.value;
       setDate(selectedDate);
-      
+
       if (organizationId && selectedDate) {
         await fetchBalanceData(selectedDate, organizationId);
       }
@@ -178,15 +180,15 @@ function CreateDayClosing() {
     const denomination = denominationOptions.find(d => d.value === parseInt(selectedDenomination));
     const good = parseInt(goodCount) || 0;
     const bad = parseInt(badCount) || 0;
-    
+
     let denominationValue;
     if (denomination.type === 'Coin') {
-     
+
       denominationValue = parseInt(selectedDenomination) ;
     } else {
       denominationValue = parseInt(selectedDenomination);
     }
-    
+
     const totalAmount = (good + bad) * denominationValue;
 
     const newEntry = {
@@ -201,7 +203,7 @@ function CreateDayClosing() {
     };
 
     setDenominationEntries([...denominationEntries, newEntry]);
-    
+
     // Reset form
     setSelectedDenomination('');
     setGoodCount('');
@@ -230,12 +232,12 @@ function CreateDayClosing() {
   const validateClosingBalance = () => {
     const { totalAmount } = getTotalSummary();
     const apiClosingBalance = parseFloat(closingBalance) || 0;
-    
+
     if (Math.abs(totalAmount - apiClosingBalance) > 0.01) {
       setBalanceError(`Closing balance mismatch! Denomination total: ₹${totalAmount.toFixed(2)} vs API closing balance: ₹${apiClosingBalance.toFixed(2)}`);
       return false;
     }
-    
+
     setBalanceError('');
     return true;
   };
@@ -303,7 +305,7 @@ function CreateDayClosing() {
 
     try {
       const desc = typeof description === 'string' && description.trim() ? description.trim() : 'Day Closing';
-      
+
       const {
         totalGood: cashIn,
         totalBad: cashOut,
@@ -351,20 +353,20 @@ function CreateDayClosing() {
         "pettycashdayclosing",
         new Blob([JSON.stringify(payload)], { type: "application/json" })
       );
-     
+
       fileUploads.forEach((file, idx) => {
         if (file) {
           formData.append(`files`, file);
           formData.append("fileDescriptions", fileDescription[idx] || "");
         }
       });
- 
+
       const res = await fetch(`${APP_SERVER_URL_PREFIX}/petty-cash/day-closing`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${bearerToken}` },
         body: formData,
       });
-      
+
       if (!res.ok) {
         const data = await res.text();
         setError(data);
@@ -393,8 +395,7 @@ function CreateDayClosing() {
   );
 
   return (
-    <div className="day-closing-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
       <PageCard title="Create Day Closing Report">
         <form onSubmit={handleSubmit} className="day-closing-form">
           {/* Basic Information Section */}
@@ -520,7 +521,7 @@ function CreateDayClosing() {
 
           <div className="form-section1">
             <h3 className="section-title">Attachments </h3>
-            <div className="form-section1">            
+            <div className="form-section1">
             <div className="file-uploads">
               {/* Dynamically render file upload inputs */}
               {fileUploads.map((file, index) => (
@@ -529,12 +530,12 @@ function CreateDayClosing() {
                   <input
                     type="file"
                     name="fileUpload"
-                    onChange={(e) => handleFileChange(index, e)}                   
+                    onChange={(e) => handleFileChange(index, e)}
                     accept="image/*,.pdf,.doc,.docx,.xlsx"
                   />
-             
+
                 <label>Description</label>
-                <input                 
+                <input
                   id={`fileDescriptions[${index}]`}
                   type="text"
                   name={`fileDescriptions[${index}]`}
@@ -542,7 +543,7 @@ function CreateDayClosing() {
                   onChange={(e) => handleFileDescriptionChange(index, e.target.value)}
                   className="form-input"
                 />
-             
+
                   <button
                     type="button"
                     onClick={() => removeFileUpload(index)}
@@ -704,7 +705,7 @@ function CreateDayClosing() {
                 disabled={loading}
               >
                 <span className="btn-icon">←</span>
-                Back 
+                Back
               </button>
             </div>
             <button
@@ -741,7 +742,7 @@ function CreateDayClosing() {
           )}
         </form>
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

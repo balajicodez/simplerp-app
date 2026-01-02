@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../_components/sidebar/Sidebar";
 import PageCard from "../_components/PageCard";
 import "./Roles.css";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 export default function Roles() {
   const navigate = useNavigate();
@@ -318,8 +319,7 @@ export default function Roles() {
   const totalRoles = roles.length;
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={'User Administration'}>
       <PageCard title="Role Management">
         <div className="dashboard-header1">
           <div className="header-content">
@@ -726,6 +726,6 @@ export default function Roles() {
           </>
         )}
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }

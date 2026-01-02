@@ -3,6 +3,7 @@ import Sidebar from '../_components/sidebar/Sidebar';
 import PageCard from '../_components/PageCard';
 import './HolidayCalendar.css';
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function buildCalendar(year, month) {
   const first = new Date(year, month, 1);
@@ -93,8 +94,7 @@ function HolidayCalendar() {
   };
 
   return (
-    <div>
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={"Holidays"}>
       <PageCard title={`Holiday Calendar — ${year} / ${month+1}`}>
         <div className="hc-controls">
           <button className="btn" onClick={() => { if (month === 0) { setYear(y => y-1); setMonth(11); } else setMonth(m => m-1); }}>Prev</button>
@@ -170,7 +170,7 @@ function HolidayCalendar() {
           </div>
         </div>
       )}
-    </div>
+    </DefaultAppSidebarLayout>
   );
 }
 

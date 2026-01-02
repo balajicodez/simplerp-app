@@ -5,6 +5,8 @@ import "./pettyCashCreateExpense.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import Utils from '../Utils';
+import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 const getLocalDate = () => {
   const today = new Date();
@@ -476,8 +478,7 @@ function CreateExpense() {
   const showCurrentBalanceSection = getExpenseType() === "CASH-OUT";
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
       <PageCard title={getPageTitle()}>
         {/* Enhanced Header Section */}
 
@@ -774,7 +775,7 @@ function CreateExpense() {
           </form>
         </div>
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

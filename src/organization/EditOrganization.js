@@ -4,6 +4,7 @@ import PageCard from "../_components/PageCard";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import { useNavigate, useParams } from "react-router-dom";
 import "./Organization.css";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function EditOrganization() {
   const { id } = useParams();
@@ -187,8 +188,7 @@ function EditOrganization() {
   }
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={"User Administration"}>
       <PageCard title="Edit Organization">
         {error && <div className="alert alert-error">⚠️ {error}</div>}
         {success && <div className="alert alert-success">✅ {success}</div>}
@@ -393,7 +393,7 @@ function EditOrganization() {
           </form>
         </div>
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

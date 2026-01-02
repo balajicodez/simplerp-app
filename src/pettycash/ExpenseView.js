@@ -4,6 +4,8 @@ import Sidebar from '../_components/sidebar/Sidebar';
 import PageCard from '../_components/PageCard';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import './EditExpense.css';
+import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function ExpenseView() {
   const { id } = useParams();
@@ -62,8 +64,7 @@ function ExpenseView() {
   };
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
       <PageCard title="Expense Details">
         
         {/* Header Section */}
@@ -286,7 +287,7 @@ function ExpenseView() {
           </div>
         )}
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

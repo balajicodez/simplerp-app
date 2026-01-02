@@ -4,6 +4,8 @@ import PageCard from "../_components/PageCard";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import { useNavigate } from "react-router-dom";
 import "./Organization.css";
+import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function CreateOrganization({ onCreated }) {
   const [form, setForm] = useState({
@@ -128,8 +130,7 @@ function CreateOrganization({ onCreated }) {
   };
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+    <DefaultAppSidebarLayout pageTitle={"User Administration"}>
       <PageCard title="Create Organization">
         {error && <div className="alert alert-error">⚠️ {error}</div>}
         {success && <div className="alert alert-success">✅ {success}</div>}
@@ -314,7 +315,7 @@ function CreateOrganization({ onCreated }) {
           </form>
         </div>
       </PageCard>
-    </div>
+    </DefaultAppSidebarLayout>
   );
 }
 

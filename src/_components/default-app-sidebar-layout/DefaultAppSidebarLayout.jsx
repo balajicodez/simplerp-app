@@ -30,7 +30,7 @@ function getSideBarMenu(userRoles = []) {
                 path: '/pettycash/expenses-inward'
             }, {
                 key: 'pettycash-expenses-outward',
-                label: 'Cash Flow - Inward',
+                label: 'Cash Flow - Outward',
                 path: '/pettycash/expenses-outward'
             }, {
                 key: 'pettycash-handloans',

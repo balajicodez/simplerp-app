@@ -4,6 +4,7 @@ import PageCard from "../_components/PageCard";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import { useNavigate } from "react-router-dom";
 import "./Organization.css";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function ViewOrganization() {
   const [orgs, setOrgs] = useState([]);
@@ -46,8 +47,7 @@ function ViewOrganization() {
   const getOrgId = (org) => org.id || org._links?.self?.href?.split("/").pop();
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={"User Administration"}>
       <PageCard title="Organizations Management">
         <div className="dashboard-header1">
           <div className="header-content">
@@ -154,7 +154,7 @@ function ViewOrganization() {
           </div>
         )}
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

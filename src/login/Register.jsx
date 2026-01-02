@@ -3,6 +3,7 @@ import { APP_SERVER_URL_PREFIX } from "../constants";
 import Sidebar from "../_components/sidebar/Sidebar";
 import PageCard from "../_components/PageCard";
 import "./Register.css";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 const RegisterPage = ({ onSuccess, onCancel }) => {
   const token = localStorage.getItem("token");
@@ -175,8 +176,7 @@ const RegisterPage = ({ onSuccess, onCancel }) => {
   };
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={'User Administration'}>
       <PageCard title="Create New User">
         <div className="create-user-container">
           <div className="create-user-header">
@@ -374,7 +374,7 @@ const RegisterPage = ({ onSuccess, onCancel }) => {
           </form>
         </div>
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 };
 

@@ -5,6 +5,7 @@ import PageCard from "../_components/PageCard";
 import RegisterPage from "./Register";
 import { APP_SERVER_URL_PREFIX } from "../constants";
 import "./Users.css";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 const UsersPage = () => {
   const navigate = useNavigate();
@@ -181,8 +182,7 @@ const UsersPage = () => {
   }
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={'User Administration'}>
       <PageCard title="User Management">
         <div className="dashboard-header1">
           <div className="header-content">
@@ -475,7 +475,7 @@ const UsersPage = () => {
           </>
         )}
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 };
 
