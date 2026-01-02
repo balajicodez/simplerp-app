@@ -6,7 +6,7 @@ import PageCard from "../_components/PageCard";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import Utils from '../Utils';
 import {DollarOutlined} from "@ant-design/icons";
-import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function DayClosingReport() {
     const [records, setRecords] = useState([]);
