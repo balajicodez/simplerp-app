@@ -5,6 +5,8 @@ import "./CreateDayClosing.css";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Utils from '../Utils';
+import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function DayClosing() {
   const [items, setItems] = useState([]);
@@ -207,8 +209,7 @@ function DayClosing() {
   };
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
       <PageCard title="Day Closing Management">
         {/* Header Section with Stats */}
         <div className="dashboard-header1">
@@ -510,7 +511,7 @@ function DayClosing() {
           </>
         )}
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

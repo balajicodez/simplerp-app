@@ -4,6 +4,8 @@ import Sidebar from '../_components/sidebar/Sidebar';
 import PageCard from '../_components/PageCard';
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import './HandLoans.css';
+import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import Utils from '../Utils';
 
 const HandLoanManagement = () => {
@@ -496,8 +498,7 @@ setTotalPages(data.totalPages || 0);
   };
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
       <PageCard title="Hand Loan Management">
         {/* Summary Dashboard */}
         <LoanSummaryDashboard
@@ -748,7 +749,7 @@ setTotalPages(data.totalPages || 0);
           </>
         )}
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 };
 

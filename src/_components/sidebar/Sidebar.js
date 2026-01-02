@@ -121,7 +121,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </li>
             <li className="subitem">
               <NavLink
-                to="/handloans"
+                to="/pettycash/handloans"
                 className={({ isActive }) => (isActive ? "active" : "")}
                 data-icon="🏢"
               >
@@ -178,7 +178,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       {isAdmin && (
         <li>
           <NavLink
-            to="/organization"
+            to="/user-administration/organizations"
             className={({ isActive }) => (isActive ? "active" : "")}
             data-icon="🏢"
           >

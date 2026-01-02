@@ -2,9 +2,7 @@
 // to the API and avoid CORS. In production this should be the real API origin.
 //export const APP_SERVER_URL_PREFIX = 'http://simplerp.sridivyasarees.com:9090/simplerp/api';
  
-export const APP_SERVER_URL_PREFIX = 'http://localhost:9090/simplerp/api';
-
-
+export const APP_SERVER_URL_PREFIX = process.env.REACT_APP_API_URL;
 export const APP_TITLE = 'SimplERP';
 export const CUSTOMER_TITLE = 'Sri Divya Sarees'
 

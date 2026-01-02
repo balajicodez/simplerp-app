@@ -6,43 +6,42 @@ import {jwtDecode} from "jwt-decode";
 import {LockOutlined, UserOutlined} from '@ant-design/icons';
 import {Alert, Button, Card, Checkbox, Divider, Form, Image, Input, Typography} from 'antd';
 import {useAuth} from "../../hooks/useAuth";
+import {loginApiCall} from "./loginApiService";
 
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
+    const [form] = Form.useForm();
+    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [remember, setRemember] = useState(false);
     const {login} = useAuth();
 
 
     const handleSubmit = async (e) => {
+        
         setLoading(true);
 
-        if (remember) localStorage.setItem('rememberedEmail', email);
-        else localStorage.removeItem('rememberedEmail');
+        const formValues = form.getFieldsValue();
+
+        if (formValues.isUsernameRemembered) localStorage.setItem('rememberedUsername', formValues.username);
+        else localStorage.removeItem('rememberedUsername');
 
         try {
-            const res = await fetch(APP_SERVER_URL_PREFIX + '/auth/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: email, password: password}),
-            });
-            const data = await res.json();
-
-            if (!res.ok) throw new Error('Failed to login');
+            const data = await loginApiCall(formValues.username, formValues.password);
             const decodedPayload = jwtDecode(data.token);
-            localStorage.setItem('token', data.token);
+
+
             localStorage.setItem('userName', data.userName);
             localStorage.setItem('organizationId', data.organizationId);
             localStorage.setItem('roles', decodedPayload.roles);
-            login(data);
 
-        } catch (err) {
-            setError({
-                title: 'Login failed. Please enter a valid username and password.'
+            // Session data - access it using useAuth hook
+            login(data.token, {
+                userName: data.userName,
+                organizationId: data.organizationId,
+                roles: decodedPayload.roles
             });
+        } catch (err) {
+            setError('Login failed. Please enter a valid username and password.');
         } finally {
             setLoading(false);
         }
@@ -50,10 +49,12 @@ export default function LoginPage() {
     };
 
     React.useEffect(() => {
-        const remembered = localStorage.getItem('rememberedEmail');
+        const remembered = localStorage.getItem('rememberedUsername');
         if (remembered) {
-            setEmail(remembered);
-            setRemember(true);
+            form.setFieldsValue({
+                'username': remembered,
+                'isUsernameRemembered': "checked"
+            });
         }
     }, []);
 
@@ -71,12 +72,12 @@ export default function LoginPage() {
                 <Divider/>
 
                 {error && <Alert className="login-error-message"
-                                 title={error.title}
-                                 description={error.description}
+                                 title={error}
                                  type="error"
                                  showIcon/>}
 
                 <Form
+                    form={form}
                     name="login"
                     layout="vertical"
                     onFinish={handleSubmit}
@@ -88,9 +89,7 @@ export default function LoginPage() {
                         label="Username"
                         rules={[{required: true, message: 'Please input your Username!'}]}
                     >
-                        <Input value={email}
-                               prefix={<UserOutlined/>}
-                               onChange={(e) => setEmail(e.target.value)}
+                        <Input prefix={<UserOutlined/>}
                                placeholder="Username"
                                disabled={loading}/>
                     </Form.Item>
@@ -102,16 +101,13 @@ export default function LoginPage() {
                         rules={[{required: true, message: 'Please input your Password!'}]}
                     >
                         <Input.Password
-                            value={password}
                             prefix={<LockOutlined/>}
-                            onChange={(e) => setPassword(e.target.value)}
                             placeholder="Password"
                             disabled={loading}/>
                     </Form.Item>
 
-                    <Form.Item>
-                        <Checkbox id="check" checked={remember} onChange={(e) => setRemember(e.target.checked)}
-                                  disabled={loading}>Remember me</Checkbox>
+                    <Form.Item name="isUsernameRemembered" valuePropName="checked">
+                        <Checkbox disabled={loading}>Remember me</Checkbox>
                     </Form.Item>
 
 
@@ -123,7 +119,7 @@ export default function LoginPage() {
                                 type="primary">{loading ? "Logging in..." : "Login"}</Button>
                     </Form.Item>
 
-                    <div>Need an account? <a href="/signup">Sign up!</a></div>
+                    {/*<div>Need an account? <a href="/signup">Sign up!</a></div>*/}
                 </Form>
             </Card>
         </div>

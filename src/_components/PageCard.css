@@ -54,8 +54,12 @@
 }
 
 .content.shifted {
-	margin-left: 220px; /* preserve existing sidebar shift */
+	margin-left: 280px; /* preserve existing sidebar shift */
 	padding: 12px;
+}
+
+.default-app-sidebar-layout .content.shifted {
+	margin-left: 0 !important;
 }
 
 @media (max-width: 800px) {
