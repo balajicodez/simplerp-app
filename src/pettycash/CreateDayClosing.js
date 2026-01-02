@@ -45,8 +45,7 @@ function CreateDayClosing() {
    // Handle file description change
   const handleFileDescriptionChange = (index, desc) => {
     const description = [...fileDescription];    
-    description[index] = desc; // Store the selected file
-    console.log("description",desc);
+    description[index] = desc; // Store the selected file   
     setFileDescription(description);
   };
 
@@ -110,6 +109,8 @@ function CreateDayClosing() {
     if(!isAdminRole) {
       const orgId = localStorage.getItem("organizationId");
       setOrganizationId(orgId);
+      setDate(new Date().toISOString().slice(0, 10));
+      fetchBalanceData(date, orgId);
     } 
   }, []);
 
