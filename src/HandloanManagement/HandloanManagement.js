@@ -1212,7 +1212,7 @@ const CreateHandLoanForm = ({
                 }
                 onChange={handleChange}
                 className="filter-select"
-                disabled={true}
+                disabled={!enableOrgDropDown}
               ><option value="">All Branches</option>
                 {organizations.map((org) => (
                   <option
