@@ -1,6 +1,6 @@
 import React from 'react';
 import './DashboardPage.css';
-import DefaultAppSidebarLayout from "../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import DefaultAppSidebarLayout from "../../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {Card, Statistic, Typography} from "antd";
 import {DollarOutlined, UsergroupAddOutlined} from "@ant-design/icons";
 
@@ -10,7 +10,7 @@ export default function DashboardPage() {
         <DefaultAppSidebarLayout pageTitle="Dashboard">
 
 
-            {/*<div className="dashboard-grid">
+            <div className="dashboard-grid">
 
                 <Card className={'dash-employees-card'} variant="borderless" style={{}}>
                     <Statistic
@@ -43,7 +43,7 @@ export default function DashboardPage() {
                         prefix={"₹"}
                     />
                 </Card>
-            </div>*/}
+            </div>
 
             <div className="insights-section">
                 <Typography.Title level={4} style={{marginTop: 0}}>Quick Insights</Typography.Title>

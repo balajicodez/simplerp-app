@@ -31,7 +31,7 @@ import ExpenseMastersListPage from './pages/petty-cash/expense-masters/ExpenseMa
 import EditOrganization from './organization/EditOrganization'
 import ExpenseView from './pettycash/ExpenseView';
 import EditExpense from './pettycash/EditExpense';
-import ExpenseMasterFormPage from './pages/petty-cash/expense-masters/ExpenseMasterFormPage';
+import ExpenseMasterCreatePage from './pages/petty-cash/expense-masters/ExpenseMasterCreatePage';
 import HolidayCalendar from './holidays/HolidayCalendar';
 import HandLoanManagement from './HandloanManagement/HandloanManagement';
 import {ProtectedRoute} from "./_components/protected/ProtectedRoute";
@@ -73,18 +73,12 @@ root.render(
                             <Route path="/pettycash/expenses-inward" element={<ExpensesInward/>}/>
 
                             <Route path="/pettycash/handloans" element={<HandLoanManagement/>}/>
-
-
                             <Route
-                                path="/pettycash/expense-masters"
-                                element={<ExpenseMastersListPage/>}/>
+                                path="/pettycash/masters"
+                                element={<ProtectedRoute><ExpenseMastersListPage/></ProtectedRoute>}/>
                             <Route
-                                path="/pettycash/expense-master"
-                                element={<ProtectedRoute><ExpenseMasterFormPage/></ProtectedRoute>}
-                            />
-                            <Route
-                                path="/pettycash/expense-master/:id"
-                                element={<ProtectedRoute><ExpenseMasterFormPage/></ProtectedRoute>}
+                                path="/pettycash/masters/create"
+                                element={<ProtectedRoute><ExpenseMasterCreatePage/></ProtectedRoute>}
                             />
 
 

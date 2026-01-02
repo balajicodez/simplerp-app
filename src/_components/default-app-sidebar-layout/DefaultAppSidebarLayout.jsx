@@ -1,35 +1,118 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './DefaultAppSidebarLayout.css';
 import logo from '../../assets/images/logo_clear.jpg';
 
-import {DollarOutlined, HomeOutlined, LogoutOutlined, SettingOutlined} from '@ant-design/icons';
-import {Avatar, Dropdown, Layout, Menu, Space, theme, Typography} from 'antd';
+import {DollarOutlined, HomeOutlined, LineChartOutlined, LogoutOutlined, SettingOutlined} from '@ant-design/icons';
+import {Avatar, Button, Divider, Dropdown, Layout, Menu, Space, theme, Typography} from 'antd';
 import {APP_TITLE} from "../../constants";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
+import {useAuth} from "../../hooks/useAuth";
+import {findItemByPath} from "./utils";
 
 const {Header, Content, Sider, Footer} = Layout;
 
 
-function getSideBarMenu() {
-    return [
+function getSideBarMenu(userRoles = []) {
+    const menu = [
         {
-            key: '1',
+            key: 'home',
             icon: <HomeOutlined/>,
             label: 'Home',
             path: '/',
         },
         {
-            key: '2',
+            key: 'pettycash',
             label: 'Petty Cash',
             icon: <DollarOutlined/>,
             children: [{
-                key: '2-1',
-                label: 'Masters',
+                key: 'pettycash-expenses-inward',
+                label: 'Cash Flow - Inward',
+                path: '/pettycash/expenses-inward'
+            }, {
+                key: 'pettycash-expenses-outward',
+                label: 'Cash Flow - Inward',
+                path: '/pettycash/expenses-outward'
+            }, {
+                key: 'pettycash-handloans',
+                label: 'Hand Loans',
+                path: '/pettycash/handloans'
+            },  {
+                key: 'pettycash-day-closing',
+                label: 'Day Closing',
+                path: '/pettycash/day-closing'
+            }, {
+                key: 'pettycash-masters',
+                label: 'Expenses - Masters',
                 path: '/pettycash/masters'
             }]
+        },
+        {
+            key: 'reports',
+            label: 'Reports',
+            icon: <LineChartOutlined />,
+            children: [{
+                key: 'reports-day-closing',
+                label: 'Day Closing Report',
+                path: '/reports/day-closing'
+            }]
+        },
+        {
+            key: 'user-administration',
+            label: 'User Administration',
+            icon: <SettingOutlined/>,
+            roles: ['ADMIN'],
+            children: [
+                {
+                    key: 'user-administration-users',
+                    label: 'Users',
+                    path: '/user-administration/users'
+                },
+                {
+                    key: 'user-administration-roles',
+                    label: 'Roles',
+                    path: '/user-administration/roles'
+                },
+                {
+                    key: 'user-administration-organizations',
+                    label: 'Organizations',
+                    path: '/user-administration/organizations'
+                }
+            ]
         }
-    ]
+    ];
+
+    // Recursive function to filter menu items
+    const filterMenu = (list) => {
+        return list
+            .filter(item => {
+                // 1. If no roles are defined, it's public
+                if (!item.roles || item.roles.length === 0) return true;
+
+                // 2. Check if user has at least one of the required roles
+                return item.roles.some(role => userRoles.includes(role));
+            })
+            .map(item => {
+                // 3. If the item has children, filter them recursively
+                if (item.children) {
+                    const filteredChildren = filterMenu(item.children);
+                    return { ...item, children: filteredChildren };
+                }
+                return item;
+            })
+            // 4. Clean up: Don't show parent menus if all their children are hidden
+            .filter(item => {
+                if (item.children && item.children.length === 0 && !item.path) {
+                    return false;
+                }
+                return true;
+            });
+    };
+
+    return filterMenu(menu);
 }
+
+
+
 
 function profileMenu() {
     return {
@@ -57,34 +140,41 @@ function profileMenu() {
 }
 
 
+
 export default function DefaultAppSidebarLayout({children, pageTitle}) {
 
-    const [userName, setUserName] = useState(localStorage.getItem('userName') || 'User');
-
+    const [userName] = useState(localStorage.getItem('userName') || 'User');
     const [collapsed, setCollapsed] = useState(false);
 
     const navigate = useNavigate();
+    const {session, logout} = useAuth();
 
 
     const {
-        token: {colorBgContainer, borderRadiusLG, colorPrimary},
+        token: {colorPrimary},
     } = theme.useToken();
 
-    const siderStyle = {
-        height: '100vh',
-        position: 'sticky',
-        insetInlineStart: 0,
-        top: 0,
-        scrollbarWidth: 'thin',
-        scrollbarGutter: 'stable'
-    };
+
+    const location = useLocation();
+    const sidebarMenu = getSideBarMenu(session?.roles || []);
+    const selectedItem = findItemByPath(sidebarMenu,location.pathname);
+    const allTopMenuKeys = sidebarMenu.map(item => item.key);
+
+
+    // collapsing sidebar on resize
+    useEffect(() => {
+        const onResize = () => setCollapsed(window.innerWidth < 900);
+        onResize();
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
 
     return (
         <Layout hasSider>
-            <Sider style={siderStyle}
+            <Sider className={'default-sidebar'}
                    width={240}
                    collapsible
-                   trigger={null}
                    collapsed={collapsed}
 
                    onCollapse={(value) => setCollapsed(value)}>
@@ -93,29 +183,38 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
 
                     <img className='sidebar-header-logo' src={logo} alt="Logo"/>
 
-                    <Typography.Title level={3} className="sidebar-header-title">{APP_TITLE}</Typography.Title>
+                    { !collapsed &&  <Typography.Title level={3} className="sidebar-header-title">{APP_TITLE}</Typography.Title>}
 
-                    {/* <Button
-                        className="sider-button"
-                        shape="circle"
-                        icon={collapsed ? <RightOutlined/> : <LeftOutlined/>}
-                        onClick={() => setCollapsed(!collapsed)}></Button>*/}
+
                 </div>
 
 
-                <Menu theme={'dark'} mode="inline"
-                      style={{borderInlineEnd: 'none'}}
+                <Menu mode="inline"
+                      theme="dark"
+                      className={"sidebar-menu"}
                       onClick={(e) => {
                           navigate(e.item.props.path)
                       }}
-                      defaultSelectedKeys={['4']} items={getSideBarMenu()}/>
+                      defaultOpenKeys={allTopMenuKeys}
+                      defaultSelectedKeys={[selectedItem?.key || 'home']}
+                      items={sidebarMenu}/>
+
+
+                <div className="sider-button-spacing"></div>
+
+                <div className="sider-button">
+                    <Button color="danger" variant="filled" block icon={<LogoutOutlined/>} onClick={() => {
+                        logout()
+                    }}>{ !collapsed && 'Logout'}</Button>
+                </div>
+
             </Sider>
 
 
-            <Layout>
+            <Layout className={'default-app-sidebar-layout'}>
 
 
-                <Header className={'default-app-sidebar-layout-header'} style={{background: colorBgContainer}}>
+                <Header className={'default-app-sidebar-layout-header'}>
 
                     <div className={'left-section'}>
                         <Typography.Title level={3} className="page-title">{pageTitle}</Typography.Title>
@@ -138,17 +237,11 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
                     </div>
                 </Header>
                 <Content style={{
-                    margin: '24px 16px 0',
-                    overflow: 'initial',
-                    padding: 24,
-                    background: colorBgContainer,
-                    borderRadius: borderRadiusLG
+                    margin: '24px 40px 0',
+                    overflow: 'initial'
                 }}>
                     {children}
                 </Content>
-                <Footer style={{textAlign: 'center'}}>
-                    {APP_TITLE} © {new Date().getFullYear()}
-                </Footer>
             </Layout>
         </Layout>
     );

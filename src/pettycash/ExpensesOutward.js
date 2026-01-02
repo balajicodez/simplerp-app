@@ -5,7 +5,7 @@ import {APP_SERVER_URL_PREFIX} from '../constants.js';
 import {useNavigate, useSearchParams} from 'react-router-dom';
 import Utils from '../Utils';
 import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import DefaultAppSidebarLayout from "../_components/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function ExpensesOutward() {
     const [items, setItems] = useState([]);
@@ -560,7 +560,7 @@ function ExpensesOutward() {
                                   const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${item.id}`, {
                                     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
                                   });
-                                  const json = await res.json();
+                                  const json = await res.json();                               
                                   setModalFile(
                                     json.imageData || json.fileUrl || json.file
                                   )
