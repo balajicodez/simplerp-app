@@ -110,7 +110,7 @@ function ViewOrganization() {
             <table className="modern-table organizations-table">
               <thead>
                 <tr>
-                  <th>Organization</th>
+                  <th>Branch</th>
                   <th>Registration</th>
                   <th>Tax Details</th>
                   <th>Contact Info</th>
