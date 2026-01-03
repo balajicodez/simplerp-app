@@ -5,6 +5,7 @@ import "./pettyCashCreateExpense.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import Utils from '../Utils';
+import CameraCapture from '../CameraCapture';
 import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
@@ -692,8 +693,7 @@ function CreateExpense() {
                     </select>
                   </div>
 
-                  <div className="flex wrap gap-4 w-full">
-                    {/* File Upload */}
+                <div className="flex wrap gap-4 w-full">
                     <div className="w-1/2">
                       <label className="">File Upload</label>
                       <input
@@ -719,8 +719,12 @@ function CreateExpense() {
                         </div>
                       )}
                     </div>
-
-                    {/* Description */}
+                  </div>
+                   <div className="flex wrap gap-4 w-full">
+                     <div className="w-1/2">
+                      <label className="">File/Image Capture</label>
+                      <CameraCapture />
+                     </div>
                   </div>
                   <div className="w-full">
                     <label>Narration</label>
