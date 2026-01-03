@@ -1064,6 +1064,7 @@ const CreateHandLoanForm = ({
     narration: "",
     handLoanType: "ISSUE",
     createdDate: getLocalDate(),
+    file: null
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -1075,7 +1076,7 @@ const CreateHandLoanForm = ({
 
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, files } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
 
     if (name === 'organizationId' && value && form.createdDate) {
@@ -1087,11 +1088,18 @@ const CreateHandLoanForm = ({
       // Fetch balance for selected date and organization
       onDateChange(form.organizationId, value);
     }
+
+     if (name === "file") {
+      const file = files[0];
+      setForm((f) => ({ ...f, file }));
+      return;
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
     
     if (!form.organizationId || !form.partyName || !form.loanAmount) {
       setError('Please fill all required fields');
@@ -1124,14 +1132,20 @@ const CreateHandLoanForm = ({
         createdDate: form.createdDate || new Date().toISOString()
       };
      
+      const formData = new FormData();
+      formData.append(
+        "handloan",
+        new Blob([JSON.stringify(requestData)], { type: "application/json" })
+      );
+      if (form.file) formData.append("file", form.file);
+
       const bearerToken = localStorage.getItem('token');
       const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+        headers: {          
           'Authorization': `Bearer ${bearerToken}`
         },
-        body: JSON.stringify(requestData)
+        body: formData
       });
 
       if (response.ok) {

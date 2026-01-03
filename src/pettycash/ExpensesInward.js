@@ -451,13 +451,18 @@ function ExpensesInward() {
                         </td>
 
                         <td className="receipt-cell">
-                          {item.imageData || item.fileUrl || item.file ? (
+                          {item.hasImage ? (
                             <button
                               className="btn-outline view-btn"
-                              onClick={() =>
-                                setModalFile(
-                                  item.imageData || item.fileUrl || item.file
-                                )
+                              onClick={async () =>{
+                                  const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${item.id}`, {
+                                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                                  });
+                                  const json = await res.json();                               
+                                  setModalFile(
+                                    json.imageData || json.fileUrl || json.file
+                                  )
+                               }
                               }
                             >
                               👁️ View
