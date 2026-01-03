@@ -451,28 +451,33 @@ function ExpensesInward() {
                           </span>
                                             </td>
 
-                                            <td className="receipt-cell">
-                                                {item.imageData || item.fileUrl || item.file ? (
-                                                    <button
-                                                        className="btn-outline view-btn"
-                                                        onClick={() =>
-                                                            setModalFile(
-                                                                item.imageData || item.fileUrl || item.file
-                                                            )
-                                                        }
-                                                    >
-                                                        👁️ View
-                                                    </button>
-                                                ) : (
-                                                    <span className="no-receipt">(No receipt)</span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                                </tbody>
-                            </table>
-                        </div>
+                        <td className="receipt-cell">
+                          {item.hasImage ? (
+                            <button
+                              className="btn-outline view-btn"
+                              onClick={async () =>{
+                                  const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${item.id}`, {
+                                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                                  });
+                                  const json = await res.json();
+                                  setModalFile(
+                                    json.imageData || json.fileUrl || json.file
+                                  )
+                               }
+                              }
+                            >
+                              👁️ View
+                            </button>
+                          ) : (
+                            <span className="no-receipt">(No receipt)</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
                         {/* Pagination */}
                         {sortedItems.length > 0 && (
