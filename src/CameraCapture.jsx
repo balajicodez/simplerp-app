@@ -1,10 +1,12 @@
 import React, { useRef, useState } from "react";
+import './CameraCapture.css';
 
 const CameraCapture = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [image, setImage] = useState(null);
   const [stream, setStream] = useState(null);
+  const [modalFile, setModalFile] = useState(null);
 
   // Start Camera
   const startCamera = async () => {
@@ -41,27 +43,29 @@ const CameraCapture = () => {
     stream?.getTracks().forEach(track => track.stop());
   };
 
-  return (
-    <div>
-      <button onClick={startCamera}>Open Camera</button>
-      <button onClick={captureImage}>Capture</button>
-      <button onClick={stopCamera}>Stop</button>
+  return (    
+    <div className="modal-overlay" onClick={() => setModalFile(null)}>
+      <div>
+        <button onClick={startCamera}>Open Camera</button>
+        <button onClick={captureImage}>Capture</button>
+        <button onClick={stopCamera}>Stop</button>
 
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        style={{ width: "300px", marginTop: "10px" }}
-      />
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          style={{ width: "300px", marginTop: "10px" }}
+        />
 
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+        <canvas ref={canvasRef} style={{ display: "none" }} />
 
-      {image && (
-        <div>
-          <h4>Captured Image</h4>
-          <img src={image} alt="captured" width="300" />
-        </div>
-      )}
+        {image && (
+          <div>
+            <h4>Captured Image</h4>
+            <img src={image} alt="captured" width="300" />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

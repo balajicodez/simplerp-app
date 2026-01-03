@@ -719,12 +719,21 @@ function CreateExpense() {
                       )}                     
                     </div>                   
                   </div>
-                   <div className="flex wrap gap-4 w-full">
+                {/* <div className="flex wrap gap-4 w-full">
                      <div className="w-1/2">
                       <label className="">File/Image Capture</label>
-                      <CameraCapture />
+
+                      <button
+                            type="button"
+                            onClick={() => {
+                              return <CameraCapture />;
+                            }}
+                          >
+                            Open Camera
+                       </button>
+
                      </div>
-                  </div> 
+                  </div>   */}
                   <div className="w-full">
                     <label>Narration</label>
                     <textarea
