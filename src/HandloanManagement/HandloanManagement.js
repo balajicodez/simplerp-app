@@ -226,7 +226,7 @@ const HandLoanManagement = () => {
         }
       }
       if (orgId) {
-       // url += `&organizationId=${orgId}`;
+        url += `&organizationId=${orgId}`;
       }
 
       const bearerToken = localStorage.getItem('token');
@@ -557,7 +557,7 @@ setTotalPages(data.totalPages || 0);
                   : "Recovered Loans"}
               </button>
             </div>
-            {/* <select
+            { <select
                 value={
                   enableOrgDropDown
                     ? selectedOrgId
@@ -576,7 +576,7 @@ setTotalPages(data.totalPages || 0);
                   </option>
                 ))}
 
-              </select> */}
+              </select> }
             <div className="search-section">
               <div className="search-box">
                 <input
