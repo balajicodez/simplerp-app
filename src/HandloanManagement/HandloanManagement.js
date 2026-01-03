@@ -25,7 +25,7 @@ const HandLoanManagement = () => {
   const [fetchedBalance, setFetchedBalance] = useState(0);
   const [recoveredLoansForMainLoan, setRecoveredLoansForMainLoan] = useState([]);
   const [loadingRecoveredLoans, setLoadingRecoveredLoans] = useState(false);
-  const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
+  const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");  
   const [selectedOrgId, setSelectedOrgId] = useState("");
   const navigate = useNavigate();  const pageSize = 10;
 
@@ -85,7 +85,7 @@ const HandLoanManagement = () => {
     setLoadingRecoveredLoans(true);
     try {
       const bearerToken = localStorage.getItem('token');
-      const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/getmainloadbyid/${mainLoanId}`, {
+      const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/getmainloanbyid/${mainLoanId}`, {
         headers: { 'Authorization': `Bearer ${bearerToken}` }
       });
       if (response.ok) {
@@ -208,7 +208,7 @@ const HandLoanManagement = () => {
         // For recovered loans view, we show all CLOSED loans
         url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgIdAndStatus?page=${currentPage}&size=${pageSize}&status=CLOSED`;
       } else {
-        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgIdAndStatus?page=${currentPage}&size=${pageSize}&status=ISSUED,PARTIALLY RECOVERED`;
+        url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgIdAndStatus?page=${currentPage}&size=${pageSize}&status=ISSUED,PARTIALLY_RECOVERED`;
       }
       
             // 👇 If NOT admin → always use logged-in org
@@ -913,7 +913,7 @@ const LoanDataTable = ({
               <th className="balance-col">Balance</th>
               {viewMode !== "ALL" && <th className="progress-col">Progress</th>}
               <th className="status-col">Status</th>
-              <th className="actions-col">Actions</th>
+              <th className="actions-col">Receipt</th>
             </tr>
           </thead>
           <tbody>
@@ -963,6 +963,8 @@ const LoanTableRow = ({
   RecoveryProgressBar,
   viewMode
 }) => {
+
+  const [modalFile, setModalFile] = useState(null);
   const isRecoveredLoan = loan.status === 'CLOSED';
   const canSelect = !isRecoveredLoan && viewMode !== 'RECOVERED';
   
@@ -1023,15 +1025,65 @@ const LoanTableRow = ({
       <td className="status-col">
         {getStatusBadge(loan)}
       </td>
-      <td className="actions-col">
-        <button 
-          className="btn-view"
-          onClick={() => onViewDetails(loan)}
-          title="View Details"
-        >
-          👁️
-        </button>
+      
+      <td className="actions-col">  
+        {loan.hasImage ? (
+            <button
+              className="btn-view"
+              onClick={async () =>{
+                  const res = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/${loan.id}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                  });
+                  const json = await res.json();                               
+                  setModalFile(
+                    json.imageData || json.fileUrl || json.file
+                  )
+                }
+              }
+            >
+              👁️ View
+            </button>   ) : (
+                            <span className="no-receipt">(No receipt)</span>
+                          )}        
       </td>
+      {modalFile && (
+          <div className="modal-overlay" onClick={() => setModalFile(null)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Receipt Preview</h3>
+                <button
+                  className="modal-close"
+                  onClick={() => setModalFile(null)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="modal-body">
+                {modalFile.startsWith("data:image") ? (
+                  <img
+                    src={modalFile}
+                    alt="Expense Receipt"
+                    className="receipt-image"
+                  />
+                ) : (
+                  <img
+                    src={`data:image/png;base64,${modalFile}`}
+                    alt="Expense Receipt"
+                    className="receipt-image"
+                  />
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn-primary"
+                  onClick={() => setModalFile(null)}
+                >
+                  Close Preview
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </tr>
   );
 };
@@ -1405,7 +1457,7 @@ const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
     if (loan) {
       setForm(prev => ({
         ...prev,
-        organizationId: loan.organization?.id || ''
+        organizationId: loan.organizationId || ''
       }));
     }
   }, [loan]);
@@ -1451,14 +1503,20 @@ const RecoverHandLoanForm = ({ loan, organizations, onSuccess, onCancel }) => {
         createdDate: form.createdDate || new Date().toISOString()
       };
      
+      const formData = new FormData();
+      formData.append(
+        "handloan",
+        new Blob([JSON.stringify(requestData)], { type: "application/json" })
+      );
+      if (form.file) formData.append("file", form.file);
+
       const bearerToken = localStorage.getItem('token');
       const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+        headers: {          
           'Authorization': `Bearer ${bearerToken}`
         },
-        body: JSON.stringify(requestData)
+        body: formData
       });
 
       if (response.ok) {

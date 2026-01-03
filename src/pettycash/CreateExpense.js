@@ -5,6 +5,7 @@ import "./pettyCashCreateExpense.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { APP_SERVER_URL_PREFIX } from "../constants.js";
 import Utils from '../Utils';
+import CameraCapture from '../CameraCapture';
 
 const getLocalDate = () => {
   const today = new Date();
@@ -691,14 +692,13 @@ function CreateExpense() {
                     </select>
                   </div>
 
-                  <div className="flex wrap gap-4 w-full">
-                    {/* File Upload */}
+                <div className="flex wrap gap-4 w-full">                    
                     <div className="w-1/2">
                       <label className="">File Upload</label>
                       <input
                         name="file"
                         type="file"
-                        onChange={handleChange}
+                        onChange={handleChange}                      
                         accept="image/*,.pdf,.doc,.docx,.xlsx"
                         className="w-full"
                       />
@@ -716,11 +716,15 @@ function CreateExpense() {
                             ×
                           </button>
                         </div>
-                      )}
-                    </div>
-
-                    {/* Description */}
+                      )}                     
+                    </div>                   
                   </div>
+                   <div className="flex wrap gap-4 w-full">
+                     <div className="w-1/2">
+                      <label className="">File/Image Capture</label>
+                      <CameraCapture />
+                     </div>
+                  </div> 
                   <div className="w-full">
                     <label>Narration</label>
                     <textarea
