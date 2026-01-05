@@ -6,3 +6,10 @@
     box-shadow: var(--elevate-1);
     margin-bottom: 2rem;
 }
+
+.day-closing-report-page .summary-container {
+    display: grid;
+    grid-Template-Columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+    gap: 1rem;
+    margin-block: 2rem;
+}

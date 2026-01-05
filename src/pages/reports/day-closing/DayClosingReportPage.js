@@ -4,61 +4,63 @@ import autoTable from "jspdf-autotable";
 import {APP_SERVER_URL_PREFIX} from "../../../constants.js";
 import Utils from '../../../Utils';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {Button, Form, Typography, DatePicker, Select} from "antd";
+import {App as AntApp, Button, Card, DatePicker, Form, Modal, Select, Spin, Statistic, Typography} from "antd";
 import './DayClosingReportPage.css';
-import {useAuth} from "../../../hooks/useAuth";
+import {
+    fetchDayClosingData,
+    fetchExpenseReportData,
+    fetchHandloansData,
+    fetchOrganizations
+} from "./dayClosingReportApiService";
+import {safeToLocaleString} from "./utils";
 
-function DayClosingReportPage() {
-    const {session} = useAuth();
-    const isAdmin = session?.roles?.includes('ADMIN');
-
+export default function DayClosingReportPage() {
     const [form] = Form.useForm();
+    const {notification} = AntApp.useApp();
 
+    const showErrorNotification = (message) => {
+        notification.error({
+            title: message,
+            placement: 'top',
+        });
+    };
+
+    const showSuccessNotification = (message) => {
+        notification.success({
+            message: message,
+            placement: 'top',
+        });
+    }
+
+    const [openPdfModal, setOpenPdfModal] = useState(false);
     const [records, setRecords] = useState([]);
     const [expenses, setExpenses] = useState([]);
     const [handloans, setHandloans] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedOrganization, setSelectedOrganization] = useState(null);
     const [modalFile, setModalFile] = useState(null);
-    const [error, setError] = useState("");
     const [reportMsg, setReportMsg] = useState("");
-    const [totals, setTotals] = useState({
-        cashIn: 0,
-        cashOut: 0,
-        startingBalance: 0,
-        expenseCashIn: 0,
-        expenseCashOut: 0,
-        handloanCashIn: 0,
-        handloanCashOut: 0,
-    });
     const [pdfUrl, setPdfUrl] = useState("");
     const [organizations, setOrganizations] = useState([]);
-    const [organizationId, setOrganizationId] = useState("");
-    const [selectedDate, setSelectedDate] = useState("");
     const [attachments, setAttachments] = useState([]);
+    const isAdminRole = Utils.isRoleApplicable('ADMIN');
 
+    const formValues = form.getFieldsValue();
+    const selectedDate = formValues.closingDate?.format("YYYY-MM-DD");
+    const organizationId = formValues.organizationId;
 
-
-    // Safe number formatting function
-    const safeToLocaleString = (value) => {
-        if (value === null || value === undefined || isNaN(value)) {
-            return "0.00";
-        }
-        return Number(value).toFixed(2).toLocaleString();
-    };
 
     useEffect(() => {
-        const bearerToken = localStorage.getItem("token");
-        fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-            headers: {Authorization: `Bearer ${bearerToken}`},
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                const orgs = data._embedded ? data._embedded.organizations || [] : data;
-                setOrganizations(orgs);
-            })
-            .catch(() => {
-            });
+
+        (async () => {
+            const data = await fetchOrganizations();
+            const orgs = data._embedded ? data._embedded.organizations || [] : data;
+            setOrganizations(orgs);
+        })();
+
+        if (!isAdminRole) {
+            form.setFieldValue('organizationId', localStorage.getItem('organizationId'));
+        }
     }, []);
 
     // Date filtering for expenses
@@ -152,56 +154,41 @@ function DayClosingReportPage() {
         return {cashInHandloans, cashOutHandloans};
     };
 
-    useEffect(() => {
-        if (!isAdmin) {
-            setOrganizationId(localStorage.getItem('organizationId'));
-        }
-        if (!selectedDate || !organizationId) return;
 
-        const fetchAllData = async () => {
+    function onValuesChange() {
+        const formValues = form.getFieldsValue();
+        const closingDate = formValues.closingDate?.format("YYYY-MM-DD");
+        const organizationId = formValues.organizationId;
+
+        if (!closingDate || !organizationId) return;
+
+        setLoading(true);
+        notification.destroy();
+
+        (async () => {
             try {
-                setLoading(true);
-                setError("");
-                const bearerToken = localStorage.getItem("token");
+                await fetchDayClosing(closingDate, organizationId);
 
-                // Day closing
-                await previewDayClosing(selectedDate, organizationId);
-
-                // Expenses
-                const expensesResponse = await fetch(
-                    `${APP_SERVER_URL_PREFIX}/expenses/report?organizationId=${organizationId}&createdDate=${selectedDate}`,
-                    {headers: {Authorization: `Bearer ${bearerToken}`}}
-                );
-
-                if (expensesResponse.ok) {
-                    const expensesData = await expensesResponse.json();
-                    setExpenses(expensesData.content || expensesData || []);
-                } else {
-                    setExpenses([]);
-                }
+                // fetch expenses data
+                const expensesData = await fetchExpenseReportData(organizationId, closingDate);
+                setExpenses(expensesData.content || expensesData || []);
 
                 // Handloans
-                const handloansResponse = await fetch(
-                    `${APP_SERVER_URL_PREFIX}/handloans/all?page=${currentPage}&size=${pageSize}`,
-                    {headers: {Authorization: `Bearer ${bearerToken}`}}
-                );
+                const handloansData = await fetchHandloansData(currentPage, pageSize);
+                setHandloans(handloansData.content || handloansData || []);
 
-                if (handloansResponse.ok) {
-                    const handloansData = await handloansResponse.json();
-                    setHandloans(handloansData.content || handloansData || []);
-                } else {
-                    setHandloans([]);
-                }
+
             } catch (err) {
                 console.error(err);
-                setError("Failed to fetch report data");
-            } finally {
-                setLoading(false);
+                setExpenses([]);
+                setHandloans([]);
+                showErrorNotification("Failed to fetch report data");
             }
-        };
+            setLoading(false);
+        })();
 
-        fetchAllData();
-    }, [selectedDate, organizationId]);
+
+    }
 
     const formatDateDDMMYYYY = (dateValue) => {
         if (!dateValue) return "-";
@@ -259,32 +246,12 @@ function DayClosingReportPage() {
     };
 
 
-    const previewDayClosing = async () => {
-        const formValues = form.getFieldsValue();
-        const closingDate = formValues.closingDate?.format("YYYY-MM-DD");
-        const organizationId = formValues.organizationId;
-
-        if (!closingDate || !organizationId) {
-            setRecords([]);
-            return;
-        }
-
+    const fetchDayClosing = async (closingDate, orgId) => {
         try {
-            setLoading(true);
-            setError("");
             const bearerToken = localStorage.getItem("token");
-            const response = await fetch(
-                `${APP_SERVER_URL_PREFIX}/pettyCashDayClosings/search/findByClosingDateAndOrganizationId?closingDate=${closingDate}&organizationId=${organizationId}`,
-                {
-                    headers: {Authorization: `Bearer ${bearerToken}`},
-                }
-            );
-            if (!response.ok) {
-                throw new Error("Failed to fetch data");
-            }
-            const data = await response.json();
+            const data = await fetchDayClosingData(orgId, closingDate);
             setRecords(data);
-            console.log("Day Closing Data:", data._links.pettyCashDayClosingAttachment.href);
+
             const response2 = await fetch(
                 data._links.pettyCashDayClosingAttachment.href,
                 {
@@ -301,37 +268,17 @@ function DayClosingReportPage() {
 
         } catch (err) {
             console.log(err);
-            setAttachments([])
-            setError("Day Closing not found for the selected date");
-            setRecords(
-                JSON.stringify({
-                    cashIn: 0,
-                    cashOut: 0,
-                    closingBalance: 0,
-                    openingBalance: 0,
-                })
-            );
-            setLoading(false);
-        } finally {
-            setLoading(false);
+            setRecords({
+                cashIn: 0,
+                cashOut: 0,
+                closingBalance: 0,
+                openingBalance: 0,
+            });
+            setAttachments([]);
+            showErrorNotification("Day closing data not found for the selected date");
         }
     };
 
-    const handleDateChange = (e) => {
-        setSelectedDate(e.target.value);
-    };
-
-    const handleOrgChange = (e) => {
-        const orgId = e.target.value;
-        setOrganizationId(orgId);
-
-        const org = organizations.find(
-            (o) =>
-                String(o.id || o._links?.self?.href?.split("/").pop()) === String(orgId)
-        );
-
-        setSelectedOrganization(org || null);
-    };
 
 
     const getOrganizationAddressText = () => {
@@ -395,14 +342,8 @@ function DayClosingReportPage() {
     };
 
 
-    const handleGenerateReport = async (e) => {
-        const formValues = form.getFieldsValue();
-        const selectedDate = formValues.closingDate.format("YYYY-MM-DD");
-        const organizationId = formValues.organizationId;
+    const handleGenerateReport = () => {
         try {
-            debugger;
-            await previewDayClosing(selectedDate, organizationId);
-
             const filteredRecords = new Array(records);
             const filteredExpenses = getExpensesForDate(selectedDate);
 
@@ -694,6 +635,7 @@ function DayClosingReportPage() {
             });
 
             setPdfUrl(doc.output("bloburl"));
+            setOpenPdfModal(true);
         } catch (e) {
             console.error("PDF generation error:", e);
             setReportMsg("Failed to generate PDF");
@@ -758,37 +700,8 @@ function DayClosingReportPage() {
             backgroundColor: "#f8fafc",
         },
 
-        headerSection: {
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: "10px",
-            padding: "6px 0",
-            borderBottom: "1px solid #e2e8f0",
-            gap: "20px",
-        },
 
-        dateSelector: {
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-        },
 
-        dateLabel: {
-            fontWeight: "600",
-            color: "#374151",
-            fontSize: "14px",
-        },
-
-        dateInput: {
-            padding: "8px 12px",
-            border: "1px solid #d1d5db",
-            borderRadius: "6px",
-            fontSize: "14px",
-            backgroundColor: "white",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-        },
 
         generateButton: {
             background: "linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)",
@@ -804,39 +717,6 @@ function DayClosingReportPage() {
             whiteSpace: "nowrap",
         },
 
-        summaryContainer: {
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "20px",
-            marginBottom: "4px",
-            padding: "3px 16px",
-            marginTop: "10px",
-        },
-
-        summaryCard: {
-            background: "white",
-            padding: "5px",
-            borderRadius: "12px",
-            textAlign: "center",
-            border: "1px solid #e2e8f0",
-        },
-        cashInCard: {
-            borderLeft: "4px solid #2563eb",
-            background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
-        },
-        cashOutCard: {
-            borderLeft: "4px solid #dc2626",
-            background: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
-        },
-        netBalanceCard: {
-            borderLeft: "4px solid #059669",
-            background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)",
-        },
-        summaryAmount: {
-            fontSize: "24px",
-            fontWeight: "700",
-            marginTop: "8px",
-        },
         openingBalance: {
             fontSize: "24px",
             fontWeight: "700",
@@ -1036,6 +916,8 @@ function DayClosingReportPage() {
         },
     };
 
+
+
     const expensesForSelectedDate = getExpensesForDate(selectedDate);
     const handloansForSelectedDate = getHandloansForDate(selectedDate);
     const {cashInExpenses, cashOutExpenses} = categorizeExpenses(
@@ -1066,59 +948,84 @@ function DayClosingReportPage() {
 
     return (
         <DefaultAppSidebarLayout pageTitle={'Reports'}>
-
             <div className="day-closing-report-page">
 
-            <div className='report-page-header'>
-                <div className={'page-title-section'}>
-                    <Typography.Title className='page-title' level={2}>
-                        Day Closing Report
-                    </Typography.Title>
+                <div className='report-page-header'>
+                    <div className={'page-title-section'}>
+                        <Typography.Title className='page-title' level={2}>
+                            Day Closing Report
+                        </Typography.Title>
+                    </div>
+                    <div className={'page-actions'}></div>
                 </div>
-                <div className={'page-actions'}></div>
-            </div>
 
-            <Form className="report-form"
-                  form={form}
-                  layout={'inline'}
-                  onFieldsChange={previewDayClosing}>
+                <Form className="report-form"
+                      form={form}
+                      layout={'inline'}
+                      onValuesChange={onValuesChange}>
 
-                <Form.Item
-                    label={"Organization"}
-                    name={"organizationId"}
-                    size={'large'}
-                    rules={[{required: true, message: 'Please select an organization'}]}>
-                    <Select
-                        placeholder="Select Organization"
-                        options={organizations.map((org) => ({label: org.name, value: org.id}))}
-                        disabled={!isAdmin}
-                    />
-                </Form.Item>
+                    <Form.Item
+                        label={"Organization"}
+                        name={"organizationId"}
+                        size={'large'}
+                        rules={[{required: true, message: 'Please select an organization'}]}>
+                        <Select
+                            placeholder="Select Organization"
+                            options={organizations.map((org) => ({label: org.name, value: org.id}))}
+                            disabled={!isAdminRole}
+                        />
+                    </Form.Item>
 
 
-                <Form.Item
-                    label={'Select Closing Date'}
-                    name={'closingDate'}
-                    size={'large'}
-                    rules={[{required: true, message: 'Please select a date'}]}
+                    <Form.Item
+                        label={'Select Date'}
+                        name={'closingDate'}
+                        size={'large'}
+                        rules={[{required: true, message: 'Please select a date'}]}
+                    >
+                        <DatePicker
+                            format={'DD-MM-YYYY'}
+                        />
+                    </Form.Item>
+
+                    <Button
+                        htmlType={'submit'}
+                        type="primary"
+                        onClick={handleGenerateReport}
+                    >
+                        Generate PDF
+                    </Button>
+                </Form>
+
+
+                <Modal
+                    title="Day Closing PDF Report"
+                    centered
+                    open={openPdfModal}
+                    onOk={() => setOpenPdfModal(false)}
+                    onCancel={() => setOpenPdfModal(false)}
+                    width={1000}
+                    footer={[
+                        <Button onClick={() => setOpenPdfModal(false)}>Cancel</Button>,
+                        <Button
+                            href={pdfUrl}
+                            type={'primary'}
+                            download={`DayClosingReport_${selectedDate}.pdf`}>Download PDF</Button>
+                   ]}
                 >
-                    <DatePicker
-                        value={selectedDate}
-                        format={'DD-MM-YYYY'}
+                    <iframe
+                        src={pdfUrl}
+                        title="Day Closing PDF Report"
+                        style={{
+                            width: "100%",
+                            height: "75vh",
+                            border: "none"
+                        }}
                     />
-                </Form.Item>
-
-                <Button
-                    htmlType={'submit'}
-                    type="primary"
-                >
-                    Generate PDF
-                </Button>
-            </Form>
+                </Modal>
 
 
-
-                {pdfUrl && (
+                {/*{pdfUrl && (
                     <div style={styles.pdfModal}>
                         <div style={styles.pdfContainer}>
                             <button
@@ -1154,7 +1061,7 @@ function DayClosingReportPage() {
                             </div>
                         </div>
                     </div>
-                )}
+                )}*/}
 
                 {reportMsg && (
                     <div
@@ -1167,71 +1074,62 @@ function DayClosingReportPage() {
                         {reportMsg.includes("Failed") ? "❌" : "✅"} {reportMsg}
                     </div>
                 )}
-                {error && <div style={styles.errorMessage}>❌ {error}</div>}
+
 
                 {loading ? (
-                    <div style={styles.loadingContainer}>
-                        <div>Loading day closing records, expenses, and handloans...</div>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '2rem', gap: '1rem' }}>
+                        <Spin size="large"></Spin> Loading day closing records, expenses, and handloans...
                     </div>
                 ) : (
                     <>
-                        <div style={styles.summaryContainer}>
-                            <div style={{...styles.summaryCard}}>
-                                <div
-                                    style={{
-                                        color: "#2563eb",
-                                        fontWeight: "600",
-                                        fontSize: "14px",
+                        <div className="summary-container" style={styles.summaryContainer}>
+                            <Card variant="borderless" >
+                                <Statistic
+                                    styles={{
+                                        content: { color: '#2563eb' },
                                     }}
-                                >
-                                    Opening Balance
-                                </div>
-                                <div style={{...styles.openingBalance, color: "#2563eb"}}>
-                                    {safeToLocaleString(records.openingBalance)}
-                                </div>
-                            </div>
-                            <div style={{...styles.summaryCard}}>
-                                <div
-                                    style={{
-                                        color: "#2563eb",
-                                        fontWeight: "600",
-                                        fontSize: "14px",
+                                    title="Opening Balance"
+                                    value={safeToLocaleString(records.openingBalance)}
+                                    precision={2}
+                                    prefix={'₹'}
+                                />
+                            </Card>
+
+                            <Card variant="borderless" >
+                                <Statistic
+                                    styles={{
+                                        content: { color: '#2563eb' },
                                     }}
-                                >
-                                    Total Cash-In
-                                </div>
-                                <div style={{...styles.summaryAmount, color: "#2563eb"}}>
-                                    {safeToLocaleString(records.cashIn)}
-                                </div>
-                            </div>
-                            <div style={{...styles.summaryCard}}>
-                                <div
-                                    style={{
-                                        color: "#dc2626",
-                                        fontWeight: "600",
-                                        fontSize: "14px",
+                                    title="Total Cash-In"
+                                    value={safeToLocaleString(records.cashIn)}
+                                    precision={2}
+                                    prefix={'₹'}
+                                />
+                            </Card>
+
+                            <Card variant="borderless" >
+                                <Statistic
+                                    styles={{
+                                        content: { color: '#dc2626' },
                                     }}
-                                >
-                                    Total Cash-Out
-                                </div>
-                                <div style={{...styles.summaryAmount, color: "#dc2626"}}>
-                                    {safeToLocaleString(records.cashOut)}
-                                </div>
-                            </div>
-                            <div style={{...styles.summaryCard}}>
-                                <div
-                                    style={{
-                                        color: "#059669",
-                                        fontWeight: "600",
-                                        fontSize: "14px",
+                                    title="Total Cash-Out"
+                                    value={safeToLocaleString(records.cashOut)}
+                                    precision={2}
+                                    prefix={'₹'}
+                                />
+                            </Card>
+
+                            <Card variant="borderless" >
+                                <Statistic
+                                    styles={{
+                                        content: { color: '#059669' },
                                     }}
-                                >
-                                    Net Balance
-                                </div>
-                                <div style={{...styles.summaryAmount, color: "#059669"}}>
-                                    {safeToLocaleString(records.closingBalance)}
-                                </div>
-                            </div>
+                                    title="Net Balance"
+                                    value={safeToLocaleString(records.closingBalance)}
+                                    precision={2}
+                                    prefix={'₹'}
+                                />
+                            </Card>
                         </div>
                         {/* Attachments Section */}
                         {attachments.length > 0 && (
@@ -1779,5 +1677,3 @@ function DayClosingReportPage() {
         </DefaultAppSidebarLayout>
     );
 }
-
-export default DayClosingReportPage;

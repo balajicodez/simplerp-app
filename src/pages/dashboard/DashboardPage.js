@@ -12,7 +12,7 @@ export default function DashboardPage() {
 
             {/*<div className="dashboard-grid">
 
-                <Card className={'dash-employees-card'} variant="borderless" style={{}}>
+                <Card className={'dash-employees-card'} variant="borderless">
                     <Statistic
                         title="Total Employees"
                         value={10}
