@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import '../../../pettycash/PettyCash.css';
 import {useNavigate, useParams} from 'react-router-dom';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {App as AntApp, Button, Col, Form, Input, Row, Select, Typography} from "antd";
+import {App as AntApp, Button, Col, Form, Input, Row, Select, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
 import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
 import {fetchExpenseMaster, postExpenseTypeMaster} from "./expenseTypeMasterApiService";
@@ -13,7 +13,7 @@ export default function ExpenseMasterFormPage() {
     const navigate = useNavigate();
     const params = useParams();
 
-    const isCreateMode = !params.id;
+    const isCreateMode = params.idOrCreate === 'create';
 
     const {notification} = AntApp.useApp();
 
@@ -34,7 +34,7 @@ export default function ExpenseMasterFormPage() {
     useEffect(() => {
         if (isCreateMode) return;
         (async () => {
-            const data = await fetchExpenseMaster(params.id);
+            const data = await fetchExpenseMaster(params.idOrCreate);
             form.setFieldsValue({
                 subtype: data.subtype,
                 type: data.type,
@@ -51,7 +51,7 @@ export default function ExpenseMasterFormPage() {
 
         try {
             if (!isCreateMode) {
-                formValues.id = params.id;
+                formValues.id = params.idOrCreate;
             }
             await postExpenseTypeMaster(formValues);
 
@@ -73,8 +73,7 @@ export default function ExpenseMasterFormPage() {
 
             <div className="form-page">
 
-                <Button htmlType="submit"
-                        variant="filled"
+                <Button variant="filled"
                         color={'default'}
                         icon={<LeftOutlined/>}
                         size={'large'}
@@ -85,91 +84,92 @@ export default function ExpenseMasterFormPage() {
                     Back
                 </Button>
 
+                <Spin spinning={loading} tip="Loading..." size={'large'}>
+                    <Form
+                        form={form}
+                        onFinish={handleSubmit}
+                        onFinishFailed={onFinishFailed}
+                        noValidate={true}
+                        className="form-page"
+                        layout="vertical">
 
-                <Form
-                    form={form}
-                    onFinish={handleSubmit}
-                    onFinishFailed={onFinishFailed}
-                    noValidate={true}
-                    className="form-page"
-                    layout="vertical">
-
-                    <div className='form-page-header'>
-
-
-                        <div className={'page-title-section'}>
+                        <div className='form-page-header'>
 
 
-                            <Typography.Title className='page-title' level={2}>
-                                {isCreateMode ? 'Create Expense Master' : 'Edit Expense Master'}
-                            </Typography.Title>
+                            <div className={'page-title-section'}>
+
+
+                                <Typography.Title className='page-title' level={2}>
+                                    {isCreateMode ? 'Create Expense Master' : 'Edit Expense Master'}
+                                </Typography.Title>
+                            </div>
+
+
+                            <div className={'page-actions'}></div>
                         </div>
 
-
-                        <div className={'page-actions'}></div>
-                    </div>
-
-                    <div className="form-page-fields-section">
+                        <div className="form-page-fields-section">
 
 
-                        <Typography.Title level={4} className="form-section-title">Details</Typography.Title>
+                            <Typography.Title level={4} className="form-section-title">Details</Typography.Title>
 
 
-                        <Row gutter={24}>
-                            <Col span={12}>
-                                <Form.Item
-                                    name="subtype"
-                                    label="Subtype"
-                                    rules={[{required: true, message: 'Please enter subtype.'}]}
-                                >
-                                    <Input value={form.subtype}
-                                           placeholder="Please enter subtype"
-                                           disabled={loading}/>
-                                </Form.Item>
-                            </Col>
+                            <Row gutter={24}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="subtype"
+                                        label="Subtype"
+                                        rules={[{required: true, message: 'Please enter subtype.'}]}
+                                    >
+                                        <Input value={form.subtype}
+                                               placeholder="Please enter subtype"
+                                               disabled={loading}/>
+                                    </Form.Item>
+                                </Col>
 
-                            <Col span={12}>
-                                <Form.Item
-                                    name="type"
-                                    label="Type"
-                                    rules={[{required: true, message: 'Please select a type.'}]}
-                                >
-                                    <Select
-                                        style={{width: "100%"}}
-                                        placeholder={'Select type'}
-                                        disabled={!isCreateMode || loading}
-                                        options={Object.entries(PRETTY_CASE_TYPES).map(([value, label]) => ({
-                                            label,
-                                            value
-                                        }))}
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="type"
+                                        label="Type"
+                                        rules={[{required: true, message: 'Please select a type.'}]}
+                                    >
+                                        <Select
+                                            style={{width: "100%"}}
+                                            placeholder={'Select type'}
+                                            disabled={!isCreateMode || loading}
+                                            options={Object.entries(PRETTY_CASE_TYPES).map(([value, label]) => ({
+                                                label,
+                                                value
+                                            }))}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
 
-                        <Form.Item
-                            name="description"
-                            label="Description"
-                            rules={[{required: true, message: 'Please enter a description.'}]}
-                        >
-                            <Input value={form.description}
-                                   placeholder="Description"
-                                   disabled={loading}/>
-                        </Form.Item>
+                            <Form.Item
+                                name="description"
+                                label="Description"
+                                rules={[{required: true, message: 'Please enter a description.'}]}
+                            >
+                                <Input value={form.description}
+                                       placeholder="Description"
+                                       disabled={loading}/>
+                            </Form.Item>
 
-                    </div>
-
-                    <div className='form-page-footer'>
-                        <div className={'page-actions'}>
-                            <Button htmlType="submit"
-                                    size={'large'}
-                                    type="primary"
-                                    loading={loading}>
-                                Save
-                            </Button>
                         </div>
-                    </div>
-                </Form>
+
+                        <div className='form-page-footer'>
+                            <div className={'page-actions'}>
+                                <Button htmlType="submit"
+                                        size={'large'}
+                                        type="primary"
+                                        loading={loading}>
+                                    Save
+                                </Button>
+                            </div>
+                        </div>
+                    </Form>
+                </Spin>
             </div>
         </DefaultAppSidebarLayout>
     );

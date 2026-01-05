@@ -13,3 +13,11 @@
     gap: 1rem;
     margin-block: 2rem;
 }
+
+.day-closing-report-page .report-section {
+    background: white;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--elevate-1);
+}

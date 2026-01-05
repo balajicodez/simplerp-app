@@ -13,6 +13,7 @@ import {
     fetchOrganizations
 } from "./dayClosingReportApiService";
 import {safeToLocaleString} from "./utils";
+import dayjs from "dayjs";
 
 export default function DayClosingReportPage() {
     const [form] = Form.useForm();
@@ -701,27 +702,6 @@ export default function DayClosingReportPage() {
         },
 
 
-
-
-        generateButton: {
-            background: "linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%)",
-            color: "white",
-            border: "none",
-            padding: "12px 14px",
-            borderRadius: "8px",
-            fontWeight: "600",
-            fontSize: "14px",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-            boxShadow: "0 2px 4px rgba(30, 58, 138, 0.3)",
-            whiteSpace: "nowrap",
-        },
-
-        openingBalance: {
-            fontSize: "24px",
-            fontWeight: "700",
-            marginTop: "8px",
-        },
         tableContainer: {
             background: "white",
             borderRadius: "12px",
@@ -858,37 +838,9 @@ export default function DayClosingReportPage() {
             textAlign: "center",
         },
 
-        // New styles for denomination section
-        denominationSection: {
-            marginTop: "9px",
-            background: "white",
-            borderRadius: "12px",
-            padding: "15px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        },
-        denominationHeader: {
-            color: "#1e3a8a",
-            marginBottom: "15px",
-            fontSize: "18px",
-            fontWeight: "600",
-            textAlign: "center",
-        },
 
         // New styles for loans section
-        loansSection: {
-            marginTop: "9px",
-            background: "white",
-            borderRadius: "12px",
-            padding: "15px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        },
-        loansHeader: {
-            color: "#1e3a8a",
-            marginBottom: "15px",
-            fontSize: "18px",
-            fontWeight: "600",
-            textAlign: "center",
-        },
+
         loansSummary: {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
@@ -984,6 +936,7 @@ export default function DayClosingReportPage() {
                         rules={[{required: true, message: 'Please select a date'}]}
                     >
                         <DatePicker
+                            maxDate={dayjs()}
                             format={'DD-MM-YYYY'}
                         />
                     </Form.Item>
@@ -1023,45 +976,6 @@ export default function DayClosingReportPage() {
                         }}
                     />
                 </Modal>
-
-
-                {/*{pdfUrl && (
-                    <div style={styles.pdfModal}>
-                        <div style={styles.pdfContainer}>
-                            <button
-                                style={styles.closeButton}
-                                onClick={() => {
-                                    setPdfUrl("");
-                                }}
-                            >
-                                ×
-                            </button>
-                            <iframe
-                                src={pdfUrl}
-                                title="Day Closing PDF Report"
-                                style={{
-                                    width: "70vw",
-                                    height: "75vh",
-                                    border: "none",
-                                    borderRadius: "8px",
-                                }}
-                            />
-                            <div style={{textAlign: "right", marginTop: "16px"}}>
-                                <a
-                                    href={pdfUrl}
-                                    download={`DayClosingReport_${selectedDate}.pdf`}
-                                    style={{
-                                        ...styles.generateButton,
-                                        textDecoration: "none",
-                                        display: "inline-block",
-                                    }}
-                                >
-                                    📥 Download PDF
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                )}*/}
 
                 {reportMsg && (
                     <div
@@ -1180,7 +1094,7 @@ export default function DayClosingReportPage() {
 
                         {/* Existing Expenses Section */}
                         {(cashInExpenses.length > 0 || cashOutExpenses.length > 0) && (
-                            <div style={styles.expensesSection}>
+                            <div className='report-section'>
                                 <div
                                     className="hide-scrollbar"
                                     style={{
@@ -1201,9 +1115,9 @@ export default function DayClosingReportPage() {
                                             height: "80%",
                                         }}
                                     >
-                                        <h4 style={{color: "#059669", marginBottom: "10px"}}>
-                                            Cash In Expenses
-                                        </h4>
+
+                                        <Typography.Title level={5} style={{color: "#059669"}}>Cash-In Expenses</Typography.Title>
+
                                         <div
                                             style={{
                                                 ...styles.tableContainer,
@@ -1254,9 +1168,8 @@ export default function DayClosingReportPage() {
                                             minWidth: "48%",
                                         }}
                                     >
-                                        <h4 style={{color: "#dc2626", marginBottom: "10px"}}>
-                                            Cash Out Expenses
-                                        </h4>
+                                        <Typography.Title level={5} style={{color: "#dc2626"}}>Cash-Out Expenses</Typography.Title>
+
                                         <div
                                             style={{
                                                 ...styles.tableContainer,
@@ -1313,10 +1226,10 @@ export default function DayClosingReportPage() {
                             records._5CoinCount > 0 ||
                             records._10CoinCount > 0 ||
                             records._20CoinCount > 0) && (
-                            <div style={styles.denominationSection}>
-                                <h4 style={styles.denominationHeader}>
+                            <div className='report-section'>
+                                <Typography.Title level={4} style={{textAlign: "center"}}>
                                     Cash Denomination Summary
-                                </h4>
+                                </Typography.Title>
 
                                 <div
                                     style={{
@@ -1574,8 +1487,11 @@ export default function DayClosingReportPage() {
                         )}
                         {/* Hand Loans Section */}
                         {allHandloansWithBalances.length > 0 && (
-                            <div style={styles.loansSection}>
-                                <h4 style={styles.loansHeader}>Hand Loans Details</h4>
+                            <div className='report-section'>
+
+                                <Typography.Title level={4} style={{textAlign: "center"}}>
+                                    Hand Loans Details
+                                </Typography.Title>
 
                                 <div
                                     style={{

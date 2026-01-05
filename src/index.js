@@ -4,8 +4,8 @@ import './index.css';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {App as AntApp, ConfigProvider} from "antd";
 
-import ViewOrganization from './organization/ViewOrganization';
-import CreateOrganization from './organization/CreateOrganization';
+import OrganizationListPage from './pages/user-administration/organizations/OrganizationListPage';
+import OrganizationFormPage from './pages/user-administration/organizations/OrganizationFormPage';
 
 import LoginPage from './pages/login/LoginPage';
 import Signup from "./login/Signup";
@@ -27,7 +27,6 @@ import CreateDayClosing from './pettycash/CreateDayClosing';
 import DayClosingReportPage from './pages/reports/day-closing/DayClosingReportPage';
 import CreateExpense from './pettycash/CreateExpense';
 import ExpenseMastersListPage from './pages/petty-cash/expense-masters/ExpenseMastersListPage';
-import EditOrganization from './organization/EditOrganization'
 import ExpenseView from './pettycash/ExpenseView';
 import EditExpense from './pettycash/EditExpense';
 import ExpenseMasterFormPage from './pages/petty-cash/expense-masters/ExpenseMasterFormPage';
@@ -37,6 +36,7 @@ import {ProtectedRoute} from "./_components/protected/ProtectedRoute";
 import {AuthProvider} from "./hooks/useAuth";
 import LogoutPage from "./pages/logout/LogoutPage";
 import NotFoundPage from "./pages/not-found/NotFoundPage";
+import CreateOrganization from "./organization/CreateOrganization";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -77,11 +77,7 @@ root.render(
                                 path="/pettycash/expense-masters"
                                 element={<ExpenseMastersListPage/>}/>
                             <Route
-                                path="/pettycash/expense-master"
-                                element={<ProtectedRoute><ExpenseMasterFormPage/></ProtectedRoute>}
-                            />
-                            <Route
-                                path="/pettycash/expense-master/:id"
+                                path="/pettycash/expense-master/:idOrCreate"
                                 element={<ProtectedRoute><ExpenseMasterFormPage/></ProtectedRoute>}
                             />
 
@@ -91,10 +87,11 @@ root.render(
 
                             <Route path="/user-administration/users" element={<Users/>}/>
                             <Route path="/user-administration/roles" element={<Roles/>}/>
-                            <Route path="/user-administration/organizations" element={<ViewOrganization/>}/>
-                            <Route path="/organization/edit/:id" element={<EditOrganization/>}/>
+                            <Route path="/user-administration/organizations" element={<OrganizationListPage/>}/>
 
-                            <Route path="/organization/create" element={<CreateOrganization/>}/>
+                            <Route path="/user-administration/organization/:idOrCreate" element={<OrganizationFormPage/>}/>
+
+                            <Route path="/user-administration/organization-create" element={<CreateOrganization/>}/>
 
 
                             <Route
