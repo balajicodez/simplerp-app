@@ -29,7 +29,8 @@ const HandLoanManagement = () => {
   const [loadingRecoveredLoans, setLoadingRecoveredLoans] = useState(false);
   const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");  
   const [selectedOrgId, setSelectedOrgId] = useState("");
-  const navigate = useNavigate();  const pageSize = 10;
+  const navigate = useNavigate();
+  const pageSize = 10;
 
   const pageParam = Number(searchParams.get("page") || 0);
   const sizeParam = Number(searchParams.get("size") || 20);
