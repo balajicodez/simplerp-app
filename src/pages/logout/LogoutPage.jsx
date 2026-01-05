@@ -4,18 +4,10 @@ import {useAuth} from "../../hooks/useAuth";
 import './LogoutPage.css';
 
 export default function LogoutPage() {
-    const {openLoginPage} = useAuth();
+    const {logout} = useAuth();
 
-    return <div className="logout-page">
-        <Result
-            status="success"
-            title="You are logged out"
-            subTitle="You are logged out. To see your account, please log in again."
-            extra={[
-                <Button type="primary" key="console" size="large" onClick={() => openLoginPage()}>
-                    Log in
-                </Button>
-            ]}
-        />
-    </div>
+
+    logout();
+
+    return <div className="page"></div>
 };

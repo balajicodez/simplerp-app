@@ -36,7 +36,6 @@ import {ProtectedRoute} from "./_components/protected/ProtectedRoute";
 import {AuthProvider} from "./hooks/useAuth";
 import LogoutPage from "./pages/logout/LogoutPage";
 import NotFoundPage from "./pages/not-found/NotFoundPage";
-import CreateOrganization from "./organization/CreateOrganization";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -85,13 +84,11 @@ root.render(
                             <Route path="/login/register" element={<Register/>}/>
 
 
-                            <Route path="/user-administration/users" element={<Users/>}/>
-                            <Route path="/user-administration/roles" element={<Roles/>}/>
-                            <Route path="/user-administration/organizations" element={<OrganizationListPage/>}/>
-
-                            <Route path="/user-administration/organization/:idOrCreate" element={<OrganizationFormPage/>}/>
-
-                            <Route path="/user-administration/organization-create" element={<CreateOrganization/>}/>
+                            {/* User Administration Routes */}
+                            <Route path="/user-administration/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
+                            <Route path="/user-administration/roles" element={<ProtectedRoute><Roles/></ProtectedRoute>}/>
+                            <Route path="/user-administration/organizations" element={<ProtectedRoute><OrganizationListPage/></ProtectedRoute>}/>
+                            <Route path="/user-administration/organization/:idOrCreate" element={<ProtectedRoute><OrganizationFormPage/></ProtectedRoute>}/>
 
 
                             <Route
