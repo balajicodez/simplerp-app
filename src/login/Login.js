@@ -47,10 +47,20 @@ function Login() {
            
             if (!res.ok) throw new Error('Failed to create employee');
             navigate('/dashboard');
-            const decodedPayload = jwtDecode(data.token);          
+            const decodedPayload = jwtDecode(data.token);
+
+             const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations/${data.organizationId}`, {
+                    headers: { 'Authorization': `Bearer ${data.token}` }
+                  });
+                  if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('organizationName', data.name);
+              }
+
             localStorage.setItem('token', data.token);
             localStorage.setItem('userName', data.userName);
             localStorage.setItem('organizationId', data.organizationId);
+             
             localStorage.setItem('roles', decodedPayload.roles);
         } catch (err) {
             setError('Login failed. Please enter valid User Name .');

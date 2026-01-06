@@ -11,6 +11,7 @@ function CreateDayClosing() {
   const [comment, setComment] = useState('');
   const [organizations, setOrganizations] = useState([]);
   const [organizationId, setOrganizationId] = useState('');
+  const [organizationName, setOrganizationName] = useState('');
   // const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [inward, setInward] = useState('');
   const [outward, setOutward] = useState('');
@@ -109,17 +110,27 @@ function CreateDayClosing() {
     if(!isAdminRole) {
       const orgId = localStorage.getItem("organizationId");
       setOrganizationId(orgId);
+      setOrganizationName(localStorage.getItem("organizationName") || '');
       setDate(new Date().toISOString().slice(0, 10));
       fetchBalanceData(date, orgId);
     } 
   }, []);
 
   const handleChange = async (e) => {
-    const { name, value, type } = e.target;
+    const { name, value, type , options } = e.target;
     if (type === 'select-one') {
-      const selectedOrgId = e.target.value;
+      const selectedOrgId = e.target.value;      
+      const select = e.target;      
+      let selectedOrgName = '';   
+      for (let option of options) {
+        if (option.value === value) {
+          selectedOrgName = option.text;
+          break;
+        }
+      }
       setOrganizationId(selectedOrgId);
-      
+      setOrganizationName(selectedOrgName);
+     
       if (selectedOrgId && date) {
         await fetchBalanceData(date, selectedOrgId);
       }
@@ -369,7 +380,7 @@ function CreateDayClosing() {
         const data = await res.text();
         setError(data);
       } else {
-        const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=9740665561,9866472624,9948011234,8985221844&dvariables=RSH,${date},${cashIn},${cashOut},${closingBalance}`, {
+        const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=9740665561,9866472624,9948011234,8985221844&dvariables=${organizationName},${date},${cashIn},${cashOut},${closingBalance}`, {
         method: 'POST'
       });
         
