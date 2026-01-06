@@ -1,63 +1,83 @@
-import React, {useEffect, useState} from 'react';
-import '../../../pettycash/PettyCash.css';
-import {useNavigate, useParams} from 'react-router-dom';
+import React, {useEffect, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {App as AntApp, Button, Col, Form, Input, Row, Select, Spin, Typography} from "antd";
+import {App as AntApp, Button, Col, Divider, Form, Input, InputNumber, Row, Select, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
-import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
 import * as DataSource from "./DataSource";
 import FormUtils from "../../../_utils/FormUtils";
 
-export default function ExpenseMasterFormPage() {
+export default function PermissionsFormPage() {
+    const params = useParams();
+    const isCreateMode = params.idOrCreate === 'create';
+
+    const navigate = useNavigate();
+
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const params = useParams();
-
-    const isCreateMode = params.idOrCreate === 'create';
 
     const formUtils = new FormUtils(AntApp.useApp());
 
 
     useEffect(() => {
-        if (isCreateMode) return;
+        setLoading(true);
         (async () => {
-            const data = await DataSource.fetchExpenseMaster(params.idOrCreate);
-            form.setFieldsValue({
-                subtype: data.subtype,
-                type: data.type,
-                description: data.description
-            });
+            try {
+                if (!isCreateMode) {
+                    // Fetch current permission data
+                    const permissionData = await DataSource.fetchPermissionById(params.idOrCreate);
+                    form.setFieldsValue({
+                        name: permissionData.name
+                    })
+                }
+            } catch (err) {
+                formUtils.showErrorNotification("Failed to load permission.")
+            }
+            setLoading(false);
         })();
-    });
+
+    }, []);
 
 
     const handleSubmit = async (e) => {
         setLoading(true);
 
         const formValues = form.getFieldsValue();
+        const payload = {
+            name: formValues.name
+        };
 
-        try {
-            if (!isCreateMode) {
-                formValues.id = params.idOrCreate;
+        if (isCreateMode) {
+            payload.id = null;
+            try {
+                await DataSource.createPermission(payload);
+                formUtils.showSuccessNotification("Organization permission successfully!");
+                navigate(-1);
+            } catch (err) {
+                console.error(err);
+                formUtils.showErrorNotification("Failed to permission organization.");
             }
-            await DataSource.postExpenseTypeMaster(formValues);
-
-            formUtils.showSuccessNotification(isCreateMode ? 'Created master successfully' : 'Updated master successfully');
-            navigate(-1);
-        } catch (err) {
-            formUtils.showErrorNotification(isCreateMode ? 'Failed to create master' : 'Failed to update master');
-        } finally {
-            setLoading(false);
+        } else {
+            try {
+                await DataSource.updatePermission(params.idOrCreate, payload);
+                formUtils.showSuccessNotification("Organization permission successfully!");
+                navigate(-1);
+            } catch (err) {
+                console.error(err);
+                formUtils.showErrorNotification("Failed to update permission.");
+            }
         }
+
+
+        setLoading(false);
     };
 
     const onFinishFailed = (errorInfo) => {
         formUtils.showErrorNotification(errorInfo.message);
     }
 
+
     return (
-        <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
+        <DefaultAppSidebarLayout pageTitle={"User Administration"}>
 
             <div className="form-page">
 
@@ -78,6 +98,7 @@ export default function ExpenseMasterFormPage() {
                         onFinish={handleSubmit}
                         onFinishFailed={onFinishFailed}
                         noValidate={true}
+                        autoComplete="off"
                         className="form-page"
                         layout="vertical">
 
@@ -88,7 +109,7 @@ export default function ExpenseMasterFormPage() {
 
 
                                 <Typography.Title className='page-title' level={2}>
-                                    {isCreateMode ? 'Create Expense Master' : 'Edit Expense Master'}
+                                    {isCreateMode ? 'Create Permission' : 'Edit Permission'}
                                 </Typography.Title>
                             </div>
 
@@ -96,50 +117,38 @@ export default function ExpenseMasterFormPage() {
                             <div className={'page-actions'}></div>
                         </div>
 
+
+
+
                         <div className="form-page-fields-section">
 
 
                             <Typography.Title level={4} className="form-section-title">Details</Typography.Title>
 
-
                             <Row gutter={24}>
                                 <Col span={12}>
                                     <Form.Item
-                                        name="subtype"
-                                        label="Subtype"
-                                        rules={[{required: true, message: 'Please enter subtype.'}]}
+                                        name="name"
+                                        label="Permission Name"
+                                        rules={[{
+                                            required: true,
+                                            message: 'Please enter permission name.'
+                                        }, {
+                                            pattern: /^[a-zA-Z0-9_\- ]+$/,
+                                            message: 'Only alphanumeric characters, spaces and hyphens are allowed.'
+                                        }, {
+                                            min: 3,
+                                            message: 'Permission name must be at least 3 characters long.'
+                                        }]}
                                     >
-                                        <Input placeholder="Please enter subtype"
+                                        <Input placeholder="Please enter permission name"
                                                disabled={loading}/>
-                                    </Form.Item>
-                                </Col>
-
-                                <Col span={12}>
-                                    <Form.Item
-                                        name="type"
-                                        label="Type"
-                                        rules={[{required: true, message: 'Please select a type.'}]}
-                                    >
-                                        <Select
-                                            style={{width: "100%"}}
-                                            placeholder={'Select type'}
-                                            disabled={!isCreateMode || loading}
-                                            options={Object.values(PRETTY_CASE_TYPES)}
-                                        />
                                     </Form.Item>
                                 </Col>
                             </Row>
 
-                            <Form.Item
-                                name="description"
-                                label="Description"
-                                rules={[{required: true, message: 'Please enter a description.'}]}
-                            >
-                                <Input placeholder="Description"
-                                       disabled={loading}/>
-                            </Form.Item>
-
                         </div>
+
 
                         <div className='form-page-footer'>
                             <div className={'page-actions'}>

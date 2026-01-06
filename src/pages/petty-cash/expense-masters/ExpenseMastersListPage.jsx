@@ -2,73 +2,24 @@ import React, {useEffect, useState} from 'react';
 import '../../../pettycash/PettyCash.css';
 import {useNavigate} from 'react-router-dom';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {App as AntApp, Button, Table, Tooltip, Typography} from "antd";
+import {App as AntApp, Button, Table, Tag, Tooltip, Typography} from "antd";
 import {EditOutlined, PlusOutlined} from "@ant-design/icons";
-import {fetchExpenseMaterTypes} from "./expenseTypeMasterApiService";
-import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import {fetchExpenseMaterTypes} from "./DataSource";
+import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
+import FormUtils from "../../../_utils/FormUtils";
 
-
-const PAGE_SIZE = 10;
 
 
 export default function ExpenseMastersListPage() {
 
-    const [items, setItems] = useState([]);
+    const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({
         current: 1,
-        pageSize: PAGE_SIZE
+        pageSize: FormUtils.LIST_DEFAULT_PAGE_SIZE
     })
     const navigate = useNavigate();
-
-    const {notification} = AntApp.useApp();
-
-    const showErrorNotification = (message) => {
-        notification.error({
-            title: message,
-            placement: 'top',
-        });
-    };
-
-    const showSuccessNotification = (message) => {
-        notification.success({
-            message: message,
-            placement: 'top',
-        });
-    }
-
-
-    const columns = [
-        {
-            title: 'Sub-Type',
-            dataIndex: 'subtype',
-            key: 'subtype',
-        },
-        {
-            title: 'Description',
-            dataIndex: 'description',
-            key: 'description',
-        },
-        {
-            title: 'Type',
-            dataIndex: 'type',
-            key: 'type',
-        },
-        {
-            title: 'Actions',
-            key: 'operation',
-            fixed: 'end',
-            width: 100,
-            render: (item) => {
-                return <Tooltip title={'Edit Expense Master'}>
-                    <Button icon={<EditOutlined/>} aria-label='Edit Expense Master'
-                            onClick={() => navigate(`/pettycash/expense-master/${item.id}`)} variant={'outlined'}
-                            color={'default'}>Edit</Button>
-                </Tooltip>
-            },
-        }
-    ];
-
+    const formUtils = new FormUtils(AntApp.useApp());
 
     const fetchData = async (currentPage, pageSize) => {
         setLoading(true);
@@ -81,7 +32,7 @@ export default function ExpenseMastersListPage() {
             expenseTypes.forEach(expenseType => {
                 expenseType.key = expenseType.id;
             })
-            setItems(expenseTypes);  // Set the expense types to state
+            setRecords(expenseTypes);  // Set the expense types to state
             setLoading(false);
 
             setPagination(prev => ({
@@ -91,7 +42,7 @@ export default function ExpenseMastersListPage() {
             }));
         } catch (error) {
             console.error("Error fetching data:", error);
-            showErrorNotification("Failed to fetch organizations");
+            formUtils.showErrorNotification("Failed to fetch organizations");
         }
         setLoading(false);
     };
@@ -127,12 +78,50 @@ export default function ExpenseMastersListPage() {
                 <Table
                     className={'list-page-table'}
                     size={'large'}
-                    dataSource={items}
-                    columns={columns}
+                    dataSource={records}
+                    columns={[
+                        {
+                            title: 'Sub-Type',
+                            dataIndex: 'subtype',
+                            key: 'subtype',
+                        },
+                        {
+                            title: 'Description',
+                            dataIndex: 'description',
+                            key: 'description',
+                        },
+                        {
+                            title: 'Type',
+                            dataIndex: 'type',
+                            key: 'type',
+                            render: (type) => {
+                                let color = type === PRETTY_CASE_TYPES.CASH_IN.value ? 'green' : 'volcano';
+                                return (
+                                    <Tag color={color} key={type} variant={'solid'}>
+                                        {type}
+                                    </Tag>
+                                );
+                            },
+                        },
+                        {
+                            title: 'Actions',
+                            key: 'operation',
+                            fixed: 'end',
+                            width: 200,
+                            render: (item) => {
+                                return <Tooltip title={'Edit Expense Master'}>
+                                    <Button icon={<EditOutlined/>} aria-label='Edit Expense Master'
+                                            onClick={() => navigate(`/pettycash/expense-master/${item.id}`)} variant={'outlined'}
+                                            color={'default'}>Edit</Button>
+                                </Tooltip>
+                            },
+                        }
+                    ]}
                     onChange={handleTableChange}
                     pagination={{
                         ...pagination,
-                        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
+                        showTotal: FormUtils.listPaginationShowTotal,
+                        itemRender: FormUtils.listPaginationItemRender
                     }}
                     loading={loading}/>
             </div>

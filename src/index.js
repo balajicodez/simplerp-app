@@ -10,11 +10,11 @@ import OrganizationFormPage from './pages/user-administration/organizations/Orga
 import LoginPage from './pages/login/LoginPage';
 import Signup from "./login/Signup";
 import Users from "./login/Users";
-import Permissions from "./login/Permissions";
+import PermissionsListPage from "./pages/user-administration/permissions/PermissionsListPage";
 import DashboardPage from './pages/dashboard/DashboardPage';
 import Upload from './uploads/Upload';
 import Register from "./login/Register";
-import Roles from "./login/Roles";
+import RolesListPage from "./pages/user-administration/roles/RolesListPage";
 import Employees from './employees/Employees';
 import CreateEmployee from './employees/CreateEmployee';
 import EmployeeView from './employees/EmployeeView';
@@ -36,6 +36,8 @@ import {ProtectedRoute} from "./_components/protected/ProtectedRoute";
 import {AuthProvider} from "./hooks/useAuth";
 import LogoutPage from "./pages/logout/LogoutPage";
 import NotFoundPage from "./pages/not-found/NotFoundPage";
+import PermissionsFormPage from "./pages/user-administration/permissions/PermissionsFormPage";
+import RolesFormPage from "./pages/user-administration/roles/RolesFormPage";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -85,18 +87,24 @@ root.render(
 
 
                             {/* User Administration Routes */}
-                            <Route path="/user-administration/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
-                            <Route path="/user-administration/roles" element={<ProtectedRoute><Roles/></ProtectedRoute>}/>
-                            <Route path="/user-administration/organizations" element={<ProtectedRoute><OrganizationListPage/></ProtectedRoute>}/>
-                            <Route path="/user-administration/organization/:idOrCreate" element={<ProtectedRoute><OrganizationFormPage/></ProtectedRoute>}/>
+                            <Route path="/user-administration/users"
+                                   element={<ProtectedRoute><Users/></ProtectedRoute>}/>
+                            <Route path="/user-administration/roles"
+                                   element={<ProtectedRoute><RolesListPage/></ProtectedRoute>}/>
+                            <Route path="/user-administration/role/:idOrCreate"
+                                   element={<ProtectedRoute><RolesFormPage/></ProtectedRoute>}/>
+                            <Route path="/user-administration/organizations"
+                                   element={<ProtectedRoute><OrganizationListPage/></ProtectedRoute>}/>
+                            <Route path="/user-administration/organization/:idOrCreate"
+                                   element={<ProtectedRoute><OrganizationFormPage/></ProtectedRoute>}/>
 
 
                             <Route
-                                path="/permissions"
-                                element={
-
-                                    <Permissions/>
-                                }
+                                path="/user-administration/permissions"
+                                element={<ProtectedRoute><PermissionsListPage/></ProtectedRoute>}
+                            />
+                            <Route path="/user-administration/permission/:idOrCreate"
+                                   element={<ProtectedRoute><PermissionsFormPage/></ProtectedRoute>}
                             />
 
                             <Route

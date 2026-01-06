@@ -1,15 +1,10 @@
 import React, {useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
-import "./Organization.css";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {App as AntApp, Button, Col, Divider, Form, Input, InputNumber, Row, Select, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
-import {
-    createOrganization,
-    fetchOrganizationById,
-    fetchOrganizations,
-    updateOrganization
-} from "./organizationApiService";
+import * as DataSource from "./DataSource";
+import FormUtils from "../../../_utils/FormUtils";
 
 export default function OrganizationFormPage() {
     const params = useParams();
@@ -23,35 +18,17 @@ export default function OrganizationFormPage() {
     const [organizations, setOrganizations] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    const {notification} = AntApp.useApp();
-
-    const showErrorNotification = (message) => {
-        notification.error({
-            title: message,
-            placement: 'top',
-        });
-    };
-
-    const showSuccessNotification = (message) => {
-        notification.success({
-            message: message,
-            placement: 'top',
-        });
-    }
+    const formUtils = new FormUtils(AntApp.useApp());
 
 
-    // ✅ LOAD EXISTING ORG
     useEffect(() => {
-
         setLoading(true);
-        const token = localStorage.getItem("token");
-
 
         (async () => {
 
             try {
                 // Fetch All Branches for parent dropdown
-                const data = await fetchOrganizations(0, 1000);
+                const data = await DataSource.fetchOrganizations(0, 1000);
                 const orgs = data._embedded ? data._embedded.organizations || [] : data;
                 setOrganizations(orgs);
 
@@ -62,7 +39,7 @@ export default function OrganizationFormPage() {
                 }  else {
 
                     // Fetch current organization data
-                    const organizationData = await fetchOrganizationById(params.idOrCreate);
+                    const organizationData = await DataSource.fetchOrganizationById(params.idOrCreate);
                     form.setFieldsValue({
                         name: organizationData.name,
                         registrationNo: organizationData.registrationNo ,
@@ -80,7 +57,7 @@ export default function OrganizationFormPage() {
                     })
                 }
             } catch (err) {
-                showErrorNotification("Failed to load organization.")
+                formUtils.showErrorNotification("Failed to load organization.")
             }
             setLoading(false);
         })();
@@ -121,21 +98,21 @@ export default function OrganizationFormPage() {
         if (isCreateMode) {
             payload.id = null;
             try {
-                await createOrganization(payload);
-                showSuccessNotification("Organization created successfully!");
+                await DataSource.createOrganization(payload);
+                formUtils.showSuccessNotification("Organization created successfully!");
                 navigate("/user-administration/organizations");
             } catch (err) {
                 console.error(err);
-                showErrorNotification("Failed to create organization.");
+                formUtils.showErrorNotification("Failed to create organization.");
             }
         } else {
             try {
-                await updateOrganization(params.idOrCreate, payload);
-                showSuccessNotification("Organization updated successfully!");
+                await DataSource.updateOrganization(params.idOrCreate, payload);
+                formUtils.showSuccessNotification("Organization updated successfully!");
                 navigate("/user-administration/organizations");
             } catch (err) {
                 console.error(err);
-                showErrorNotification("Failed to update organization.");
+                formUtils.showErrorNotification("Failed to update organization.");
             }
         }
 
@@ -144,7 +121,7 @@ export default function OrganizationFormPage() {
     };
 
     const onFinishFailed = (errorInfo) => {
-        showErrorNotification(errorInfo.message);
+        formUtils.showErrorNotification(errorInfo.message);
     }
 
 
@@ -159,7 +136,7 @@ export default function OrganizationFormPage() {
                         size={'large'}
                         iconPlacement={'left'}
                         onClick={() => {
-                            navigate("/user-administration/organizations");
+                            navigate(-1);
                         }}>
                     Back
                 </Button>

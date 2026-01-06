@@ -117,30 +117,7 @@ function getSideBarMenu(userRoles = []) {
 
 
 
-function profileMenu() {
-    return {
-        items: [
-            {
-                key: '1',
-                label: 'Profile',
-            },
-            {
-                key: '2',
-                label: 'Settings',
-                icon: <SettingOutlined/>,
-            },
-            {
-                type: 'divider',
-            },
-            {
-                key: '3',
-                label: 'Logout',
-                icon: <LogoutOutlined/>,
-                danger: true,
-            },
-        ]
-    }
-}
+
 
 
 
@@ -171,6 +148,26 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);
+
+    function profileMenu() {
+        return {
+            items: [
+                {
+                    key: 'profile',
+                    label: 'Profile',
+                },
+                {
+                    key: 'logout',
+                    label: 'Logout',
+                    icon: <LogoutOutlined/>,
+                    danger: true,
+                    onClick: () => {
+                        logout();
+                    }
+                },
+            ]
+        }
+    }
 
 
     return (
