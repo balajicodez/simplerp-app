@@ -661,7 +661,53 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
           safeToLocaleString(denominationTotal),
         ]);
       }
+const coinsTotal = calculateCoinsTotal(); // Use your helper function
+if (coinsTotal > 0) {
+  denominationTotal += coinsTotal;
 
+  // Add individual coin rows for clarity
+  if (records._1CoinCount > 0) {
+    denominationRows.push([
+      "₹1 Coin",
+      records._1CoinCount || 0,
+      0,
+      safeToLocaleString((records._1CoinCount || 0) * 1),
+    ]);
+  }
+  if (records._5CoinCount > 0) {
+    denominationRows.push([
+      "₹5 Coin",
+      records._5CoinCount || 0,
+      0,
+      safeToLocaleString((records._5CoinCount || 0) * 5),
+    ]);
+  }
+  if (records._10CoinCount > 0) {
+    denominationRows.push([
+      "₹10 Coin",
+      records._10CoinCount || 0,
+      0,
+      safeToLocaleString((records._10CoinCount || 0) * 10),
+    ]);
+  }
+  if (records._20CoinCount > 0) {
+    denominationRows.push([
+      "₹20 Coin",
+      records._20CoinCount || 0,
+      0,
+      safeToLocaleString((records._20CoinCount || 0) * 20),
+    ]);
+  }
+}
+
+if (denominationRows.length > 0) {
+  denominationRows.push([
+    "TOTAL",
+    "",
+    "",
+    safeToLocaleString(denominationTotal),
+  ]);
+}
       autoTable(doc, {
         startY: currentY,
         head: [["Note", "Good", "Soiled", "Amount"]],
@@ -680,6 +726,76 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
   };
 
   // Function to calculate denomination total
+  // const calculateDenominationTotal = () => {
+  //   const denominations = [
+  //     {
+  //       value: 500,
+  //       good: records._500NoteCount || 0,
+  //       soiled: records._500SoiledNoteCount || 0,
+  //     },
+  //     {
+  //       value: 200,
+  //       good: records._200NoteCount || 0,
+  //       soiled: records._200SoiledNoteCount || 0,
+  //     },
+  //     {
+  //       value: 100,
+  //       good: records._100NoteCount || 0,
+  //       soiled: records._100SoiledNoteCount || 0,
+  //     },
+  //     {
+  //       value: 50,
+  //       good: records._50NoteCount || 0,
+  //       soiled: records._50SoiledNoteCount || 0,
+  //     },
+  //     {
+  //       value: 20,
+  //       good: records._20NoteCount || 0,
+  //       soiled: records._20SoiledNoteCount || 0,
+  //     },
+  //     {
+  //       value: 10,
+  //       good: records._10NoteCount || 0,
+  //       soiled: records._10SoiledNoteCount || 0,
+  //     },
+  //   ];
+
+  //   let total = 0;
+  //   denominations.forEach((denom) => {
+  //     const netNotes = denom.good - denom.soiled;
+  //     total += netNotes * denom.value;
+  //   });
+
+  //   // Add coins
+  //   const coinsCount =
+  //     (records._1CoinCount || 0) +
+  //     (records._5CoinCount || 0) +
+  //     (records._10CoinCount || 0) +
+  //     (records._20CoinCount || 0);
+  //   total += coinsCount;
+
+  //   return total;
+  // };
+
+  const calculateDenominationAmount = (
+    denominationValue,
+    goodCount,
+    soiledCount
+  ) => {
+    const good = Number(goodCount) || 0;
+    const soiled = Number(soiledCount) || 0;
+    const netNotes = good - soiled;
+    return netNotes * denominationValue;
+  };
+
+  const calculateCoinsTotal = () => {
+    return (
+      (Number(records._1CoinCount) || 0) * 1 +
+      (Number(records._5CoinCount) || 0) * 5 +
+      (Number(records._10CoinCount) || 0) * 10 +
+      (Number(records._20CoinCount) || 0) * 20
+    );
+  };
   const calculateDenominationTotal = () => {
     const denominations = [
       {
@@ -716,16 +832,19 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
 
     let total = 0;
     denominations.forEach((denom) => {
-      const netNotes = denom.good - denom.soiled;
+      const goodNotes = Number(denom.good) || 0;
+      const soiledNotes = Number(denom.soiled) || 0;
+      const netNotes = goodNotes - soiledNotes;
       total += netNotes * denom.value;
     });
 
-    // Add coins
+    // Add coins - FIXED: Make sure these are numbers
     const coinsCount =
-      (records._1CoinCount || 0) +
-      (records._5CoinCount || 0) +
-      (records._10CoinCount || 0) +
-      (records._20CoinCount || 0);
+      (Number(records._1CoinCount) || 0) +
+      (Number(records._5CoinCount) || 0) * 5 +
+      (Number(records._10CoinCount) || 0) * 10 +
+      (Number(records._20CoinCount) || 0) * 20;
+
     total += coinsCount;
 
     return total;
@@ -1062,10 +1181,10 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
           <div className="form-group">
             <select
               value={
-                  isAdminRole
-                    ? organizationId
-                    : localStorage.getItem("organizationId")
-                }
+                isAdminRole
+                  ? organizationId
+                  : localStorage.getItem("organizationId")
+              }
               onChange={handleOrgChange}
               className="form-select"
               disabled={isAdminRole ? !selectedDate : true}
@@ -1232,29 +1351,33 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                 >
                   <table style={styles.table}>
                     <thead style={styles.tableHeader}>
-                      <tr>                        
+                      <tr>
                         <th style={styles.tableHeaderCell}>Description</th>
                         <th style={styles.tableHeaderCell}>File</th>
                       </tr>
                     </thead>
                     <tbody>
                       {attachments.map((item, idx) => (
-                        <tr key={idx} style={styles.tableRow}>                         
-                          <td style={styles.tableCell}>{item.description || "General"}</td>
-                          <td style={styles.tableCell}>{item.imageData || item.fileUrl || item.file ? (
-                            <button
-                              className="btn-outline view-btn"
-                              onClick={() =>
-                                setModalFile(
-                                  item.imageData || item.fileUrl || item.file
-                                )
-                              }
-                            >
-                              👁️ View
-                            </button>
-                          ) : (
-                            <span className="no-receipt">(No receipt)</span>
-                          )}</td>
+                        <tr key={idx} style={styles.tableRow}>
+                          <td style={styles.tableCell}>
+                            {item.description || "General"}
+                          </td>
+                          <td style={styles.tableCell}>
+                            {item.imageData || item.fileUrl || item.file ? (
+                              <button
+                                className="btn-outline view-btn"
+                                onClick={() =>
+                                  setModalFile(
+                                    item.imageData || item.fileUrl || item.file
+                                  )
+                                }
+                              >
+                                👁️ View
+                              </button>
+                            ) : (
+                              <span className="no-receipt">(No receipt)</span>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1437,9 +1560,11 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                           >
                             ₹{" "}
                             {safeToLocaleString(
-                              (records._500NoteCount -
-                                records._500SoiledNoteCount) *
-                                500
+                              calculateDenominationAmount(
+                                500,
+                                records._500NoteCount,
+                                records._500SoiledNoteCount
+                              )
                             )}
                           </td>
                         </tr>
@@ -1461,9 +1586,11 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                           >
                             ₹{" "}
                             {safeToLocaleString(
-                              (records._200NoteCount -
-                                records._200SoiledNoteCount) *
-                                200
+                              calculateDenominationAmount(
+                                200,
+                                records._200NoteCount,
+                                records._200SoiledNoteCount
+                              )
                             )}
                           </td>
                         </tr>
@@ -1485,9 +1612,11 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                           >
                             ₹{" "}
                             {safeToLocaleString(
-                              (records._100NoteCount -
-                                records._100SoiledNoteCount) *
-                                100
+                              calculateDenominationAmount(
+                                100,
+                                records._100NoteCount,
+                                records._100SoiledNoteCount
+                              )
                             )}
                           </td>
                         </tr>
@@ -1509,9 +1638,11 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                           >
                             ₹{" "}
                             {safeToLocaleString(
-                              (records._50NoteCount -
-                                records._50SoiledNoteCount) *
-                                50
+                              calculateDenominationAmount(
+                                50,
+                                records._50NoteCount,
+                                records._50SoiledNoteCount
+                              )
                             )}
                           </td>
                         </tr>
@@ -1533,9 +1664,11 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                           >
                             ₹{" "}
                             {safeToLocaleString(
-                              (records._20NoteCount -
-                                records._20SoiledNoteCount) *
-                                20
+                              calculateDenominationAmount(
+                                20,
+                                records._20NoteCount,
+                                records._20SoiledNoteCount
+                              )
                             )}
                           </td>
                         </tr>
@@ -1557,15 +1690,17 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                           >
                             ₹{" "}
                             {safeToLocaleString(
-                              (records._10NoteCount -
-                                records._10SoiledNoteCount) *
-                                10
+                              calculateDenominationAmount(
+                                10,
+                                records._10NoteCount,
+                                records._10SoiledNoteCount
+                              )
                             )}
                           </td>
                         </tr>
                       )}
 
-                      {/* ₹1 Coin */}
+                      {/* Coins - INDIVIDUAL ROWS for clarity */}
                       {records._1CoinCount > 0 && (
                         <tr style={styles.tableRow}>
                           <td style={styles.tableCell}>₹ 1 (Coin)</td>
@@ -1576,12 +1711,12 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                           <td
                             style={{ ...styles.tableCell, fontWeight: "600" }}
                           >
-                            ₹ {safeToLocaleString(records._1CoinCount * 1)}
+                            ₹{" "}
+                            {safeToLocaleString((records._1CoinCount || 0) * 1)}
                           </td>
                         </tr>
                       )}
 
-                      {/* ₹5 Coin */}
                       {records._5CoinCount > 0 && (
                         <tr style={styles.tableRow}>
                           <td style={styles.tableCell}>₹ 5 (Coin)</td>
@@ -1592,12 +1727,12 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                           <td
                             style={{ ...styles.tableCell, fontWeight: "600" }}
                           >
-                            ₹ {safeToLocaleString(records._5CoinCount * 5)}
+                            ₹{" "}
+                            {safeToLocaleString((records._5CoinCount || 0) * 5)}
                           </td>
                         </tr>
                       )}
 
-                      {/* ₹10 Coin */}
                       {records._10CoinCount > 0 && (
                         <tr style={styles.tableRow}>
                           <td style={styles.tableCell}>₹ 10 (Coin)</td>
@@ -1608,12 +1743,14 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                           <td
                             style={{ ...styles.tableCell, fontWeight: "600" }}
                           >
-                            ₹ {safeToLocaleString(records._10CoinCount * 10)}
+                            ₹{" "}
+                            {safeToLocaleString(
+                              (records._10CoinCount || 0) * 10
+                            )}
                           </td>
                         </tr>
                       )}
 
-                      {/* ₹20 Coin */}
                       {records._20CoinCount > 0 && (
                         <tr style={styles.tableRow}>
                           <td style={styles.tableCell}>₹ 20 (Coin)</td>
@@ -1624,7 +1761,10 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
                           <td
                             style={{ ...styles.tableCell, fontWeight: "600" }}
                           >
-                            ₹ {safeToLocaleString(records._20CoinCount * 20)}
+                            ₹{" "}
+                            {safeToLocaleString(
+                              (records._20CoinCount || 0) * 20
+                            )}
                           </td>
                         </tr>
                       )}
@@ -1719,7 +1859,7 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
             )}
           </>
         )}
-         {/* Receipt Modal */}
+        {/* Receipt Modal */}
         {modalFile && (
           <div className="modal-overlay" onClick={() => setModalFile(null)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
