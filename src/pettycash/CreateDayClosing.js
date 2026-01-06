@@ -369,7 +369,7 @@ function CreateDayClosing() {
         const data = await res.text();
         setError(data);
       } else {
-        const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=9740665561&dvariables=RSH,${date},${cashIn},${cashOut},${closingBalance}`, {
+        const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=9740665561,9866472624,9948011234,8985221844&dvariables=RSH,${date},${cashIn},${cashOut},${closingBalance}`, {
         method: 'POST'
       });
         
