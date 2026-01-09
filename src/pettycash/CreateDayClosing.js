@@ -90,13 +90,6 @@ function CreateDayClosing() {
     { value: 1, label: '1c Coin', type: 'Coin' }
   ];
 
-  // React.useEffect(() => {
-  //   import('../organization/organizationApi').then(mod => {
-  //     mod.fetchOrganizations().then(setOrganizations).catch(() => { });
-  //   });
-  // }, []);
-
-  
   React.useEffect(() => {
     const bearerToken = localStorage.getItem('token');
     fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
@@ -382,7 +375,7 @@ function CreateDayClosing() {
         setError(data);
       } else {
        try{
-        const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=${DAY_CLOSING_WHATSAPP_NUMBERS_CSV}&dvariables=${organizationName},${Utils.formatDateDDMMYYYY(date)},${cashIn},${cashOut},${closingBalance}`, 
+        const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=${DAY_CLOSING_WHATSAPP_NUMBERS_CSV}&dvariables=${organizationName},${Utils.formatDateDDMMYYYY(date)},${payload.cashIn},${payload.cashOut},${payload.closingBalance}`, 
         {
           method: 'POST'        
         });
