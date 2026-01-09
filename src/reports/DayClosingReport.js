@@ -533,6 +533,7 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
             "Loan ID",
             "Party Name",
             "Total Amount",
+            "Narration",
             "Recovered Amount",
             "Balance Amount",
           ],
@@ -542,15 +543,17 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
             h.handLoanNumber,
             h.partyName,
             safeToLocaleString(h.loanAmount),
+            h.narration,
             safeToLocaleString(h.recoveredAmount),
-            safeToLocaleString(h.balanceAmount),
+            safeToLocaleString(h.balanceAmount)
           ]),
 
           // ✅ TOTAL ROW
           [
             "TOTAL",
-            "",
+            "",            
             safeToLocaleString(totalLoanAmount),
+            "",
             safeToLocaleString(totalRecoveredAmount),
             safeToLocaleString(totalBalanceAmount),
           ],
@@ -572,11 +575,12 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
             data.cell.styles.fillColor = [243, 244, 246]; // light gray
           }
         },
-        // columnStyles: {
-        //   2: { halign: "right" },
-        //   3: { halign: "right" },
-        //   4: { halign: "right" },
-        // },
+         columnStyles: {
+           2: { halign: "right" },
+           3: { halign: "right" },
+           4: { halign: "right" },
+           5: { halign: "right" }
+         },
       });
 
         currentY = doc.lastAutoTable.finalY + 14;
@@ -661,14 +665,14 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
           safeToLocaleString(denominationTotal),
         ]);
       }
-const coinsTotal = calculateCoinsTotal(); // Use your helper function
+const coinsTotal =  0 ;//calculateCoinsTotal(); // Use your helper function
 if (coinsTotal > 0) {
   denominationTotal += coinsTotal;
 
   // Add individual coin rows for clarity
   if (records._1CoinCount > 0) {
     denominationRows.push([
-      "₹1 Coin",
+      "1 Coin",
       records._1CoinCount || 0,
       0,
       safeToLocaleString((records._1CoinCount || 0) * 1),
@@ -676,7 +680,7 @@ if (coinsTotal > 0) {
   }
   if (records._5CoinCount > 0) {
     denominationRows.push([
-      "₹5 Coin",
+      "5 Coin",
       records._5CoinCount || 0,
       0,
       safeToLocaleString((records._5CoinCount || 0) * 5),
@@ -684,7 +688,7 @@ if (coinsTotal > 0) {
   }
   if (records._10CoinCount > 0) {
     denominationRows.push([
-      "₹10 Coin",
+      "10 Coin",
       records._10CoinCount || 0,
       0,
       safeToLocaleString((records._10CoinCount || 0) * 10),
@@ -692,7 +696,7 @@ if (coinsTotal > 0) {
   }
   if (records._20CoinCount > 0) {
     denominationRows.push([
-      "₹20 Coin",
+      "0 Coin",
       records._20CoinCount || 0,
       0,
       safeToLocaleString((records._20CoinCount || 0) * 20),
@@ -700,14 +704,7 @@ if (coinsTotal > 0) {
   }
 }
 
-if (denominationRows.length > 0) {
-  denominationRows.push([
-    "TOTAL",
-    "",
-    "",
-    safeToLocaleString(denominationTotal),
-  ]);
-}
+
       autoTable(doc, {
         startY: currentY,
         head: [["Note", "Good", "Soiled", "Amount"]],
@@ -784,7 +781,7 @@ if (denominationRows.length > 0) {
   ) => {
     const good = Number(goodCount) || 0;
     const soiled = Number(soiledCount) || 0;
-    const netNotes = good - soiled;
+    const netNotes = good + soiled;
     return netNotes * denominationValue;
   };
 
@@ -834,7 +831,7 @@ if (denominationRows.length > 0) {
     denominations.forEach((denom) => {
       const goodNotes = Number(denom.good) || 0;
       const soiledNotes = Number(denom.soiled) || 0;
-      const netNotes = goodNotes - soiledNotes;
+      const netNotes = goodNotes + soiledNotes;
       total += netNotes * denom.value;
     });
 
@@ -1815,6 +1812,7 @@ if (denominationRows.length > 0) {
                         <th style={styles.tableHeaderCell}>Loan No</th>
                         <th style={styles.tableHeaderCell}>Party</th>
                         <th style={styles.tableHeaderCell}>Loan Amount</th>
+                        <th style={styles.tableHeaderCell}>Narration</th>
                         <th style={styles.tableHeaderCell}>Recovered</th>
                         <th style={styles.tableHeaderCell}>Balance</th>
                         <th style={styles.tableHeaderCell}>Status</th>
@@ -1829,6 +1827,9 @@ if (denominationRows.length > 0) {
                           <td style={styles.tableCell}>{loan.partyName}</td>
                           <td style={styles.tableCell}>
                             {safeToLocaleString(loan.loanAmount)}
+                          </td>
+                          <td style={styles.tableCell}>
+                            {safeToLocaleString(loan.narration)}
                           </td>
                           <td style={styles.tableCell}>
                             {safeToLocaleString(loan.recoveredAmount)}

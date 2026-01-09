@@ -21,6 +21,17 @@ const Utils = {
             ? rolesCsv.split(',').map(role => role.trim())
             : [];        
         return rolesArray.includes(role);
+  },
+
+    formatDateDDMMYYYY : (dateValue) => {
+    if (!dateValue) return "-";
+
+    const date = new Date(dateValue);
+    if (isNaN(date.getTime())) return "-";
+
+    return `${String(date.getDate()).padStart(2, "0")}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${date.getFullYear()}`;
   }
 };
 

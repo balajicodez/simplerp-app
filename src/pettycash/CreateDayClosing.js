@@ -3,6 +3,7 @@ import Sidebar from '../Sidebar';
 import PageCard from '../components/PageCard';
 import './CreateDayClosing.css';
 import { APP_SERVER_URL_PREFIX } from '../constants.js';
+import { DAY_CLOSING_WHATSAPP_NUMBERS_CSV } from '../constants.js';
 import { useNavigate } from 'react-router-dom';
 import Utils from '../Utils';
 
@@ -380,11 +381,14 @@ function CreateDayClosing() {
         const data = await res.text();
         setError(data);
       } else {
-        const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=9740665561,9866472624,9948011234,8985221844&dvariables=${organizationName},${date},${cashIn},${cashOut},${closingBalance}`, {
-        method: 'POST'
-      });
-        
-
+       try{
+        const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=${DAY_CLOSING_WHATSAPP_NUMBERS_CSV}&dvariables=${organizationName},${Utils.formatDateDDMMYYYY(date)},${cashIn},${cashOut},${closingBalance}`, 
+        {
+          method: 'POST'        
+        });
+      } catch(e){
+        console.error('Error sending WhatsApp notification:', e);
+      }
         setSuccess('Day closing created successfully!');
         setTimeout(() => navigate('/pettycash/day-closing'), 1200);
       }
