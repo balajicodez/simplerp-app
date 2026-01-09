@@ -631,7 +631,7 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
       const denominationRows = denominations
         .filter((d) => Number(d.good) > 0 || Number(d.soiled) > 0)
         .map((d) => {
-          const amount = (Number(d.good) - Number(d.soiled)) * d.value;
+          const amount = (Number(d.good) + Number(d.soiled)) * d.value;
           denominationTotal += amount;
           return [
             d.label,
@@ -1852,6 +1852,7 @@ if (coinsTotal > 0) {
                             {loan.status}
                           </td>
                         </tr>
+                                                
                       ))}
                     </tbody>
                   </table>
