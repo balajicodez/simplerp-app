@@ -1829,7 +1829,7 @@ if (coinsTotal > 0) {
                             {safeToLocaleString(loan.loanAmount)}
                           </td>
                           <td style={styles.tableCell}>
-                            {safeToLocaleString(loan.narration)}
+                            {loan.narration}
                           </td>
                           <td style={styles.tableCell}>
                             {safeToLocaleString(loan.recoveredAmount)}
