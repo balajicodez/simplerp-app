@@ -959,19 +959,19 @@ function CreateDayClosing() {
           },
         ];
         const data = await handleGenerateReport();
-        console.log("Generated PDF Base64:", data);
+        //console.log("Generated PDF Base64:", data);
         messagePayload[0].media = data;
         messagePayload[0].medianame = `Day_Closing_Report_${date}.pdf`;
         messagePayload[0].mobile = "9740665561";
         messagePayload[0].templatename = "day_closing_report";
-        messagePayload[0].dvariables = [{ organizationName }, date, cashIn, cashOut, closingBalance];
+        messagePayload[0].dvariables = [ organizationName , date, cashIn, cashOut, closingBalance];
         //const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=9740665561,9866472624,9948011234,8985221844&dvariables=RSH,${date},${cashIn},${cashOut},${closingBalance}`, {
         try {
           const response = await fetch(url, {
             method: "POST",
             headers: {
               "X-API-KEY": "8b275f43ccf74564ba0715316533af8a",
-              "Content-Type": "application/json",
+              "Content-Type": "application/json"
             },
             body: JSON.stringify(messagePayload),
           });
