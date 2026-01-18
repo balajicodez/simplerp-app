@@ -140,12 +140,12 @@ function CreateDayClosing() {
     });
   };
 
-  const getIssuedAndPartialLoansByOrg = () => {
+  const getIssuedAndPartialLoansByOrg = (handloansData) => {
     if (!organizationId) return [];
 
     const loanMap = new Map();
 
-    handloans.forEach((h) => {
+    handloansData.forEach((h) => {
       // 🔥 FILTER BY ORGANIZATION
       const loanOrgId =
         h.organizationId ||
@@ -249,20 +249,21 @@ function CreateDayClosing() {
         { headers: { Authorization: `Bearer ${bearerToken}` } }
       );
 
+      var handloansData = [];
       if (handloansResponse.ok) {
-        const handloansData = await handloansResponse.json();
+        handloansData = await handloansResponse.json();
         setHandloans(handloansData.content || handloansData || []);
       } else {
         setHandloans([]);
       }
 
-      const filteredRecords = new Array(records);
-      const filteredExpenses = getExpensesForDate(expensesData.content, date);
+      const filteredRecords = new Array(data);
+      const filteredExpenses = getExpensesForDate(expensesData, date);
 
       // ✅ ALL HANDLOANS (NO DATE FILTER)
       //const filteredHandloans = getAllHandloansWithBalances();
       //const filteredHandloans = getIssuedAndPartialLoans();
-      const filteredHandloans = getIssuedAndPartialLoansByOrg();
+      const filteredHandloans = getIssuedAndPartialLoansByOrg(handloansData.content);
 
       const { cashInExpenses, cashOutExpenses } =
         categorizeExpenses(filteredExpenses);
@@ -326,12 +327,12 @@ function CreateDayClosing() {
           ],
         ],
         body: filteredRecords.map(() => [
-          formatDateDDMMYYYY(records.closingDate),
-          records.description || "-",
-          safeToLocaleString(records.cashIn),
-          safeToLocaleString(records.cashOut),
+          formatDateDDMMYYYY(data.closingDate),
+          data.description || "-",
+          safeToLocaleString(data.cashIn),
+          safeToLocaleString(data.cashOut),
           safeToLocaleString(
-            records.openingBalance + records.cashIn - records.cashOut
+            data.openingBalance + data.cashIn - data.cashOut
           ),
         ]),
         theme: "grid",
@@ -370,7 +371,7 @@ function CreateDayClosing() {
         margin: { left: margin },
         styles: { fontSize: 11, overflow: "linebreak" },
         headStyles: { fillColor: [22, 163, 74], textColor: 255 },
-        columnStyles: { 1: { halign: "center" } },
+        columnStyles: { 1: { halign: "right" } },
       });
 
       /* capture Y */
@@ -456,11 +457,11 @@ function CreateDayClosing() {
               data.cell.styles.fillColor = [243, 244, 246]; // light gray
             }
           },
-          // columnStyles: {
-          //   2: { halign: "right" },
-          //   3: { halign: "right" },
-          //   4: { halign: "right" },
-          // },
+           columnStyles: {
+             2: { halign: "right" },
+             3: { halign: "right" },
+             4: { halign: "right" },
+           }
         });
 
         currentY = doc.lastAutoTable.finalY + 14;
@@ -471,38 +472,38 @@ function CreateDayClosing() {
         {
           label: "500",
           value: 500,
-          good: records._500NoteCount,
-          soiled: records._500SoiledNoteCount,
+          good: data._500NoteCount,
+          soiled: data._500SoiledNoteCount,
         },
         {
           label: "200",
           value: 200,
-          good: records._200NoteCount,
-          soiled: records._200SoiledNoteCount,
+          good: data._200NoteCount,
+          soiled: data._200SoiledNoteCount,
         },
         {
           label: "100",
           value: 100,
-          good: records._100NoteCount,
-          soiled: records._100SoiledNoteCount,
+          good: data._100NoteCount,
+          soiled: data._100SoiledNoteCount,
         },
         {
           label: "50",
           value: 50,
-          good: records._50NoteCount,
-          soiled: records._50SoiledNoteCount,
+          good: data._50NoteCount,
+          soiled: data._50SoiledNoteCount,
         },
         {
           label: "20",
           value: 20,
-          good: records._20NoteCount,
-          soiled: records._20SoiledNoteCount,
+          good: data._20NoteCount,
+          soiled: data._20SoiledNoteCount,
         },
         {
           label: "10",
           value: 10,
-          good: records._10NoteCount,
-          soiled: records._10SoiledNoteCount,
+          good: data._10NoteCount,
+          soiled: data._10SoiledNoteCount,
         },
       ];
 
@@ -522,10 +523,10 @@ function CreateDayClosing() {
         });
 
       const coinsCount =
-        (records._1CoinCount || 0) +
-        (records._5CoinCount || 0) +
-        (records._10CoinCount || 0) +
-        (records._20CoinCount || 0);
+        (data._1CoinCount || 0) +
+        (data._5CoinCount || 0) +
+        (data._10CoinCount || 0) +
+        (data._20CoinCount || 0);
 
       if (coinsCount > 0) {
         denominationTotal += coinsCount;
@@ -537,49 +538,41 @@ function CreateDayClosing() {
         ]);
       }
 
-      if (denominationRows.length > 0) {
-        denominationRows.push([
-          "TOTAL",
-          "",
-          "",
-          safeToLocaleString(denominationTotal),
-        ]);
-      }
       const coinsTotal = calculateCoinsTotal(); // Use your helper function
       if (coinsTotal > 0) {
         denominationTotal += coinsTotal;
 
         // Add individual coin rows for clarity
-        if (records._1CoinCount > 0) {
+        if (data._1CoinCount > 0) {
           denominationRows.push([
             "₹1 Coin",
-            records._1CoinCount || 0,
+            data._1CoinCount || 0,
             0,
-            safeToLocaleString((records._1CoinCount || 0) * 1),
+            safeToLocaleString((data._1CoinCount || 0) * 1),
           ]);
         }
-        if (records._5CoinCount > 0) {
+        if (data._5CoinCount > 0) {
           denominationRows.push([
             "₹5 Coin",
-            records._5CoinCount || 0,
+            data._5CoinCount || 0,
             0,
-            safeToLocaleString((records._5CoinCount || 0) * 5),
+            safeToLocaleString((data._5CoinCount || 0) * 5),
           ]);
         }
-        if (records._10CoinCount > 0) {
+        if (data._10CoinCount > 0) {
           denominationRows.push([
             "₹10 Coin",
-            records._10CoinCount || 0,
+            data._10CoinCount || 0,
             0,
-            safeToLocaleString((records._10CoinCount || 0) * 10),
+            safeToLocaleString((data._10CoinCount || 0) * 10),
           ]);
         }
-        if (records._20CoinCount > 0) {
+        if (data._20CoinCount > 0) {
           denominationRows.push([
             "₹20 Coin",
-            records._20CoinCount || 0,
+            data._20CoinCount || 0,
             0,
-            safeToLocaleString((records._20CoinCount || 0) * 20),
+            safeToLocaleString((data._20CoinCount || 0) * 20),
           ]);
         }
       }
@@ -966,9 +959,10 @@ function CreateDayClosing() {
           },
         ];
         const data = await handleGenerateReport();
+        console.log("Generated PDF Base64:", data);
         messagePayload[0].media = data;
         messagePayload[0].medianame = `Day_Closing_Report_${date}.pdf`;
-        messagePayload[0].mobile = "8985221844";
+        messagePayload[0].mobile = "9706556561";
         messagePayload[0].templatename = "day_closing_report";
         messagePayload[0].dvariables = [{ organizationName }];
         //const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=9740665561,9866472624,9948011234,8985221844&dvariables=RSH,${date},${cashIn},${cashOut},${closingBalance}`, {
