@@ -950,28 +950,23 @@ function CreateDayClosing() {
       } else {
         const messagePayload = [
           {
-            templatename: "day_closing_report",
-            mobile: "919740665561",
-            medianame: "sample.pdf",
-            dvariables: ["var 1", "var 2", "var 3", "var 4", "var 2"],
-            media: "",
-            // ⚠️ keep full Base64 string here (truncated for readability)
+            
           },
         ];
         const data = await handleGenerateReport();
         //console.log("Generated PDF Base64:", data);
         messagePayload[0].media = data;
         messagePayload[0].medianame = `Day_Closing_Report_${date}.pdf`;
-        messagePayload[0].mobile = "9740665561";
+        messagePayload[0].mobile = DAY_CLOSING_WHATSAPP_NUMBERS_CSV;
         messagePayload[0].templatename = "day_closing_report";
         messagePayload[0].dvariables = [ organizationName , date, cashIn, cashOut, closingBalance];
         //const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=9740665561,9866472624,9948011234,8985221844&dvariables=RSH,${date},${cashIn},${cashOut},${closingBalance}`, {
         try {
           const response = await fetch(url, {
             method: "POST",
-            headers: {
-              "X-API-KEY": "8b275f43ccf74564ba0715316533af8a",
-              "Content-Type": "application/json"
+            headers: {           
+              "Content-Type": "application/json",
+               Authorization: `Bearer ${bearerToken}` 
             },
             body: JSON.stringify(messagePayload),
           });
@@ -993,7 +988,7 @@ function CreateDayClosing() {
     }
   };
 
-  const url = "http://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate/json";
+  const url = APP_SERVER_URL_PREFIX+"/wapp/api/v2/send/bytemplate/json";
 
   const { totalGood, totalBad, totalAmount } = getTotalSummary();
 
