@@ -1,7 +1,7 @@
-import {fetchWithAuth, postWithAuthAndBody, putWithAuthAndBody} from "../../../_utils/datasource-utils";
+import {fetchWithAuth, postWithAuthAndBody} from "../../../_utils/datasource-utils";
 
 
-export async function fetchExpenseMaterTypes(page = 0, size = 20) {
+export async function fetchExpenseMasters(page = 0, size = 20) {
     return fetchWithAuth(`/expenseTypeMasters?page=${page}&size=${size}`);
 }
 

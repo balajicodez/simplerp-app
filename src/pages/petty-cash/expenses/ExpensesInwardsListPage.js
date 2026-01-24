@@ -5,8 +5,11 @@ import {useNavigate, useSearchParams} from 'react-router-dom';
 import Utils from '../../../Utils';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
-import {Button, Card, Statistic, Typography} from "antd";
+import {App as AntApp, Button, Card, Statistic, Typography} from "antd";
 import {PlusOutlined} from "@ant-design/icons";
+import {fetchExpenses} from "./ExpensesDataSource";
+import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
+import FormUtils from "../../../_utils/FormUtils";
 
 function ExpensesInwardsListPage() {
     const [items, setItems] = useState([]);
@@ -20,24 +23,25 @@ function ExpensesInwardsListPage() {
     const [sortConfig, setSortConfig] = useState({key: "", direction: ""});
 
     const navigate = useNavigate();
+
+    const formUtils = new FormUtils(AntApp.useApp());
     const pageParam = Number(searchParams.get("page") || 0);
     const sizeParam = Number(searchParams.get("size") || 20);
 
     // Calculate statistics
     const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0);
     const totalTransactions = items.length;
-    const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
+    const isAdmin = Utils.isRoleApplicable("ADMIN");
     const enableCreate = Utils.isRoleApplicable("ADMIN") || Utils.isRoleApplicable("CASHASSISTANT");
 
     const fetchUrl = async () => {
         setLoading(true);
         try {
-            const bearerToken = localStorage.getItem("token");
 
             let orgId = null;
 
             // 👇 If NOT admin → always use logged-in org
-            if (!enableOrgDropDown) {
+            if (!isAdmin) {
                 orgId = localStorage.getItem("organizationId");
             }
             // 👇 If admin
@@ -49,23 +53,7 @@ function ExpensesInwardsListPage() {
                 }
             }
 
-            let url =
-                `${APP_SERVER_URL_PREFIX}/expenses?` +
-                `page=${pageParam}&size=${sizeParam}` +
-                `&expenseType=CASH-IN` +
-                `&startDate=${fromDate}` +
-                `&endDate=${toDate}`;
-
-            // add orgId only when required
-            if (orgId) {
-                url += `&organizationId=${orgId}`;
-            }
-
-            const res = await fetch(url, {
-                headers: {Authorization: `Bearer ${bearerToken}`},
-            });
-
-            const json = await res.json();
+            const json = await fetchExpenses(pageParam, sizeParam, 'CASH-IN', fromDate, toDate, orgId);
             const list = json.content || json._embedded?.expenses || [];
 
             setItems(list);
@@ -83,9 +71,6 @@ function ExpensesInwardsListPage() {
         setSearchParams({page: 0, size: sizeParam});
     };
 
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
-    };
 
     // Safe string conversion function
     const safeToString = (value) => {
@@ -208,34 +193,26 @@ function ExpensesInwardsListPage() {
 
     useEffect(() => {
         fetchUrl();
-    }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate, enableOrgDropDown]);
+    }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate, isAdmin]);
 
 
     useEffect(() => {
-        const fetchOrganizations = async () => {
+        const fetchLoadData = async () => {
             try {
-                const bearerToken = localStorage.getItem("token");
-                const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-                    headers: {Authorization: `Bearer ${bearerToken}`},
-                });
-                const data = await response.json();
-                const orgs = data._embedded ? data._embedded.organizations || [] : data;
-                setOrganizations(orgs);
+                const data = await fetchOrganizations(0, 1000);
+                setOrganizations(data._embedded ? data._embedded.organizations || [] : data);
+                setLoading(false);
             } catch (error) {
-                console.error("Failed to fetch organizations:", error);
+                console.error("Error fetching data:", error);
+                formUtils.showErrorNotification("Failed to fetch organizations");
             }
         };
-        fetchOrganizations();
+        fetchLoadData();
     }, []);
 
-    const getSortIcon = (key) => {
-        if (sortConfig.key !== key) return "↕️";
-        return sortConfig.direction === "ascending" ? "↑" : "↓";
-    };
 
     return (
         <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
-
 
             <div className="list-page">
                 <div className='list-page-header'>
@@ -289,13 +266,13 @@ function ExpensesInwardsListPage() {
                             <label>Branch</label>
                             <select
                                 value={
-                                    enableOrgDropDown
+                                    isAdmin
                                         ? selectedOrgId
                                         : localStorage.getItem("organizationId")
                                 }
                                 onChange={handleOrganizationChange}
                                 className="filter-select"
-                                disabled={!enableOrgDropDown}
+                                disabled={!isAdmin}
                             >
                                 <option value="">All Branches</option>
                                 {organizations.map((org) => (

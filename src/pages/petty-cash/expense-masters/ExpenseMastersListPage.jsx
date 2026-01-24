@@ -4,7 +4,7 @@ import {useNavigate} from 'react-router-dom';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {App as AntApp, Button, Table, Tag, Tooltip, Typography} from "antd";
 import {EditOutlined, PlusOutlined} from "@ant-design/icons";
-import {fetchExpenseMaterTypes} from "./ExpenseMastersDataSource";
+import {fetchExpenseMasters} from "./ExpenseMastersDataSource";
 import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
 import FormUtils from "../../../_utils/FormUtils";
 
@@ -25,7 +25,7 @@ export default function ExpenseMastersListPage() {
         setLoading(true);
         try {
             // Replace with your actual API endpoint
-            const data = await fetchExpenseMaterTypes(currentPage - 1, pageSize);
+            const data = await fetchExpenseMasters(currentPage - 1, pageSize);
 
             // Access the _embedded property from the parsed data
             const expenseTypes = data._embedded.expenseTypeMasters;

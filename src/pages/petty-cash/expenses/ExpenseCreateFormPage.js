@@ -17,7 +17,7 @@ const getLocalDate = () => {
     return `${year}-${month}-${day}`;
 };
 
-function ExpenseFormPage() {
+function ExpenseCreateFormPage() {
     const [form, setForm] = useState({
         transactionDate: getLocalDate(),
         amount: "",
@@ -73,19 +73,6 @@ function ExpenseFormPage() {
         return "Create Expense";
     };
 
-    const getHeaderColor = () => {
-        const type = getExpenseType();
-        if (type === "CASH-IN") return "inward";
-        if (type === "CASH-OUT") return "outward";
-        return "default";
-    };
-
-    const getExpenseIcon = () => {
-        const type = getExpenseType();
-        if (type === "CASH-IN") return "💰";
-        if (type === "CASH-OUT") return "💸";
-        return "📝";
-    };
 
     // Debug useEffect
     useEffect(() => {
@@ -458,23 +445,6 @@ function ExpenseFormPage() {
         navigate("/pettycash/expenses-inward");
     };
 
-    const getCategoryIcon = (category) => {
-        const icons = {
-            SALARY: "💼",
-            TRAVEL: "✈️",
-            OFFICE_SUPPLIES: "📦",
-            UTILITIES: "💡",
-            MAINTENANCE: "🔧",
-            MEALS: "🍽️",
-            TRANSPORT: "🚗",
-            OTHER: "📝",
-        };
-        return icons[category] || "💰";
-    };
-
-    const formatBalance = (balance) => {
-        return `₹${Number(balance).toLocaleString()}`;
-    };
 
     // Check if current balance section should be shown
     const showCurrentBalanceSection = getExpenseType() === "CASH-OUT";
@@ -808,4 +778,4 @@ function ExpenseFormPage() {
     );
 }
 
-export default ExpenseFormPage;
+export default ExpenseCreateFormPage;

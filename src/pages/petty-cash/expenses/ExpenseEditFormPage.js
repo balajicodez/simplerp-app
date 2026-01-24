@@ -7,7 +7,7 @@ import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout
 import {Button, Form, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
 
-export default function EditExpenseFormPage() {
+export default function ExpenseEditFormPage() {
     const {id} = useParams();
     const navigate = useNavigate();
     const [form, setForm] = useState({

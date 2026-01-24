@@ -24,7 +24,6 @@ function OrganizationListPage() {
     const fetchData = async (currentPage, pageSize) => {
         setLoading(true);
         try {
-            // Replace with your actual API endpoint
             const data = await fetchOrganizations(currentPage - 1, pageSize);
             setRecords(data._embedded ? data._embedded.organizations || [] : data);
             setLoading(false);

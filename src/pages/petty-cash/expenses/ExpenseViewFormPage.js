@@ -6,7 +6,7 @@ import './EditExpense.css';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
-function ExpenseView() {
+function ExpenseViewFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [expense, setExpense] = useState(null);
@@ -290,4 +290,4 @@ function ExpenseView() {
   );
 }
 
-export default ExpenseView;
+export default ExpenseViewFormPage;

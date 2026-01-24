@@ -5,8 +5,10 @@ import {useNavigate, useSearchParams} from 'react-router-dom';
 import Utils from '../../../Utils';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {Button, Card, Statistic, Typography} from "antd";
+import {App as AntApp, Button, Card, Statistic, Typography} from "antd";
 import {PlusOutlined} from "@ant-design/icons";
+import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
+import FormUtils from "../../../_utils/FormUtils";
 
 function ExpensesOutwardListPage() {
     const [items, setItems] = useState([]);
@@ -20,6 +22,7 @@ function ExpensesOutwardListPage() {
     const [sortConfig, setSortConfig] = useState({key: '', direction: ''});
 
     const navigate = useNavigate();
+    const formUtils = new FormUtils(AntApp.useApp());
     const pageParam = Number(searchParams.get('page') || 0);
     const sizeParam = Number(searchParams.get('size') || 20);
 
@@ -243,20 +246,17 @@ function ExpensesOutwardListPage() {
     };
 
     useEffect(() => {
-        const fetchOrganizations = async () => {
+        const fetchLoadData = async () => {
             try {
-                const bearerToken = localStorage.getItem('token');
-                const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-                    headers: {'Authorization': `Bearer ${bearerToken}`}
-                });
-                const data = await response.json();
-                const orgs = data._embedded ? data._embedded.organizations || [] : data;
-                setOrganizations(orgs);
+                const data = await fetchOrganizations(0, 1000);
+                setOrganizations(data._embedded ? data._embedded.organizations || [] : data);
+                setLoading(false);
             } catch (error) {
-                console.error('Failed to fetch organizations:', error);
+                console.error("Error fetching data:", error);
+                formUtils.showErrorNotification("Failed to fetch organizations");
             }
         };
-        fetchOrganizations();
+        fetchLoadData();
     }, []);
 
 

@@ -5,8 +5,8 @@ export const DAY_CLOSING_WHATSAPP_NUMBERS_CSV = '9740665561,9866472624,994801123
 
 
 if (process.env.REACT_APP_API_URL) {
-    // create .env with REACT_APP_API_URL='http://localhost:9090/simplerp/api'
-    // for local development
+    // for local development create .env file and place below value
+    // REACT_APP_API_URL='http://localhost:9090/simplerp/api'
     APP_SERVER_URL_PREFIX = process.env.REACT_APP_API_URL;
 }
 //export const DAY_CLOSING_WHATSAPP_NUMBERS_CSV = '9740665561';

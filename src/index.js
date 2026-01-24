@@ -15,9 +15,9 @@ import ExpensesOutwardListPage from './pages/petty-cash/expenses/ExpensesOutward
 import DayClosingListPage from './pages/petty-cash/day-closing/DayClosingListPage';
 import CreateDayClosing from './pages/petty-cash/day-closing/CreateDayClosing';
 import DayClosingReportPage from './pages/reports/day-closing/DayClosingReportPage';
-import ExpenseFormPage from './pages/petty-cash/expenses/ExpenseFormPage';
-import ExpenseView from './pages/petty-cash/expenses/ExpenseView';
-import EditExpenseFormPage from './pages/petty-cash/expenses/EditExpenseFormPage';
+import ExpenseCreateFormPage from './pages/petty-cash/expenses/ExpenseCreateFormPage';
+import ExpenseViewFormPage from './pages/petty-cash/expenses/ExpenseViewFormPage';
+import ExpenseEditFormPage from './pages/petty-cash/expenses/ExpenseEditFormPage';
 import HolidayCalendar from './pages/holidays/HolidayCalendar';
 import HandLoansListPage from './pages/petty-cash/hand-loans/HandLoansListPage';
 import LoginPage from "./pages/login/LoginPage";
@@ -118,9 +118,9 @@ root.render(
                                 element={<CreateDayClosing/>}
                             />
                             <Route path="/reports/day-closing" element={<DayClosingReportPage/>}/>
-                            <Route path="/pettycash/expenses/create" element={<ExpenseFormPage/>}/>
-                            <Route path="/pettycash/expenses/:id" element={<ExpenseView/>}/>
-                            <Route path="/pettycash/expenses/:id/edit" element={<EditExpenseFormPage/>}/>
+                            <Route path="/pettycash/expenses/create" element={<ExpenseCreateFormPage/>}/>
+                            <Route path="/pettycash/expenses/:id" element={<ExpenseViewFormPage/>}/>
+                            <Route path="/pettycash/expenses/:id/edit" element={<ExpenseEditFormPage/>}/>
 
 
                             <Route path="/holidays" element={<HolidayCalendar/>}/>

@@ -5,7 +5,9 @@ import { APP_SERVER_URL_PREFIX } from "../../../constants.js";
 import Utils from '../../../Utils';
 import './DayClosingReportPage.css';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {Typography} from "antd";
+import {App as AntApp, Typography} from "antd";
+import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
+import FormUtils from "../../../_utils/FormUtils";
 
 export default function DayClosingReportPage() {
   const [records, setRecords] = useState([]);
@@ -31,6 +33,7 @@ export default function DayClosingReportPage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [attachments , setAttachments] = useState([]);
   const isAdminRole = Utils.isRoleApplicable('ADMIN');
+  const formUtils = new FormUtils(AntApp.useApp());
 
   // Safe number formatting function
   const safeToLocaleString = (value) => {
@@ -41,16 +44,17 @@ export default function DayClosingReportPage() {
   };
 
   useEffect(() => {
-    const bearerToken = localStorage.getItem("token");
-    fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-      headers: { Authorization: `Bearer ${bearerToken}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const orgs = data._embedded ? data._embedded.organizations || [] : data;
-        setOrganizations(orgs);
-      })
-      .catch(() => {});
+    const fetchLoadData = async () => {
+      try {
+        const data = await fetchOrganizations(0, 1000);
+        setOrganizations(data._embedded ? data._embedded.organizations || [] : data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        formUtils.showErrorNotification("Failed to fetch organizations");
+      }
+    };
+    fetchLoadData();
   }, []);
 
   // Date filtering for expenses
