@@ -57,7 +57,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       <ul>
         <li>
           <NavLink
-            to="/dashboard"
+            to="/"
             className={({ isActive }) => (isActive ? "active" : "")}
             data-icon="🏠"
           >

@@ -27,7 +27,7 @@ function getSideBarMenu(userRoles = []) {
             children: [{
                 key: 'pettycash-expenses-inward',
                 label: 'Cash Flow - Inward',
-                path: '/pettycash/expenses-inward'
+                path: '/pettycash/expenses-inward', //'/pettycash/expenses-inward'
             }, {
                 key: 'pettycash-expenses-outward',
                 label: 'Cash Flow - Outward',
@@ -77,7 +77,7 @@ function getSideBarMenu(userRoles = []) {
                 },
                 {
                     key: 'user-administration-organizations',
-                    label: 'Organizations',
+                    label: 'Branches',
                     path: '/user-administration/organizations'
                 }
             ]
