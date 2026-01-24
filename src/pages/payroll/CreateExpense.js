@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../Sidebar';
-import PageCard from '../components/PageCard';
-import '../pettycash/PettyCash.css';
+import Sidebar from '../../Sidebar';
+import PageCard from '../../components/PageCard';
+import '../../pettycash/PettyCash.css';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import { APP_SERVER_URL_PREFIX } from "../../constants.js";
 
 function CreateExpense() {
   const [form, setForm] = useState({ description: '', amount: '', employeeId: '', subtype: '', type: '', expenseDate: '', referenceNumber: '', file: null });

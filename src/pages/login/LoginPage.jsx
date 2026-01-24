@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import {APP_TITLE, CUSTOMER_TITLE} from "../../constants.js";
-import logo from './../../assets/images/logo_clear.jpg';
 import './LoginPage.css';
 import {jwtDecode} from "jwt-decode";
 import {LockOutlined, UserOutlined} from '@ant-design/icons';
@@ -62,7 +61,7 @@ export default function LoginPage() {
         <div className="login-page">
 
             <div className={'login-illustration-section'}>
-                <img src={'/logo.jpg'} alt="Logo" width={'400px'}/>
+                <img src={'/images/logo.jpg'} alt="Logo" width={'400px'}/>
                 <Typography.Title level={1} style={{margin: 0}}>{CUSTOMER_TITLE}</Typography.Title>
             </div>
 

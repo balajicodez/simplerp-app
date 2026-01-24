@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import './DefaultAppSidebarLayout.css';
-import logo from '../../assets/images/logo_clear.jpg';
 
 import {DollarOutlined, HomeOutlined, LineChartOutlined, LogoutOutlined, SettingOutlined} from '@ant-design/icons';
 import {Avatar, Button, Divider, Dropdown, Layout, Menu, Space, theme, Typography} from 'antd';
@@ -177,7 +176,7 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
                 <div className="sidebar-header">
 
 
-                    <img className='sidebar-header-logo' src={logo} alt="Logo"/>
+                    <img className='sidebar-header-logo' src={'/images/logo_alt_clear.jpg'} alt="Logo" />
 
                     { !collapsed &&  <Typography.Title level={4} className="sidebar-header-title">{APP_TITLE}</Typography.Title>}
 

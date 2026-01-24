@@ -36,7 +36,6 @@ import PermissionsFormPage from "./pages/user-administration/permissions/Permiss
 import ExpenseMastersListPage from "./pages/petty-cash/expense-masters/ExpenseMastersListPage";
 import ExpenseMasterFormPage from "./pages/petty-cash/expense-masters/ExpenseMasterFormPage";
 import NotFoundPage from "./pages/not-found/NotFoundPage";
-import Download from "./download/Download";
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
