@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import PageCard from '../../../components/PageCard';
 import { APP_SERVER_URL_PREFIX } from "../../../constants.js";
 import './EditExpense.css';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import {Button, Image, Spin, Typography} from "antd";
+import {LeftOutlined} from "@ant-design/icons";
 
 function ExpenseViewFormPage() {
   const { id } = useParams();
@@ -64,7 +65,38 @@ function ExpenseViewFormPage() {
 
   return (
       <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
-      <PageCard title="Expense Details">
+        <div className="form-page">
+
+          <Button variant="filled"
+                  color={'default'}
+                  icon={<LeftOutlined/>}
+                  iconPlacement={'left'}
+                  onClick={() => {
+                    navigate(-1);
+                  }}>
+            Back
+          </Button>
+          <Spin spinning={loading} tip="Loading..." size={'large'}>
+
+            <div
+                noValidate={true}
+                className="form-page"
+                layout="vertical">
+
+              <div className='form-page-header'>
+
+
+                <div className={'page-title-section'}>
+
+
+                  <Typography.Title className='page-title' level={2}>
+                    Expense Details
+                  </Typography.Title>
+                </div>
+
+
+                <div className={'page-actions'}></div>
+              </div>
         
         {/* Header Section */}
         <div className="expense-view-header" style={{ backgroundColor: getExpenseTypeColor() }}>
@@ -109,7 +141,7 @@ function ExpenseViewFormPage() {
             {/* Main Details Card */}
             <div className="details-card">
               <div className="card-header">
-                <h3>Transaction Information</h3>
+                <Typography.Title level={4} >Transaction Information</Typography.Title>
                 <div className="status-badge" style={{ backgroundColor: getExpenseTypeColor() }}>
                   {expense.expenseType || 'Unknown'}
                 </div>
@@ -167,7 +199,7 @@ function ExpenseViewFormPage() {
             {/* Dates Card */}
             <div className="details-card">
               <div className="card-header">
-                <h3>Timeline</h3>
+                <Typography.Title level={4} >Timeline</Typography.Title>
                 <div className="timeline-icon">📅</div>
               </div>
               
@@ -210,14 +242,15 @@ function ExpenseViewFormPage() {
             {(expense.imageData || expense.fileUrl || expense.file) && (
               <div className="details-card">
                 <div className="card-header">
-                  <h3>Receipt Attachment</h3>
+
+                  <Typography.Title level={4} >Receipt Attachment</Typography.Title>
                   <div className="attachment-icon">📎</div>
                 </div>
                 
                 <div className="receipt-section">
                   <div className="receipt-preview">
                     {expense.imageData ? (
-                      <img 
+                      <Image
                         src={`data:image/png;base64,${expense.imageData}`} 
                         alt="Expense Receipt" 
                         className="receipt-image"
@@ -240,35 +273,6 @@ function ExpenseViewFormPage() {
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="action-buttons-container">
-              <button 
-                className="btn-secondary"
-                onClick={() => navigate('/pettycash/expenses-outward')}
-              >
-                <span className="btn-icon">←</span>
-                Back to List
-              </button>
-              
-              <div className="primary-actions">
-                {/* <button 
-                  className="btn-outline"
-                  onClick={() => navigate(-1)}
-                >
-                  <span className="btn-icon">↶</span>
-                  Go Back
-                </button> */}
-                
-                <button 
-                  className="btn-primary"
-                  // onClick={() => navigate(`/pettycash/expenses/${id}/edit`)}
-                >
-                  🔒 Locked
-                  {/* <span className="btn-icon">✏️</span>
-                  Edit Expense */}
-                </button>
-              </div>
-            </div>
           </div>
         )}
 
@@ -285,7 +289,9 @@ function ExpenseViewFormPage() {
             </button>
           </div>
         )}
-      </PageCard>
+            </div>
+          </Spin>
+        </div>
       </DefaultAppSidebarLayout>
   );
 }

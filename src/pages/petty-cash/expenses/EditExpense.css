@@ -668,7 +668,7 @@ button:disabled {
 .expense-view-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 24px;
   margin-bottom: 24px;
 }
@@ -734,10 +734,14 @@ button:disabled {
 
 .details-card {
   background: white;
-  border-radius: 12px;
-  padding: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: var(--elevate-1);
+  margin-bottom: 1rem;
+}
+
+.card-header h4 {
+  margin-top: .5rem;
 }
 
 .card-header {
@@ -837,7 +841,6 @@ button:disabled {
 
 .receipt-preview {
   max-width: 400px;
-  max-height: 50px;
   text-align: center;
 }
 
@@ -932,20 +935,7 @@ button:disabled {
   .details-grid {
     grid-template-columns: 1fr;
   }
-  
-  .action-buttons-container {
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .primary-actions {
-    width: 100%;
-    justify-content: stretch;
-  }
-  
-  .primary-actions button {
-    flex: 1;
-  }
+
   
   .card-header {
     flex-direction: column;

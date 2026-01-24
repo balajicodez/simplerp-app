@@ -32,10 +32,12 @@
 }
 
 .list-page .filter-form {
+    display: flex;
+    gap: 1rem;
     padding: 1rem 0;
 }
 
-.list-page .filter-form .search-field {
+.list-page .filter-form > * {
     width: 20rem;
 }
 

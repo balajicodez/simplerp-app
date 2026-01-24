@@ -1,6 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import './PettyCash.css';
-import {APP_SERVER_URL_PREFIX} from '../../../constants.js';
 import {useNavigate, useSearchParams} from 'react-router-dom';
 import Utils from '../../../Utils';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
@@ -9,11 +7,9 @@ import {
     App as AntApp,
     Button,
     Card,
-    Col,
     DatePicker,
     Form,
     Modal,
-    Row,
     Select,
     Statistic,
     Table,
@@ -28,20 +24,13 @@ import {fetchExpense, fetchExpenses} from "./ExpensesDataSource";
 
 function ExpensesOutwardListPage() {
     const [items, setItems] = useState([]);
-    const [links, setLinks] = useState({});
     const [loading, setLoading] = useState(false);
     const [modalFile, setModalFile] = useState(null);
-    const [searchParams, setSearchParams] = useSearchParams();
     const [organizations, setOrganizations] = useState([]);
-    const [selectedOrgId, setSelectedOrgId] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortConfig, setSortConfig] = useState({key: '', direction: ''});
 
     const [filterForm] = Form.useForm();
     const navigate = useNavigate();
     const formUtils = new FormUtils(AntApp.useApp());
-    const pageParam = Number(searchParams.get('page') || 0);
-    const sizeParam = Number(searchParams.get('size') || 20);
 
     // Calculate statistics for outward expenses
     const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0);
@@ -50,31 +39,6 @@ function ExpensesOutwardListPage() {
     const isAdmin = Utils.isRoleApplicable('ADMIN');
     const enableCreate = Utils.isRoleApplicable("ADMIN") || Utils.isRoleApplicable("CASHASSISTANT");
 
-    // const fetchUrl = async (url) => {
-    //   setLoading(true);
-    //   try {
-    //     const bearerToken = localStorage.getItem('token');
-    //     const res = await fetch(url, {
-    //       headers: { 'Authorization': `Bearer ${bearerToken}` }
-    //     });
-    //     const json = await res.json();
-    //     let list = json.content || json._embedded?.expenses || [];
-    //     list = list.filter(e => e.expenseType === 'CASH-OUT');
-    //     setItems(list);
-    //     setLinks(json._links || {});
-    //   } catch (e) {
-    //     console.error('Failed to fetch outward expenses:', e);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-
-    const today = new Date().toISOString().split("T")[0];
-    const last7Days = new Date(Date.now() - 7 * 86400000)
-        .toISOString()
-        .split("T")[0];
-    const [fromDate, setFromDate] = useState(last7Days);
-    const [toDate, setToDate] = useState(today);
 
     const [pagination, setPagination] = useState({
         current: 1,
@@ -108,95 +72,6 @@ function ExpensesOutwardListPage() {
     };
 
 
-    const handleOrganizationChange = (e) => {
-        const value = e.target.value;
-        setSelectedOrgId(value);
-        setSearchParams({page: 0, size: sizeParam});
-    };
-
-
-    // Safe string conversion function
-    const safeToString = (value) => {
-        if (value === null || value === undefined) return '';
-        if (typeof value === 'number') return value.toString();
-        if (typeof value === 'string') return value;
-        return String(value);
-    };
-
-    // Filter items based on search term
-    const filteredItems = items.filter(item => {
-        if (!searchTerm) return true;
-
-        const searchLower = safeToString(searchTerm).toLowerCase();
-
-        return (
-            safeToString(item.description).toLowerCase().includes(searchLower) ||
-            safeToString(item.employeeId).toLowerCase().includes(searchLower) ||
-            safeToString(item.expenseSubType).toLowerCase().includes(searchLower) ||
-            safeToString(item.amount).includes(searchTerm) // Direct number comparison without toLowerCase
-        );
-    });
-
-    // Sort items
-    const sortedItems = React.useMemo(() => {
-        if (!sortConfig.key) return filteredItems;
-
-        return [...filteredItems].sort((a, b) => {
-            const aValue = a[sortConfig.key];
-            const bValue = b[sortConfig.key];
-
-            // Handle null/undefined values
-            if (aValue == null && bValue == null) return 0;
-            if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
-            if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
-
-            // Handle different data types
-            if (typeof aValue === 'number' && typeof bValue === 'number') {
-                return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
-            }
-
-            // String comparison
-            const aString = safeToString(aValue).toLowerCase();
-            const bString = safeToString(bValue).toLowerCase();
-
-            if (aString < bString) {
-                return sortConfig.direction === 'ascending' ? -1 : 1;
-            }
-            if (aString > bString) {
-                return sortConfig.direction === 'ascending' ? 1 : -1;
-            }
-            return 0;
-        });
-    }, [filteredItems, sortConfig]);
-
-    const handleSort = (key) => {
-        setSortConfig(current => ({
-            key,
-            direction: current.key === key && current.direction === 'ascending' ? 'descending' : 'ascending'
-        }));
-    };
-    useEffect(() => {
-        fetchData(pageParam, sizeParam);
-    }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate, isAdmin]);
-
-    const isToday = (dateString) => {
-        if (!dateString) return false;
-
-        try {
-            const itemDate = new Date(dateString);
-            const today = new Date();
-
-            return (
-                itemDate.getDate() === today.getDate() &&
-                itemDate.getMonth() === today.getMonth() &&
-                itemDate.getFullYear() === today.getFullYear()
-            );
-        } catch (e) {
-            console.error('Invalid date:', dateString, e);
-            return false;
-        }
-    };
-
     const fetchOrganizationsData = async () => {
         try {
             const data = await fetchOrganizations(0, 1000);
@@ -220,18 +95,6 @@ function ExpensesOutwardListPage() {
     }, []);
 
 
-    const formatDate = (dateString) => {
-        if (!dateString) return "-";
-
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return "-";
-
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
-
-        return `${day}-${month}-${year}`;
-    };
 
 
     // Get expense type color
@@ -334,11 +197,10 @@ function ExpensesOutwardListPage() {
                       onValuesChange={handleValueChange}
                       layout={'vertical'}>
 
-                    <Row gutter={24}>
-                        <Col span={4}>
                             <Form.Item
                                 name="organizationId"
                                 label="Branch"
+
                             >
                                 <Select
                                     style={{width: "100%"}}
@@ -347,9 +209,7 @@ function ExpensesOutwardListPage() {
                                     options={organizationOptions}
                                 />
                             </Form.Item>
-                        </Col>
 
-                        <Col span={4}>
                             <Form.Item
                                 name="fromDate"
                                 label="From Date"
@@ -359,9 +219,6 @@ function ExpensesOutwardListPage() {
                                     style={{width: "100%"}}
                                 />
                             </Form.Item>
-                        </Col>
-
-                        <Col span={4}>
                             <Form.Item
                                 name="toDate"
                                 label="To Date"
@@ -371,14 +228,11 @@ function ExpensesOutwardListPage() {
                                     style={{width: "100%"}}
                                 />
                             </Form.Item>
-                        </Col>
-                    </Row>
 
                 </Form>
 
                 <Table
                     className={'list-page-table'}
-                    size={'large'}
                     dataSource={items}
                     columns={[
                         {
@@ -398,8 +252,9 @@ function ExpensesOutwardListPage() {
                             dataIndex: 'expenseSubType',
                             key: 'expenseSubType',
                             render: (expenseSubType) => {
+                                const color = getExpenseTypeColor(expenseSubType);
                                 return (
-                                    <Tag color={'blue'} key={expenseSubType} variant={'filled'}>
+                                    <Tag color={color} key={expenseSubType} variant={'filled'}>
                                         {expenseSubType}
                                     </Tag>
                                 );

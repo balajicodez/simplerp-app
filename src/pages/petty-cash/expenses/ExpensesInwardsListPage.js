@@ -7,16 +7,14 @@ import {
     App as AntApp,
     Button,
     Card,
-    Col,
     DatePicker,
     Form,
     Modal,
-    Row,
     Select,
     Statistic, Table, Tag,
     Typography
 } from "antd";
-import {EditOutlined, EyeOutlined, PlusOutlined} from "@ant-design/icons";
+import {EyeOutlined, PlusOutlined} from "@ant-design/icons";
 import {fetchExpense, fetchExpenses} from "./ExpensesDataSource";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
@@ -45,6 +43,7 @@ function ExpensesInwardsListPage() {
     const isAdmin = Utils.isRoleApplicable("ADMIN");
     const enableCreate = Utils.isRoleApplicable("ADMIN") || Utils.isRoleApplicable("CASHASSISTANT");
 
+
     const fetchData = async (currentPage, pageSize) => {
         setLoading(true);
         try {
@@ -70,11 +69,6 @@ function ExpensesInwardsListPage() {
             setLoading(false);
         }
     };
-
-
-
-
-
 
     const fetchOrganizationsData = async () => {
         try {
@@ -181,45 +175,37 @@ function ExpensesInwardsListPage() {
                       onValuesChange={handleValueChange}
                       layout={'vertical'}>
 
-                    <Row gutter={24}>
-                        <Col span={6}>
-                            <Form.Item
-                                name="organizationId"
-                                label="Branch"
-                            >
-                                <Select
-                                    style={{width: "100%"}}
-                                    disabled={!isAdmin}
-                                    placeholder={'Select branch'}
-                                    options={organizationOptions}
-                                />
-                            </Form.Item>
-                        </Col>
+                    <Form.Item
+                        name="organizationId"
+                        label="Branch"
+                    >
+                        <Select
+                            style={{width: "100%"}}
+                            disabled={!isAdmin}
+                            placeholder={'Select branch'}
+                            options={organizationOptions}
+                        />
+                    </Form.Item>
 
-                        <Col span={6}>
-                            <Form.Item
-                                name="fromDate"
-                                label="From Date"
-                            >
-                                <DatePicker
-                                    format={'DD-MM-YYYY'}
-                                    style={{width: "100%"}}
-                                />
-                            </Form.Item>
-                        </Col>
+                    <Form.Item
+                        name="fromDate"
+                        label="From Date"
+                    >
+                        <DatePicker
+                            format={'DD-MM-YYYY'}
+                            style={{width: "100%"}}
+                        />
+                    </Form.Item>
 
-                        <Col span={6}>
-                            <Form.Item
-                                name="toDate"
-                                label="To Date"
-                            >
-                                <DatePicker
-                                    format={'DD-MM-YYYY'}
-                                    style={{width: "100%"}}
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                    <Form.Item
+                        name="toDate"
+                        label="To Date"
+                    >
+                        <DatePicker
+                            format={'DD-MM-YYYY'}
+                            style={{width: "100%"}}
+                        />
+                    </Form.Item>
 
                 </Form>
 
