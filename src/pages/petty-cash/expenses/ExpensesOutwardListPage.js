@@ -21,6 +21,7 @@ import {fetchOrganizations} from "../../user-administration/organizations/Organi
 import FormUtils from "../../../_utils/FormUtils";
 import dayjs from "dayjs";
 import {fetchExpense, fetchExpenses} from "./ExpensesDataSource";
+import {DATE_DISPLAY_FORMAT} from "../../../constants";
 
 function ExpensesOutwardListPage() {
     const [items, setItems] = useState([]);
@@ -215,7 +216,7 @@ function ExpensesOutwardListPage() {
                                 label="From Date"
                             >
                                 <DatePicker
-                                    format={'DD-MM-YYYY'}
+                                    format={DATE_DISPLAY_FORMAT}
                                     style={{width: "100%"}}
                                 />
                             </Form.Item>
@@ -224,7 +225,7 @@ function ExpensesOutwardListPage() {
                                 label="To Date"
                             >
                                 <DatePicker
-                                    format={'DD-MM-YYYY'}
+                                    format={DATE_DISPLAY_FORMAT}
                                     style={{width: "100%"}}
                                 />
                             </Form.Item>
@@ -266,7 +267,7 @@ function ExpensesOutwardListPage() {
                             key: 'createdDate',
                             render: (createdDate) => {
                                 if (!createdDate) return "-";
-                                return dayjs(createdDate).format('DD-MM-YYYY');
+                                return dayjs(createdDate).format(DATE_DISPLAY_FORMAT);
                             },
                         },
                         {
@@ -275,7 +276,7 @@ function ExpensesOutwardListPage() {
                             key: 'transactionDate',
                             render: (transactionDate) => {
                                 if (!transactionDate) return "-";
-                                return dayjs(transactionDate).format('DD-MM-YYYY');
+                                return dayjs(transactionDate).format(DATE_DISPLAY_FORMAT);
                             },
                         },
                         {

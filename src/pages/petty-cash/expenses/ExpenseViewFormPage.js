@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { APP_SERVER_URL_PREFIX } from "../../../constants.js";
+import {APP_SERVER_URL_PREFIX, DATE_DISPLAY_FORMAT} from "../../../constants.js";
 import './EditExpense.css';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {Button, Image, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
+import dayjs from "dayjs";
 
 function ExpenseViewFormPage() {
   const { id } = useParams();
@@ -51,16 +52,7 @@ function ExpenseViewFormPage() {
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    } catch (e) {
-      return dateString;
-    }
+    return dayjs(dateString).format(DATE_DISPLAY_FORMAT);
   };
 
   return (

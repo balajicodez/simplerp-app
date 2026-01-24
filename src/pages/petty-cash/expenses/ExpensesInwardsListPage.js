@@ -19,6 +19,7 @@ import {fetchExpense, fetchExpenses} from "./ExpensesDataSource";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
 import dayjs from "dayjs";
+import {DATE_DISPLAY_FORMAT} from "../../../constants";
 
 function ExpensesInwardsListPage() {
     const [items, setItems] = useState([]);
@@ -192,7 +193,7 @@ function ExpensesInwardsListPage() {
                         label="From Date"
                     >
                         <DatePicker
-                            format={'DD-MM-YYYY'}
+                            format={DATE_DISPLAY_FORMAT}
                             style={{width: "100%"}}
                         />
                     </Form.Item>
@@ -202,7 +203,7 @@ function ExpensesInwardsListPage() {
                         label="To Date"
                     >
                         <DatePicker
-                            format={'DD-MM-YYYY'}
+                            format={DATE_DISPLAY_FORMAT}
                             style={{width: "100%"}}
                         />
                     </Form.Item>
@@ -244,7 +245,7 @@ function ExpensesInwardsListPage() {
                             key: 'createdDate',
                             render: (createdDate) => {
                                 if (!createdDate) return "-";
-                                return dayjs(createdDate).format('DD-MM-YYYY');
+                                return dayjs(createdDate).format(DATE_DISPLAY_FORMAT);
                             },
                         },
                         {
@@ -253,7 +254,7 @@ function ExpensesInwardsListPage() {
                             key: 'transactionDate',
                             render: (transactionDate) => {
                                 if (!transactionDate) return "-";
-                                return dayjs(transactionDate).format('DD-MM-YYYY');
+                                return dayjs(transactionDate).format(DATE_DISPLAY_FORMAT);
                             },
                         },
                         {

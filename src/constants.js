@@ -12,5 +12,8 @@ if (process.env.REACT_APP_API_URL) {
 //export const DAY_CLOSING_WHATSAPP_NUMBERS_CSV = '9740665561';
 
 
+export const DATE_DISPLAY_FORMAT = 'DD-MM-YYYY';
+
+
 export const APP_TITLE = 'SimplERP';
 export const CUSTOMER_TITLE = 'Sri Divya Sarees Pvt Ltd';
