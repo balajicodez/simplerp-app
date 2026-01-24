@@ -5,9 +5,6 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {App as AntApp, ConfigProvider} from "antd";
 
 
-import Upload from './uploads/Upload';
-import Download from './download/Download';
-import Report from './reports/Report';
 import Employees from './employees/Employees';
 import CreateEmployee from './employees/CreateEmployee';
 import EmployeeView from './employees/EmployeeView';
@@ -19,10 +16,8 @@ import DayClosing from './pettycash/DayClosing';
 import CreateDayClosing from './pettycash/CreateDayClosing';
 import DayClosingReport from './reports/DayClosingReport';
 import CreateExpense from './pettycash/CreateExpense';
-import ExpenseMasters from './pettycash/ExpenseMasters';
 import ExpenseView from './pettycash/ExpenseView';
 import EditExpense from './pettycash/EditExpense';
-import CreateExpenseMaster from './pettycash/CreateExpenseMaster';
 import HolidayCalendar from './holidays/HolidayCalendar';
 import HandLoanManagement from './HandloanManagement/HandloanManagement';
 import LoginPage from "./pages/login/LoginPage";
@@ -41,6 +36,7 @@ import PermissionsFormPage from "./pages/user-administration/permissions/Permiss
 import ExpenseMastersListPage from "./pages/petty-cash/expense-masters/ExpenseMastersListPage";
 import ExpenseMasterFormPage from "./pages/petty-cash/expense-masters/ExpenseMasterFormPage";
 import NotFoundPage from "./pages/not-found/NotFoundPage";
+import Download from "./download/Download";
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -63,8 +59,6 @@ root.render(
 
                             <Route path="/" element={<ProtectedRoute><DashboardPage/></ProtectedRoute>}/>
 
-
-                            <Route path="/upload" element={<ProtectedRoute><Upload/></ProtectedRoute>}/>
 
                             <Route path="/employees" element={<Employees/>}/>
                             <Route path="/employees/create" element={<CreateEmployee/>}/>
@@ -131,7 +125,6 @@ root.render(
 
 
                             <Route path="/holidays" element={<HolidayCalendar/>}/>
-
 
                             <Route path="/logout" element={<LoginPage/>}/>
                         </Routes>
