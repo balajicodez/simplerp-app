@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import Sidebar from "../Sidebar";
-import PageCard from "../components/PageCard";
-import { APP_SERVER_URL_PREFIX } from "../constants.js";
-import Utils from '../Utils';
+import { APP_SERVER_URL_PREFIX } from "../../../constants.js";
+import Utils from '../../../Utils';
+import './DayClosingReportPage.css';
+import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import {Typography} from "antd";
 
-function DayClosingReport() {
+export default function DayClosingReportPage() {
   const [records, setRecords] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [handloans, setHandloans] = useState([]);
@@ -848,10 +849,6 @@ if (coinsTotal > 0) {
   };
 
   const styles = {
-    container: {
-      minHeight: "100vh",
-      backgroundColor: "#f8fafc",
-    },
 
     headerSection: {
       display: "flex",
@@ -1160,10 +1157,21 @@ if (coinsTotal > 0) {
   );
 
   return (
-    <div style={styles.container}>
-      <Sidebar isOpen={true} />
-      <PageCard title="Day Closing Report">
-        <div style={styles.headerSection}>
+      <DefaultAppSidebarLayout pageTitle={'Reports'}>
+
+        <div className="day-closing-report-page">
+
+          <div className='report-page-header'>
+            <div className={'page-title-section'}>
+              <Typography.Title className='page-title' level={2}>
+                Day Closing Report
+              </Typography.Title>
+            </div>
+            <div className={'page-actions'}></div>
+          </div>
+
+
+          <div style={styles.headerSection}>
           <div style={styles.dateSelector}>
             <label style={styles.dateLabel}>
               Select Date To Generate Report:
@@ -1900,9 +1908,7 @@ if (coinsTotal > 0) {
             </div>
           </div>
         )}
-      </PageCard>
-    </div>
+        </div>
+    </DefaultAppSidebarLayout>
   );
 }
-
-export default DayClosingReport;

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import Sidebar from './../Sidebar';
-import PageCard from '../components/PageCard';
-import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import PageCard from '../../components/PageCard';
+import { APP_SERVER_URL_PREFIX } from "../../constants.js";
 import { useNavigate } from 'react-router-dom';
 import './Employees.css';
+import {PRETTY_CASE_PAGE_TITLE} from "../petty-cash/PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function CreateEmployee() {
   const [form, setForm] = useState({ name: '', skill: '', region: '', age: '', migrantWorker: false });
@@ -78,8 +79,8 @@ function CreateEmployee() {
   };
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
+
       <PageCard title="Create Employee">
         <div className="create-employee-form">
           {error && (
@@ -238,7 +239,7 @@ function CreateEmployee() {
           </form>
         </div>
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 
   // Helper functions for styling

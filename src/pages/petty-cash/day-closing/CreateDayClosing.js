@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import Sidebar from "../Sidebar";
-import PageCard from "../components/PageCard";
+import PageCard from "../../../components/PageCard";
 import "./CreateDayClosing.css";
-import { APP_SERVER_URL_PREFIX } from "../constants.js";
-import { DAY_CLOSING_WHATSAPP_NUMBERS_CSV } from "../constants.js";
+import { APP_SERVER_URL_PREFIX } from "../../../constants.js";
+import { DAY_CLOSING_WHATSAPP_NUMBERS_CSV } from "../../../constants.js";
 import { useNavigate } from "react-router-dom";
-import Utils from "../Utils";
+import Utils from "../../../Utils";
+import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function CreateDayClosing() {
   const [description, setDescription] = useState("Day Closing");
@@ -1005,8 +1006,8 @@ function CreateDayClosing() {
   );
 
   return (
-    <div className="day-closing-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
+
       <PageCard title="Create Day Closing Report">
         <form onSubmit={handleSubmit} className="day-closing-form">
           {/* Basic Information Section */}
@@ -1354,7 +1355,7 @@ function CreateDayClosing() {
           )}
         </form>
       </PageCard>
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

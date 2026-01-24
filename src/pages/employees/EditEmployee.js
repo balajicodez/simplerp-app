@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from './../Sidebar';
-import PageCard from '../components/PageCard';
-import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import PageCard from '../../components/PageCard';
+import { APP_SERVER_URL_PREFIX } from "../../constants.js";
 import { useNavigate, useParams } from 'react-router-dom';
 import './Employees.css';
+import DefaultAppSidebarLayout from "../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import {EMPLOYEES_PAGE_TITLE} from "./EmployeeConstants";
 
 function EditEmployee() {
   const { id } = useParams();
@@ -135,21 +136,20 @@ function EditEmployee() {
 
   if (loading) {
     return (
-      <div className="page-container">
-        <Sidebar isOpen={true} />
+        <DefaultAppSidebarLayout pageTitle={EMPLOYEES_PAGE_TITLE}>
         <PageCard title="Edit Employee">
           <div className="loading-state">
             <div className="loading-spinner"></div>
             <p>Loading employee data...</p>
           </div>
         </PageCard>
-      </div>
+        </DefaultAppSidebarLayout>
     );
   }
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={EMPLOYEES_PAGE_TITLE}>
+
       <PageCard title={`Edit Employee`}>
         
         {/* Enhanced Header Section */}
@@ -437,7 +437,7 @@ function EditEmployee() {
           </form>
         </div>
       </PageCard>
-    </div>
+    </DefaultAppSidebarLayout>
   );
 }
 

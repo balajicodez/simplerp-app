@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../Sidebar';
-import PageCard from '../components/PageCard';
+import PageCard from '../../components/PageCard';
 import './HolidayCalendar.css';
-import { APP_SERVER_URL_PREFIX } from '../constants.js';
+import { APP_SERVER_URL_PREFIX } from '../../constants.js';
+import {EMPLOYEES_PAGE_TITLE} from "../employees/EmployeeConstants";
+import DefaultAppSidebarLayout from "../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function buildCalendar(year, month) {
   const first = new Date(year, month, 1);
@@ -93,8 +94,7 @@ function HolidayCalendar() {
   };
 
   return (
-    <div>
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={EMPLOYEES_PAGE_TITLE}>
       <PageCard title={`Holiday Calendar — ${year} / ${month+1}`}>
         <div className="hc-controls">
           <button className="btn" onClick={() => { if (month === 0) { setYear(y => y-1); setMonth(11); } else setMonth(m => m-1); }}>Prev</button>
@@ -170,7 +170,7 @@ function HolidayCalendar() {
           </div>
         </div>
       )}
-    </div>
+      </DefaultAppSidebarLayout>
   );
 }
 

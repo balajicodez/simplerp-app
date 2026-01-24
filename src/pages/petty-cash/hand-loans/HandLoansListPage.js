@@ -1,7 +1,5 @@
 import React, {useState, useEffect, useCallback, useMemo} from 'react';
 import {useNavigate, useSearchParams} from 'react-router-dom';
-import Sidebar from '../../../Sidebar';
-import PageCard from '../../../components/PageCard';
 import {APP_SERVER_URL_PREFIX} from "../../../constants.js";
 import './HandLoans.css';
 import Utils from '../../../Utils';

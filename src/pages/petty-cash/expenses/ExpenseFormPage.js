@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from "react";
-import "../../../pettycash/pettyCashCreateExpense.css";
+import "./pettyCashCreateExpense.css";
 import {useNavigate, useLocation} from "react-router-dom";
 import {APP_SERVER_URL_PREFIX} from "../../../constants.js";
 import Utils from '../../../Utils';
-import CameraCapture from '../../../CameraCapture';
+import CameraCapture from '../../../_components/camera-capture/CameraCapture';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {Button, Form, Spin, Typography} from "antd";

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import '../../../pettycash/PettyCash.css';
+import '../expenses/PettyCash.css';
 import {useNavigate} from 'react-router-dom';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {App as AntApp, Button, Table, Tag, Tooltip, Typography} from "antd";

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../Sidebar";
-import PageCard from "../components/PageCard";
 import "./CreateDayClosing.css";
-import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import { APP_SERVER_URL_PREFIX } from "../../../constants.js";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import Utils from '../Utils';
+import Utils from '../../../Utils';
+import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import {Button, Typography} from "antd";
+import {PlusOutlined} from "@ant-design/icons";
 
-function DayClosing() {
+function DayClosingListPage() {
   const [items, setItems] = useState([]);
   const [links, setLinks] = useState({});
   const [loading, setLoading] = useState(false);
@@ -207,34 +209,25 @@ function DayClosing() {
   };
 
   return (
-    <div className="page-container">
-      <Sidebar isOpen={true} />
-      <PageCard title="Day Closing Management">
-        {/* Header Section with Stats */}
-        <div className="dashboard-header1">
-          <div
-            className="header-content"
-            style={{ display: "flex", justifyContent: "space-between" }}
-          >
-            <div></div>
-            <div>
-              <button
-                className="btn-primary1"
-                style={{
-                  color: "#c393c1",
-                  display: "flex",
-                  justifyContent: "flex-end",
-                }}
-                onClick={() => navigate("/pettycash/day-closing/create")}
-              >
-                <span className="btn-icon" style={{ color: "#c392c1" }}>
-                  +
-                </span>
-                Perform Day Closing
-              </button>
+      <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
+
+        <div className="list-page">
+          <div className='list-page-header'>
+            <div className={'page-title-section'}>
+              <Typography.Title className='page-title' level={2}>Day Closing Management</Typography.Title>
             </div>
-          </div>          
-        </div>
+
+            <div className={'page-actions'}>
+              <Button type={'primary'}
+                      size={'large'}
+                      onClick={() => navigate("/pettycash/day-closing/create")} icon={<PlusOutlined/>}>
+                Perform Day Closing
+              </Button>
+            </div>
+
+          </div>
+
+
 
         {/* Filters Section */}
         <div className="filters-section1">
@@ -509,9 +502,9 @@ function DayClosing() {
             )}           
           </>
         )}
-      </PageCard>
-    </div>
+      </div>
+    </DefaultAppSidebarLayout>
   );
 }
 
-export default DayClosing;
+export default DayClosingListPage;

@@ -1,0 +1,23 @@
+
+.day-closing-report-page .report-form {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--elevate-1);
+    margin-bottom: 2rem;
+}
+
+.day-closing-report-page .summary-container {
+    display: grid;
+    grid-Template-Columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+    gap: 1rem;
+    margin-block: 2rem;
+}
+
+.day-closing-report-page .report-section {
+    background: white;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--elevate-1);
+}

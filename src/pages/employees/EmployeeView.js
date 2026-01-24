@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from './../Sidebar';
-import PageCard from '../components/PageCard';
-import { APP_SERVER_URL_PREFIX } from "../constants.js";
+import PageCard from '../../components/PageCard';
+import { APP_SERVER_URL_PREFIX } from "../../constants.js";
 import './Employees.css';
+import {EMPLOYEES_PAGE_TITLE} from "./EmployeeConstants";
+import DefaultAppSidebarLayout from "../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
 function EmployeeView() {
   const { id } = useParams();
@@ -26,8 +27,7 @@ function EmployeeView() {
   }, [id]);
 
   return (
-    <div>
-      <Sidebar isOpen={true} />
+      <DefaultAppSidebarLayout pageTitle={EMPLOYEES_PAGE_TITLE}>
       <PageCard title={employee ? employee.name : 'Employee Details'}>
         {loading && <div className="small">Loading...</div>}
         {error && <div style={{ color: '#c53030' }}>{error}</div>}
@@ -77,7 +77,7 @@ function EmployeeView() {
           </div>
         )}
       </PageCard>
-    </div>
+    </DefaultAppSidebarLayout>
   );
 }
 

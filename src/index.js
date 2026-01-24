@@ -5,20 +5,20 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {App as AntApp, ConfigProvider} from "antd";
 
 
-import Employees from './employees/Employees';
-import CreateEmployee from './employees/CreateEmployee';
-import EmployeeView from './employees/EmployeeView';
-import EditEmployee from './employees/EditEmployee';
-import Expenses from './pettycash/Expenses';
+import Employees from './pages/employees/Employees';
+import CreateEmployee from './pages/employees/CreateEmployee';
+import EmployeeView from './pages/employees/EmployeeView';
+import EditEmployee from './pages/employees/EditEmployee';
+import Expenses from './pages/petty-cash/expenses/Expenses';
 import ExpensesInwardsListPage from './pages/petty-cash/expenses/ExpensesInwardsListPage';
 import ExpensesOutwardListPage from './pages/petty-cash/expenses/ExpensesOutwardListPage';
-import DayClosing from './pettycash/DayClosing';
-import CreateDayClosing from './pettycash/CreateDayClosing';
-import DayClosingReport from './reports/DayClosingReport';
+import DayClosingListPage from './pages/petty-cash/day-closing/DayClosingListPage';
+import CreateDayClosing from './pages/petty-cash/day-closing/CreateDayClosing';
+import DayClosingReportPage from './pages/reports/day-closing/DayClosingReportPage';
 import ExpenseFormPage from './pages/petty-cash/expenses/ExpenseFormPage';
-import ExpenseView from './pettycash/ExpenseView';
-import EditExpense from './pettycash/EditExpense';
-import HolidayCalendar from './holidays/HolidayCalendar';
+import ExpenseView from './pages/petty-cash/expenses/ExpenseView';
+import EditExpenseFormPage from './pages/petty-cash/expenses/EditExpenseFormPage';
+import HolidayCalendar from './pages/holidays/HolidayCalendar';
 import HandLoansListPage from './pages/petty-cash/hand-loans/HandLoansListPage';
 import LoginPage from "./pages/login/LoginPage";
 import {AuthProvider} from "./hooks/useAuth";
@@ -74,7 +74,7 @@ root.render(
                                 path="/pettycash/expenses-outward"
                                 element={<ExpensesOutwardListPage/>}
                             />
-                            <Route path="/pettycash/day-closing" element={<DayClosing/>}/>
+                            <Route path="/pettycash/day-closing" element={<DayClosingListPage/>}/>
 
 
                             <Route
@@ -117,10 +117,10 @@ root.render(
                                 path="/pettycash/day-closing/create"
                                 element={<CreateDayClosing/>}
                             />
-                            <Route path="/reports/day-closing" element={<DayClosingReport/>}/>
+                            <Route path="/reports/day-closing" element={<DayClosingReportPage/>}/>
                             <Route path="/pettycash/expenses/create" element={<ExpenseFormPage/>}/>
                             <Route path="/pettycash/expenses/:id" element={<ExpenseView/>}/>
-                            <Route path="/pettycash/expenses/:id/edit" element={<EditExpense/>}/>
+                            <Route path="/pettycash/expenses/:id/edit" element={<EditExpenseFormPage/>}/>
 
 
                             <Route path="/holidays" element={<HolidayCalendar/>}/>
