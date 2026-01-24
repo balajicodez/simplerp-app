@@ -17,7 +17,11 @@ export default function UsersListPage() {
         token: {colorPrimary},
     } = theme.useToken();
 
-    const [pagination, setPagination] = useState({current: 1, pageSize: FormUtils.LIST_DEFAULT_PAGE_SIZE})
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: FormUtils.LIST_DEFAULT_PAGE_SIZE,
+        sorter: {field: 'username', order: "descend"}
+    })
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -29,11 +33,11 @@ export default function UsersListPage() {
 
         (async () => {
             const onLoadOrgs = await fetchOrganizations();
-            await fetchUsers(pagination.current, pagination.pageSize, onLoadOrgs);
+            await fetchUsers(pagination.current, pagination.pageSize, pagination.sorter, onLoadOrgs);
         })();
     }, []);
 
-    const fetchUsers = async (currentPage, pageSize, onLoadOrgs) => {
+    const fetchUsers = async (currentPage, pageSize, sorter, onLoadOrgs) => {
         setLoading(true);
         try {
             const data = await UserDataSource.fetchUsers(currentPage - 1, pageSize);
@@ -51,6 +55,7 @@ export default function UsersListPage() {
                 ...prev,
                 current: currentPage,
                 pageSize,
+                sorter,
                 total: data.page.totalElements, // Total records from the API
             }));
         } catch (err) {
@@ -75,10 +80,10 @@ export default function UsersListPage() {
     // Filter users based on search term
     const filteredUsers = FormUtils.searchListByFields(users, ['username', 'email', 'organizationName', 'status'], searchTerm);
 
-    const handleTableChange = (pagination) => {
+    const handleTableChange = (pagination, _, sorter) => {
         // This function is triggered when the user changes the page
 
-        fetchUsers(pagination.current, pagination.pageSize);
+        fetchUsers(pagination.current, pagination.pageSize, sorter);
     }
 
 

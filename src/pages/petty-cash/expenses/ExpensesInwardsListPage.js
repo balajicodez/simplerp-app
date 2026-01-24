@@ -1,7 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import './PettyCash.css';
-import {APP_SERVER_URL_PREFIX} from '../../../constants.js';
-import {useNavigate, useSearchParams} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import Utils from '../../../Utils';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
@@ -12,37 +10,34 @@ import {
     Col,
     DatePicker,
     Form,
-    Input,
     Modal,
     Row,
     Select,
-    Statistic,
+    Statistic, Table, Tag,
     Typography
 } from "antd";
-import {PlusOutlined} from "@ant-design/icons";
-import {fetchExpenses} from "./ExpensesDataSource";
+import {EditOutlined, EyeOutlined, PlusOutlined} from "@ant-design/icons";
+import {fetchExpense, fetchExpenses} from "./ExpensesDataSource";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
-import {checkPasswordStrength} from "../../user-administration/users/utils";
 import dayjs from "dayjs";
 
 function ExpensesInwardsListPage() {
     const [items, setItems] = useState([]);
-    const [links, setLinks] = useState({});
     const [loading, setLoading] = useState(false);
     const [modalFile, setModalFile] = useState(null);
-    const [searchParams, setSearchParams] = useSearchParams();
     const [organizations, setOrganizations] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [sortConfig, setSortConfig] = useState({key: "", direction: ""});
+
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: FormUtils.LIST_DEFAULT_PAGE_SIZE
+    })
 
     const navigate = useNavigate();
 
     const [filterForm] = Form.useForm();
 
     const formUtils = new FormUtils(AntApp.useApp());
-    const pageParam = Number(searchParams.get("page") || 0);
-    const sizeParam = Number(searchParams.get("size") || 20);
 
     // Calculate statistics
     const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0);
@@ -50,7 +45,7 @@ function ExpensesInwardsListPage() {
     const isAdmin = Utils.isRoleApplicable("ADMIN");
     const enableCreate = Utils.isRoleApplicable("ADMIN") || Utils.isRoleApplicable("CASHASSISTANT");
 
-    const fetchUrl = async () => {
+    const fetchData = async (currentPage, pageSize) => {
         setLoading(true);
         try {
 
@@ -58,11 +53,17 @@ function ExpensesInwardsListPage() {
             const fromDate = filterForm.getFieldValue('fromDate').format('YYYY-MM-DD');
             const toDate = filterForm.getFieldValue('toDate').format('YYYY-MM-DD');
 
-            const json = await fetchExpenses(pageParam, sizeParam, 'CASH-IN', fromDate, toDate, orgId);
-            const list = json.content || json._embedded?.expenses || [];
+            const data = await fetchExpenses(currentPage - 1, pageSize, 'CASH-IN', fromDate, toDate, orgId);
+            const list = data.content || data._embedded?.expenses || [];
 
             setItems(list);
-            setLinks(json._links || {});
+
+            setPagination(prev => ({
+                ...prev,
+                current: currentPage,
+                pageSize,
+                total: data.totalElements, // Total records from the API
+            }));
         } catch (e) {
             console.error("Failed to fetch expenses:", e);
         } finally {
@@ -71,123 +72,45 @@ function ExpensesInwardsListPage() {
     };
 
 
-    // Safe string conversion function
-    const safeToString = (value) => {
-        if (value === null || value === undefined) return "";
-        if (typeof value === "number") return value.toString();
-        if (typeof value === "string") return value;
-        return String(value);
+
+
+
+
+    const fetchOrganizationsData = async () => {
+        try {
+            const data = await fetchOrganizations(0, 1000);
+            setOrganizations(data._embedded ? data._embedded.organizations || [] : data);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            formUtils.showErrorNotification("Failed to fetch organizations");
+        }
     };
-
-    // Format date for display
-    const formatDate = (dateString) => {
-        if (!dateString) return "-";
-
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return "-";
-
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
-
-        return `${day}-${month}-${year}`;
-    };
-
-    // Filter items based on search term
-    const filteredItems = items.filter((item) => {
-        if (!searchTerm) return true;
-
-        const searchLower = safeToString(searchTerm).toLowerCase();
-
-        return (
-            safeToString(item.branchName).toLowerCase().includes(searchLower) ||
-            safeToString(item.employeeId).toLowerCase().includes(searchLower) ||
-            safeToString(item.expenseSubType).toLowerCase().includes(searchLower) ||
-            safeToString(item.amount).includes(searchTerm) || // Direct number comparison without toLowerCase
-            safeToString(item.expenseDate).toLowerCase().includes(searchLower) ||
-            safeToString(item.createdDate).toLowerCase().includes(searchLower) ||
-            safeToString(item.referenceNumber).toLowerCase().includes(searchLower) ||
-            safeToString(item.gstapplicable).toLowerCase().includes(searchLower)
-        );
-    });
-
-    // Sort items
-    const sortedItems = React.useMemo(() => {
-        if (!sortConfig.key) return filteredItems;
-
-        return [...filteredItems].sort((a, b) => {
-            const aValue = a[sortConfig.key];
-            const bValue = b[sortConfig.key];
-
-            // Handle null/undefined values
-            if (aValue == null && bValue == null) return 0;
-            if (aValue == null) return sortConfig.direction === "ascending" ? -1 : 1;
-            if (bValue == null) return sortConfig.direction === "ascending" ? 1 : -1;
-
-            // Handle date sorting
-            if (sortConfig.key.includes("Date")) {
-                const aDate = new Date(aValue);
-                const bDate = new Date(bValue);
-                return sortConfig.direction === "ascending"
-                    ? aDate - bDate
-                    : bDate - aDate;
-            }
-
-            // Handle different data types
-            if (typeof aValue === "number" && typeof bValue === "number") {
-                return sortConfig.direction === "ascending"
-                    ? aValue - bValue
-                    : bValue - aValue;
-            }
-
-            // String comparison
-            const aString = safeToString(aValue).toLowerCase();
-            const bString = safeToString(bValue).toLowerCase();
-
-            if (aString < bString) {
-                return sortConfig.direction === "ascending" ? -1 : 1;
-            }
-            if (aString > bString) {
-                return sortConfig.direction === "ascending" ? 1 : -1;
-            }
-            return 0;
-        });
-    }, [filteredItems, sortConfig]);
-
-
-    useEffect(() => {
-        fetchUrl();
-    }, [pageParam, sizeParam, isAdmin]);
 
 
     useEffect(() => {
 
         filterForm.setFieldsValue({
-            organizationId: !isAdmin ? localStorage.getItem("organizationId") : null,
+            organizationId: !isAdmin ? parseInt(localStorage.getItem("organizationId")) : null,
             fromDate: dayjs(new Date()).subtract(7, 'days'), // last 7 days
             toDate: dayjs(new Date()) // today
         });
 
 
-        const fetchLoadData = async () => {
-            try {
-                const data = await fetchOrganizations(0, 1000);
-                setOrganizations(data._embedded ? data._embedded.organizations || [] : data);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                formUtils.showErrorNotification("Failed to fetch organizations");
-            }
-        };
-        fetchLoadData();
+        fetchOrganizationsData();
+        fetchData(pagination.current, pagination.pageSize);
     }, []);
+
+    const handleTableChange = (pagination) => {
+        // This function is triggered when the user changes the page
+        fetchData(pagination.current, pagination.pageSize);
+    }
 
 
     const handleValueChange = (changedValues, allValues) => {
         if (changedValues.hasOwnProperty('organizationId')
             || changedValues.hasOwnProperty('fromDate')
             || changedValues.hasOwnProperty('toDate')) {
-            setSearchParams({page: 0, size: sizeParam});
-            fetchUrl();
+            fetchData(1, pagination.pageSize);
         }
     }
 
@@ -225,6 +148,7 @@ function ExpensesInwardsListPage() {
                 <div className={'list-dashboard'}>
                     <Card>
                         <Statistic
+                            size={'small'}
                             styles={{
                                 content: {color: 'green'},
                             }}
@@ -258,7 +182,7 @@ function ExpensesInwardsListPage() {
                       layout={'vertical'}>
 
                     <Row gutter={24}>
-                        <Col span={4}>
+                        <Col span={6}>
                             <Form.Item
                                 name="organizationId"
                                 label="Branch"
@@ -272,7 +196,7 @@ function ExpensesInwardsListPage() {
                             </Form.Item>
                         </Col>
 
-                        <Col span={4}>
+                        <Col span={6}>
                             <Form.Item
                                 name="fromDate"
                                 label="From Date"
@@ -284,7 +208,7 @@ function ExpensesInwardsListPage() {
                             </Form.Item>
                         </Col>
 
-                        <Col span={4}>
+                        <Col span={6}>
                             <Form.Item
                                 name="toDate"
                                 label="To Date"
@@ -299,173 +223,98 @@ function ExpensesInwardsListPage() {
 
                 </Form>
 
-
-
-                {/* Search Results Info */}
-                {searchTerm && (
-                    <div className="search-results-info">
-                        Found {filteredItems.length} transactions matching "{searchTerm}"
-                        <button
-                            className="clear-search-btn"
-                            onClick={() => setSearchTerm("")}
-                        >
-                            Clear search
-                        </button>
-                    </div>
-                )}
-
-                {/* Data Table */}
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="loading-spinner"></div>
-                        <p>Loading transactions...</p>
-                    </div>
-                ) : (
-                    <>
-                        <div className="table-container">
-                            <table className="modern-table">
-                                <thead>
-                                <tr>
-                                    <th
-                                        // onClick={() => handleSort('amount')}
-                                        // className="sortable-header"
+                <Table
+                    className={'list-page-table'}
+                    size={'large'}
+                    dataSource={items}
+                    columns={[
+                        {
+                            title: 'Amount',
+                            dataIndex: 'amount',
+                            key: 'amount',
+                            render: (item) => {
+                                return (
+                                    <Tag variant={'filled'} color={'green'} >
+                                        ₹{item.toFixed(2)}
+                                    </Tag>
+                                )
+                            }
+                        },
+                        {
+                            title: 'Type',
+                            dataIndex: 'expenseSubType',
+                            key: 'expenseSubType',
+                            render: (expenseSubType) => {
+                                return (
+                                    <Tag color={'blue'} key={expenseSubType} variant={'filled'}>
+                                        {expenseSubType}
+                                    </Tag>
+                                );
+                            },
+                        },
+                        {
+                            title: 'Expense Date',
+                            dataIndex: 'createdDate',
+                            key: 'createdDate',
+                            render: (createdDate) => {
+                                if (!createdDate) return "-";
+                                return dayjs(createdDate).format('DD-MM-YYYY');
+                            },
+                        },
+                        {
+                            title: 'Transaction Date',
+                            dataIndex: 'transactionDate',
+                            key: 'transactionDate',
+                            render: (transactionDate) => {
+                                if (!transactionDate) return "-";
+                                return dayjs(transactionDate).format('DD-MM-YYYY');
+                            },
+                        },
+                        {
+                            title: 'Book',
+                            dataIndex: 'gstapplicable',
+                            key: 'gstapplicable',
+                            render: (gstapplicable) => {
+                                const color = gstapplicable ? "blue" : "grey";
+                                return (
+                                    <Tag color={color} key={gstapplicable} variant={'solid'}>
+                                        {gstapplicable ? "Yes" : "No"}
+                                    </Tag>
+                                );
+                            },
+                        },
+                        {
+                            title: 'Receipt',
+                            dataIndex: 'hasImage',
+                            key: 'hasImage',
+                            render: (hasImage, item) => {
+                                if (!hasImage) return "(No receipt)";
+                                return (
+                                    <Button
+                                            size={'small'}
+                                            icon={<EyeOutlined/>}
+                                            onClick={async () => {
+                                                const json = await fetchExpense(item.id);
+                                                setModalFile(
+                                                    json.imageData || json.fileUrl || json.file
+                                                )
+                                            }}
                                     >
-                                        Amount
-                                    </th>
-                                    <th
-                                        // onClick={() => handleSort('expenseSubType')}
-                                        // className="sortable-header"
-                                    >
-                                        Type
-                                    </th>
-                                    <th
-                                        // onClick={() => handleSort('createdDate')}
-                                        // className="sortable-header"
-                                    >
-                                        Expense Date
-                                    </th>
-                                    <th>TransactionDate</th>
-                                    <th>Book</th>
-                                    <th>Receipt</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {sortedItems.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="8" className="no-data">
-                                            <div className="no-data-content">
-                                                <div className="no-data-icon">📝</div>
-                                                <p>
-                                                    {searchTerm
-                                                        ? `No transactions found for "${searchTerm}"`
-                                                        : "No inward transactions found"}
-                                                </p>
-
-                                                {searchTerm && (
-                                                    <button
-                                                        className="btn-secondary"
-                                                        onClick={() => setSearchTerm("")}
-                                                    >
-                                                        Clear Search
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    sortedItems.map((item, idx) => (
-                                        <tr key={idx} className="table-row">
-                                            <td className="amount-cell">
-                          <span className="amount-badge">
-                            ₹{item.amount?.toLocaleString()}
-                          </span>
-                                            </td>
-
-                                            <td className="type-cell">
-                          <span className="type-tag">
-                            {item.expenseSubType || "General"}
-                          </span>
-                                            </td>
-
-                                            <td className="date-cell">
-                                                <div className="date-display">
-                                                    {formatDate(item.createdDate)}
-                                                </div>
-                                            </td>
-                                            <td className="date-cell">
-                                                <div className="date-display">
-                                                    {formatDate(item.transactionDate)}
-                                                </div>
-                                            </td>
-                                            <td className="type-cell">
-                          <span className="type-tag">
-                            {item.gstapplicable ? "Yes" : "No"}
-                          </span>
-                                            </td>
-
-                                            <td className="receipt-cell">
-                                                {item.hasImage ? (
-                                                    <button
-                                                        className="btn-outline view-btn"
-                                                        onClick={async () => {
-                                                            const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${item.id}`, {
-                                                                headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
-                                                            });
-                                                            const json = await res.json();
-                                                            setModalFile(
-                                                                json.imageData || json.fileUrl || json.file
-                                                            )
-                                                        }
-                                                        }
-                                                    >
-                                                        👁️ View
-                                                    </button>
-                                                ) : (
-                                                    <span className="no-receipt">(No receipt)</span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {sortedItems.length > 0 && (
-                            <div className="pagination-section">
-                                <div className="pagination-info">
-                                    Showing {sortedItems.length} of many results • Page{" "}
-                                    {pageParam + 1}
-                                </div>
-                                <div className="pagination-controls">
-                                    <button
-                                        className="btn-outline"
-                                        disabled={!(links.prev || pageParam > 0)}
-                                        onClick={() => {
-                                            if (links.prev) return fetchUrl(links.prev.href);
-                                            const prev = Math.max(0, pageParam - 1);
-                                            setSearchParams({page: prev, size: sizeParam});
-                                        }}
-                                    >
-                                        ← Previous
-                                    </button>
-                                    <button
-                                        className="btn-outline"
-                                        disabled={!(links.next || items.length >= sizeParam)}
-                                        onClick={() => {
-                                            if (links.next) return fetchUrl(links.next.href);
-                                            const next = pageParam + 1;
-                                            setSearchParams({page: next, size: sizeParam});
-                                        }}
-                                    >
-                                        Next →
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
+                                        View
+                                    </Button>
+                                );
+                            },
+                        }
+                    ]}
+                    onChange={handleTableChange}
+                    pagination={{
+                        ...pagination,
+                        showTotal: FormUtils.listPaginationShowTotal,
+                        itemRender: FormUtils.listPaginationItemRender,
+                        showSizeChanger: true
+                    }}
+                    locale={{emptyText: "No inward transactions found"}}
+                    loading={loading}/>
 
                 <Modal
                     title="Receipt Preview"

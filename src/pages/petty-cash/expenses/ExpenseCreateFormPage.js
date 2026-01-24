@@ -467,7 +467,7 @@ function ExpenseCreateFormPage() {
 
                 <Spin spinning={loading} tip="Loading..." size={'large'}>
 
-                    <Form
+                    <div
                         noValidate={true}
                         className="form-page"
                         layout="vertical">
@@ -739,7 +739,7 @@ function ExpenseCreateFormPage() {
                                         className="btn-secondary"
                                         onClick={clearForm}
                                         disabled={loading}
-                                        style={{padding: "2px"}}
+                                        style={{visibility: "hidden"}}
                                     >
                                         ← Back
                                     </button>
@@ -771,7 +771,7 @@ function ExpenseCreateFormPage() {
                                 </div>
                             </form>
                         </div>
-                    </Form>
+                    </div>
                 </Spin>
             </div>
         </DefaultAppSidebarLayout>

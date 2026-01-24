@@ -11,3 +11,7 @@ export async function fetchExpenses(page = 0, size = 20, expenseType, startDate,
 export async function postExpenseTypeMaster(expenseTypeMaster) {
     return postWithAuthAndBody(`/expenseTypeMasters`, expenseTypeMaster);
 }
+
+export async function fetchExpense(id) {
+    return fetchWithAuth(`/expenses/${id}`);
+}

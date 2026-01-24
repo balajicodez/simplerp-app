@@ -5,10 +5,26 @@ import {useNavigate, useSearchParams} from 'react-router-dom';
 import Utils from '../../../Utils';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {App as AntApp, Button, Card, Modal, Statistic, Typography} from "antd";
-import {PlusOutlined} from "@ant-design/icons";
+import {
+    App as AntApp,
+    Button,
+    Card,
+    Col,
+    DatePicker,
+    Form,
+    Modal,
+    Row,
+    Select,
+    Statistic,
+    Table,
+    Tag, Tooltip,
+    Typography
+} from "antd";
+import {EditOutlined, PlusOutlined} from "@ant-design/icons";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
+import dayjs from "dayjs";
+import {fetchExpense, fetchExpenses} from "./ExpensesDataSource";
 
 function ExpensesOutwardListPage() {
     const [items, setItems] = useState([]);
@@ -21,6 +37,7 @@ function ExpensesOutwardListPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState({key: '', direction: ''});
 
+    const [filterForm] = Form.useForm();
     const navigate = useNavigate();
     const formUtils = new FormUtils(AntApp.useApp());
     const pageParam = Number(searchParams.get('page') || 0);
@@ -30,7 +47,7 @@ function ExpensesOutwardListPage() {
     const totalAmount = items.reduce((sum, item) => sum + (item.amount || 0), 0);
     const totalTransactions = items.length;
     const averageExpense = totalTransactions > 0 ? totalAmount / totalTransactions : 0;
-    const enableOrgDropDown = Utils.isRoleApplicable('ADMIN');
+    const isAdmin = Utils.isRoleApplicable('ADMIN');
     const enableCreate = Utils.isRoleApplicable("ADMIN") || Utils.isRoleApplicable("CASHASSISTANT");
 
     // const fetchUrl = async (url) => {
@@ -59,99 +76,37 @@ function ExpensesOutwardListPage() {
     const [fromDate, setFromDate] = useState(last7Days);
     const [toDate, setToDate] = useState(today);
 
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: FormUtils.LIST_DEFAULT_PAGE_SIZE
+    })
 
-// const fetchUrl = async () => {
-//   setLoading(true);
-//   try {
-//     const bearerToken = localStorage.getItem("token");
-//     const org = selectedOrgId || localStorage.getItem("organizationId");
-
-//     const url = `${APP_SERVER_URL_PREFIX}/expenses?page=${pageParam}&size=${sizeParam}&expenseType=CASH-OUT&startDate=${fromDate}&endDate=${toDate}&organizationId=${org}`;
-
-//     const res = await fetch(url, {
-//       headers: { Authorization: `Bearer ${bearerToken}` },
-//     });
-
-//     const json = await res.json();
-//     setItems(json.content || []);
-//     setLinks(json._links || {});
-//   } catch (e) {
-//     console.error("Failed to fetch expenses", e);
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-    const fetchUrl = async (directUrl = null) => {
+    const fetchData = async (currentPage, pageSize) => {
         setLoading(true);
         try {
-            const bearerToken = localStorage.getItem("token");
 
-            let url = "";
+            const orgId = filterForm.getFieldValue('organizationId');
+            const fromDate = filterForm.getFieldValue('fromDate').format('YYYY-MM-DD');
+            const toDate = filterForm.getFieldValue('toDate').format('YYYY-MM-DD');
 
-            // When clicking pagination links
-            if (directUrl) {
-                url = directUrl;
-            } else {
-                let orgId = null;
-
-                // Non-admin → fixed org
-                if (!enableOrgDropDown) {
-                    orgId = localStorage.getItem("organizationId");
-                }
-                // Admin
-                else {
-                    if (selectedOrgId) {
-                        orgId = selectedOrgId; // selected sub-org
-                    } else {
-                        orgId = null; // all orgs
-                    }
-                }
-
-                url =
-                    `${APP_SERVER_URL_PREFIX}/expenses?` +
-                    `page=${pageParam}&size=${sizeParam}` +
-                    `&expenseType=CASH-OUT` +
-                    `&startDate=${fromDate}` +
-                    `&endDate=${toDate}`;
-
-                if (orgId) {
-                    url += `&organizationId=${orgId}`;
-                }
-            }
-
-            const res = await fetch(url, {
-                headers: {Authorization: `Bearer ${bearerToken}`},
-            });
-
-            const json = await res.json();
-            const list = json.content || json._embedded?.expenses || [];
+            const data = await fetchExpenses(currentPage - 1, pageSize, 'CASH-OUT', fromDate, toDate, orgId);
+            const list = data.content || data._embedded?.expenses || [];
 
             setItems(list);
-            setLinks(json._links || {});
+
+            setPagination(prev => ({
+                ...prev,
+                current: currentPage,
+                pageSize,
+                total: data.totalElements, // Total records from the API
+            }));
         } catch (e) {
-            console.error("Failed to fetch expenses", e);
+            console.error("Failed to fetch expenses:", e);
         } finally {
             setLoading(false);
         }
     };
 
-    // const handleOrganizationChange = (e) => {
-    //   const value = e.target.value;
-    //   setSelectedOrgId(value);
-    //   const bearerToken = localStorage.getItem('token');
-    //   if (value) {
-    //     fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT&organizationId=${value}`, {
-    //       headers: { 'Authorization': `Bearer ${bearerToken}` }
-    //     });
-    //     setSearchParams({ page: 0, size: sizeParam });
-    //   } else {
-    //     fetchUrl(`${APP_SERVER_URL_PREFIX}/expenses?page=0&size=${sizeParam}&expenseType=CASH-OUT`, {
-    //       headers: { 'Authorization': `Bearer ${bearerToken}` }
-    //     });
-    //     setSearchParams({ page: 0, size: sizeParam });
-    //   }
-    // };
 
     const handleOrganizationChange = (e) => {
         const value = e.target.value;
@@ -159,9 +114,6 @@ function ExpensesOutwardListPage() {
         setSearchParams({page: 0, size: sizeParam});
     };
 
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
-    };
 
     // Safe string conversion function
     const safeToString = (value) => {
@@ -224,8 +176,8 @@ function ExpensesOutwardListPage() {
         }));
     };
     useEffect(() => {
-        fetchUrl();
-    }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate, enableOrgDropDown]);
+        fetchData(pageParam, sizeParam);
+    }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate, isAdmin]);
 
     const isToday = (dateString) => {
         if (!dateString) return false;
@@ -245,18 +197,26 @@ function ExpensesOutwardListPage() {
         }
     };
 
+    const fetchOrganizationsData = async () => {
+        try {
+            const data = await fetchOrganizations(0, 1000);
+            setOrganizations(data._embedded ? data._embedded.organizations || [] : data);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            formUtils.showErrorNotification("Failed to fetch organizations");
+        }
+    };
+
     useEffect(() => {
-        const fetchLoadData = async () => {
-            try {
-                const data = await fetchOrganizations(0, 1000);
-                setOrganizations(data._embedded ? data._embedded.organizations || [] : data);
-                setLoading(false);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                formUtils.showErrorNotification("Failed to fetch organizations");
-            }
-        };
-        fetchLoadData();
+
+        filterForm.setFieldsValue({
+            organizationId: !isAdmin ? parseInt(localStorage.getItem("organizationId")) : null,
+            fromDate: dayjs(new Date()).subtract(7, 'days'), // last 7 days
+            toDate: dayjs(new Date()) // today
+        });
+
+        fetchOrganizationsData();
+        fetchData(pagination.current, pagination.pageSize);
     }, []);
 
 
@@ -273,10 +233,6 @@ function ExpensesOutwardListPage() {
         return `${day}-${month}-${year}`;
     };
 
-    const getSortIcon = (key) => {
-        if (sortConfig.key !== key) return '↕️';
-        return sortConfig.direction === 'ascending' ? '↑' : '↓';
-    };
 
     // Get expense type color
     const getExpenseTypeColor = (type) => {
@@ -290,6 +246,30 @@ function ExpensesOutwardListPage() {
         };
         return typeColors[type] || '#6b7280';
     };
+
+    const handleValueChange = (changedValues, allValues) => {
+        if (changedValues.hasOwnProperty('organizationId')
+            || changedValues.hasOwnProperty('fromDate')
+            || changedValues.hasOwnProperty('toDate')) {
+            fetchData(1, pagination.pageSize);
+        }
+    }
+
+    const handleTableChange = (pagination) => {
+        // This function is triggered when the user changes the page
+        fetchData(pagination.current, pagination.pageSize);
+    }
+
+
+    let organizationOptions = [{
+        label: "All Branches",
+        value: null
+    }];
+
+    organizationOptions = organizationOptions.concat(organizations.map(item => ({
+        label: item.name,
+        value: item.id
+    })))
 
     return (
         <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
@@ -314,7 +294,7 @@ function ExpensesOutwardListPage() {
                     <Card>
                         <Statistic
                             styles={{
-                                content: { color: 'red' },
+                                content: {color: 'red'},
                             }}
                             title="Total Outflow"
                             value={totalAmount?.toLocaleString() || '0'}
@@ -342,314 +322,167 @@ function ExpensesOutwardListPage() {
 
                     <Card>
                         <Statistic
-                            title= {selectedOrgId ? "Selected Branch" : "Branches"}
-                            value={selectedOrgId ? 1 : organizations.length}
+                            title={filterForm.getFieldValue('organizationId') ? "Selected Branch" : "Branches"}
+                            value={filterForm.getFieldValue('organizationId') ? 1 : organizations.length}
                             precision={0}
                         />
                     </Card>
                 </div>
 
-                {/* Filters and Search Section */}
-                <div className="filters-section1">
-                    <div className="filters-grid">
-                        <div className="filter-group">
-                            <label>Branch</label>
-                            <select
-                                value={
-                                    enableOrgDropDown
-                                        ? selectedOrgId
-                                        : localStorage.getItem("organizationId")
-                                }
-                                onChange={handleOrganizationChange}
-                                className="filter-select"
-                                disabled={!enableOrgDropDown}
+                <Form className="filter-form"
+                      form={filterForm}
+                      onValuesChange={handleValueChange}
+                      layout={'vertical'}>
+
+                    <Row gutter={24}>
+                        <Col span={4}>
+                            <Form.Item
+                                name="organizationId"
+                                label="Branch"
                             >
-                                <option value="">All Branches</option>
-                                {organizations.map((org) => (
-                                    <option
-                                        key={org.id || org._links?.self?.href}
-                                        value={org.id || org._links?.self?.href.split("/").pop()}
-                                    >
-                                        {org.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="filter-group">
-                            <label>From Date</label>
-                            <input
-                                type="date"
-                                value={fromDate}
-                                onChange={(e) => {
-                                    setFromDate(e.target.value);
-                                    setSearchParams({page: 0, size: sizeParam});
-                                }}
-                                className="filter-select"
-                            />
-                        </div>
+                                <Select
+                                    style={{width: "100%"}}
+                                    disabled={!isAdmin}
+                                    placeholder={'Select branch'}
+                                    options={organizationOptions}
+                                />
+                            </Form.Item>
+                        </Col>
 
-                        <div className="filter-group">
-                            <label>To Date</label>
-                            <input
-                                type="date"
-                                value={toDate}
-                                onChange={(e) => {
-                                    setToDate(e.target.value);
-                                    setSearchParams({page: 0, size: sizeParam});
-                                }}
-                                className="filter-select"
-                            />
-                        </div>
-
-                        <div className="filter-group">
-                            <label>Items per page</label>
-                            <select
-                                value={sizeParam}
-                                onChange={(e) =>
-                                    setSearchParams({page: 0, size: e.target.value})
-                                }
-                                className="filter-select"
+                        <Col span={4}>
+                            <Form.Item
+                                name="fromDate"
+                                label="From Date"
                             >
-                                <option value={10}>10</option>
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                                <option value={100}>100</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                                <DatePicker
+                                    format={'DD-MM-YYYY'}
+                                    style={{width: "100%"}}
+                                />
+                            </Form.Item>
+                        </Col>
 
-                {/* Search Results Info */}
-                {searchTerm && (
-                    <div className="search-results-info">
-                        Found {filteredItems.length} expenses matching "{searchTerm}"
-                        <button
-                            className="clear-search-btn"
-                            onClick={() => setSearchTerm("")}
-                        >
-                            Clear search
-                        </button>
-                    </div>
-                )}
+                        <Col span={4}>
+                            <Form.Item
+                                name="toDate"
+                                label="To Date"
+                            >
+                                <DatePicker
+                                    format={'DD-MM-YYYY'}
+                                    style={{width: "100%"}}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
 
-                {/* Data Table */}
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="loading-spinner"></div>
-                        <p>Loading outward expenses...</p>
-                    </div>
-                ) : (
-                    <>
-                        <div className="table-container">
-                            <table className="modern-table">
-                                <thead>
-                                <tr>
-                                    <th
-                                        // onClick={() => handleSort('amount')}
-                                        // className="sortable-header"
-                                    >
-                                        Amount
-                                    </th>
-                                    {/* <th
-                      onClick={() => handleSort('employeeId')}
-                      className="sortable-header"
-                    >
-                      Employee {getSortIcon('employeeId')}
-                    </th> */}
-                                    <th
-                                        // onClick={() => handleSort('expenseSubType')}
-                                        // className="sortable-header"
-                                    >
-                                        Type
-                                    </th>
-                                    <th>Expense Date</th>
-                                    <th>TransactionDate</th>
-                                    <th>Book</th>
-                                    <th>Receipt</th>
-                                    <th>Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {sortedItems.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="6" className="no-data">
-                                            <div className="no-data-content">
-                                                <div className="no-data-icon">💸</div>
-                                                <p>
-                                                    {searchTerm
-                                                        ? `No expenses found for "${searchTerm}"`
-                                                        : "No outward expenses found"}
-                                                </p>
-                                                {searchTerm || selectedOrgId ? (
-                                                    <p className="no-data-subtext">
-                                                        Try adjusting your search or filter criteria
-                                                    </p>
-                                                ) : null}
-                                                {!searchTerm ? (
-                                                    <div></div>
-                                                ) : (
-                                                    <button
-                                                        className="btn-secondary"
-                                                        onClick={() => setSearchTerm("")}
-                                                    >
-                                                        Clear Search
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    sortedItems.map((item, idx) => (
-                                        <tr key={idx} className="table-row">
-                                            {/* <td className="description-cell">
-                          <div className="description-text" title={item.amount}>
-                            {item.amount}
-                          </div>
-                          {item.organizationId && (
-                            <div className="org-badge">
-                              {organizations.find(org =>
-                                String(org.id) === String(item.organizationId) ||
-                                String(org._links?.self?.href.split('/').pop()) === String(item.organizationId)
-                              )?.name || 'Organization'}
-                            </div>
-                          )}
-                        </td> */}
-                                            <td className="amount-cell">
-                          <span className="amount-badge outward-amount">
-                            -₹{item.amount?.toLocaleString()}
-                          </span>
-                                            </td>
-                                            {/* <td className="employee-cell">
-                          <div className="employee-info">
-                            <span className="employee-id">{item.employeeId || 'N/A'}</span>
-                          </div>
-                        </td> */}
-                                            <td className="type-cell">
-                          <span
-                              className="type-tag"
-                              style={{
-                                  backgroundColor: getExpenseTypeColor(
-                                      item.expenseSubType
-                                  ),
-                                  color: "white",
-                              }}
-                          >
-                            {item.expenseSubType || "General"}
-                          </span>
-                                            </td>
-                                            <td className="date-cell">
-                                                <div className="date-display">
-                                                    {formatDate(item.createdDate)}
-                                                </div>
-                                            </td>
-                                            <td className="date-cell">
-                                                <div className="date-display">
-                                                    {formatDate(item.transactionDate)}
-                                                </div>
-                                            </td>
-                                            <td className="type-cell">
-                          <span className="type-tag">
-                            {item.gstapplicable ? "Yes" : "No"}
-                          </span>
-                                            </td>
+                </Form>
 
-                                            <td className="receipt-cell">
-                                                {item.hasImage ? (
-                                                    <button
-                                                        className="btn-outline view-btn"
-                                                        onClick={async () => {
-                                                            const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses/${item.id}`, {
-                                                                headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
-                                                            });
-                                                            const json = await res.json();
-                                                            setModalFile(
-                                                                json.imageData || json.fileUrl || json.file
-                                                            )
-                                                        }
-                                                        }
-                                                    >
-                                                        👁️ View
-                                                    </button>
-                                                ) : (
-                                                    <span className="no-receipt">(No receipt)</span>
-                                                )}
-                                            </td>
-                                            <td className="actions-cell">
-                                                <div className="action-buttons">
-                                                    <button
-                                                        className="btn-outline edit-btn"
-                                                        onClick={() =>
-                                                            navigate(
-                                                                `/pettycash/expenses/${
-                                                                    item.id ||
-                                                                    item._links?.self?.href.split("/").pop()
-                                                                }/edit`
-                                                            )
-                                                        }
-                                                        title="Edit expense"
-                                                    >
-                                                        ✏️
-                                                    </button>
-
-                                                    {/* <button
-                              className="btn-outline view-btn"
-                              onClick={() =>
-                                navigate(
-                                  `/pettycash/expenses/${
-                                    item.id ||
-                                    item._links?.self?.href.split("/").pop()
-                                  }`
+                <Table
+                    className={'list-page-table'}
+                    size={'large'}
+                    dataSource={items}
+                    columns={[
+                        {
+                            title: 'Amount',
+                            dataIndex: 'amount',
+                            key: 'amount',
+                            render: (item) => {
+                                return (
+                                    <Tag variant={'filled'} color={'green'}>
+                                        ₹{item.toFixed(2)}
+                                    </Tag>
                                 )
-                              }
-                              title="View details"
-                            >
-                              👁️
-                            </button> */}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                                </tbody>
-                            </table>
-                        </div>
+                            }
+                        },
+                        {
+                            title: 'Type',
+                            dataIndex: 'expenseSubType',
+                            key: 'expenseSubType',
+                            render: (expenseSubType) => {
+                                return (
+                                    <Tag color={'blue'} key={expenseSubType} variant={'filled'}>
+                                        {expenseSubType}
+                                    </Tag>
+                                );
+                            },
+                        },
+                        {
+                            title: 'Expense Date',
+                            dataIndex: 'createdDate',
+                            key: 'createdDate',
+                            render: (createdDate) => {
+                                if (!createdDate) return "-";
+                                return dayjs(createdDate).format('DD-MM-YYYY');
+                            },
+                        },
+                        {
+                            title: 'Transaction Date',
+                            dataIndex: 'transactionDate',
+                            key: 'transactionDate',
+                            render: (transactionDate) => {
+                                if (!transactionDate) return "-";
+                                return dayjs(transactionDate).format('DD-MM-YYYY');
+                            },
+                        },
+                        {
+                            title: 'Book',
+                            dataIndex: 'gstapplicable',
+                            key: 'gstapplicable',
+                            render: (gstapplicable) => {
+                                const color = gstapplicable ? "blue" : "grey";
+                                return (
+                                    <Tag color={color} key={gstapplicable} variant={'solid'}>
+                                        {gstapplicable ? "Yes" : "No"}
+                                    </Tag>
+                                );
+                            },
+                        },
+                        {
+                            title: 'Receipt',
+                            dataIndex: 'hasImage',
+                            key: 'hasImage',
+                            render: (hasImage, item) => {
+                                if (!hasImage) return "(No receipt)";
+                                return (
+                                    <Button type={'link'}
+                                            size={'small'}
+                                            icon={<EditOutlined/>}
+                                            onClick={async () => {
+                                                const json = await fetchExpense(item.id);
+                                                setModalFile(
+                                                    json.imageData || json.fileUrl || json.file
+                                                )
+                                            }}
+                                    >
+                                        View
+                                    </Button>
+                                );
+                            },
+                        },
+                        {
+                            title: 'Actions',
+                            key: 'operation',
+                            fixed: 'end',
+                            width: 200,
+                            render: (item) => {
+                                return <Tooltip title={'Edit Outward Transaction'}>
+                                    <Button icon={<EditOutlined/>} aria-label='Edit Outward Transaction'
+                                            onClick={() => navigate(`/pettycash/expenses/${item.id}/edit`)}
+                                            variant={'outlined'}
+                                            color={'default'}>Edit</Button>
+                                </Tooltip>
+                            },
+                        }
+                    ]}
+                    onChange={handleTableChange}
+                    pagination={{
+                        ...pagination,
+                        showTotal: FormUtils.listPaginationShowTotal,
+                        itemRender: FormUtils.listPaginationItemRender,
+                        showSizeChanger: true
+                    }}
+                    locale={{emptyText: "No outward transactions found"}}
+                    loading={loading}/>
 
-                        {/* Pagination */}
-                        {sortedItems.length > 0 && (
-                            <div className="pagination-section">
-                                <div className="pagination-info">
-                                    Showing {sortedItems.length} expenses • Page {pageParam + 1} •
-                                    Total: ₹{totalAmount.toLocaleString()}
-                                </div>
-                                <div className="pagination-controls">
-                                    <button
-                                        className="btn-outline"
-                                        disabled={!(links.prev || pageParam > 0)}
-                                        onClick={() => {
-                                            if (links.prev) return fetchUrl(links.prev.href);
-                                            const prev = Math.max(0, pageParam - 1);
-                                            setSearchParams({page: prev, size: sizeParam});
-                                        }}
-                                    >
-                                        ← Previous
-                                    </button>
-                                    <span className="page-indicator">Page {pageParam + 1}</span>
-                                    <button
-                                        className="btn-outline"
-                                        disabled={!(links.next || items.length >= sizeParam)}
-                                        onClick={() => {
-                                            if (links.next) return fetchUrl(links.next.href);
-                                            const next = pageParam + 1;
-                                            setSearchParams({page: next, size: sizeParam});
-                                        }}
-                                    >
-                                        Next →
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
 
                 <Modal
                     title="Receipt Preview"
