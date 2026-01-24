@@ -38,6 +38,9 @@ import OrganizationListPage from "./pages/user-administration/organizations/Orga
 import OrganizationFormPage from "./pages/user-administration/organizations/OrganizationFormPage";
 import PermissionsListPage from "./pages/user-administration/permissions/PermissionsListPage";
 import PermissionsFormPage from "./pages/user-administration/permissions/PermissionsFormPage";
+import ExpenseMastersListPage from "./pages/petty-cash/expense-masters/ExpenseMastersListPage";
+import ExpenseMasterFormPage from "./pages/petty-cash/expense-masters/ExpenseMasterFormPage";
+import NotFoundPage from "./pages/not-found/NotFoundPage";
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -54,15 +57,45 @@ root.render(
                 <BrowserRouter>
                     <AuthProvider>
                         <Routes>
+                            <Route path='*' element={<NotFoundPage/>}/>
                             <Route path="/login" element={<LoginPage/>}/>
                             <Route path="/logout" element={<LogoutPage/>}/>
 
                             <Route path="/" element={<ProtectedRoute><DashboardPage/></ProtectedRoute>}/>
 
+
+                            <Route path="/upload" element={<ProtectedRoute><Upload/></ProtectedRoute>}/>
+
+                            <Route path="/employees" element={<Employees/>}/>
+                            <Route path="/employees/create" element={<CreateEmployee/>}/>
+                            <Route path="/employees/:id" element={<EmployeeView/>}/>
+                            <Route path="/employees/:id/edit" element={<EditEmployee/>}/>
+
+
+                            {/* Petty Cash Routes */}
+                            <Route path="/pettycash/expenses" element={<Expenses/>}/>
+                            <Route path="/pettycash/expenses-inward" element={<ExpensesInward/>}/>
+
+                            <Route path="/pettycash/handloans" element={<HandLoanManagement/>}/>
+                            <Route
+                                path="/pettycash/expenses-outward"
+                                element={<ExpensesOutward/>}
+                            />
+                            <Route path="/pettycash/day-closing" element={<DayClosing/>}/>
+
+
+                            <Route
+                                path="/pettycash/expense-masters"
+                                element={<ExpenseMastersListPage/>}/>
+                            <Route
+                                path="/pettycash/expense-master/:idOrCreate"
+                                element={<ProtectedRoute><ExpenseMasterFormPage/></ProtectedRoute>}
+                            />
+
+
                             {/* User Administration Routes */}
                             <Route path="/user-administration/users"
                                    element={<ProtectedRoute><UsersListPage/></ProtectedRoute>}/>
-
                             <Route path="/user-administration/user/:idOrCreate"
                                    element={<ProtectedRoute><UsersFormPage/></ProtectedRoute>}/>
 
@@ -71,6 +104,7 @@ root.render(
                                    element={<ProtectedRoute><RolesListPage/></ProtectedRoute>}/>
                             <Route path="/user-administration/role/:idOrCreate"
                                    element={<ProtectedRoute><RolesFormPage/></ProtectedRoute>}/>
+
                             <Route path="/user-administration/organizations"
                                    element={<ProtectedRoute><OrganizationListPage/></ProtectedRoute>}/>
                             <Route path="/user-administration/organization/:idOrCreate"
@@ -85,21 +119,7 @@ root.render(
                                    element={<ProtectedRoute><PermissionsFormPage/></ProtectedRoute>}
                             />
 
-                            <Route path="/upload" element={<Upload/>}/>
-                            <Route path="/reports" element={<Report/>}/>
-                            <Route path="/download" element={<Download/>}/>
-                            <Route path="/employees" element={<Employees/>}/>
-                            <Route path="/employees/create" element={<CreateEmployee/>}/>
-                            <Route path="/employees/:id" element={<EmployeeView/>}/>
-                            <Route path="/employees/:id/edit" element={<EditEmployee/>}/>
-                            <Route path="/pettycash/expenses" element={<Expenses/>}/>
-                            <Route path="/pettycash/expenses-inward" element={<ExpensesInward/>}/>
 
-                            <Route
-                                path="/pettycash/expenses-outward"
-                                element={<ExpensesOutward/>}
-                            />
-                            <Route path="/pettycash/day-closing" element={<DayClosing/>}/>
                             <Route
                                 path="/pettycash/day-closing/create"
                                 element={<CreateDayClosing/>}
@@ -108,16 +128,12 @@ root.render(
                             <Route path="/pettycash/expenses/create" element={<CreateExpense/>}/>
                             <Route path="/pettycash/expenses/:id" element={<ExpenseView/>}/>
                             <Route path="/pettycash/expenses/:id/edit" element={<EditExpense/>}/>
-                            <Route path="/pettycash/masters" element={<ExpenseMasters/>}/>
-                            <Route
-                                path="/pettycash/masters/create"
-                                element={<CreateExpenseMaster/>}
-                            />
+
 
                             <Route path="/holidays" element={<HolidayCalendar/>}/>
-                            <Route path="handloans" element={<HandLoanManagement/>}/>
 
 
+                            <Route path="/logout" element={<LoginPage/>}/>
                         </Routes>
                     </AuthProvider>
                 </BrowserRouter>
