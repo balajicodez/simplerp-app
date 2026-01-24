@@ -3,7 +3,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {App as AntApp, Button, Col, Divider, Form, Input, InputNumber, Row, Select, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
-import * as DataSource from "./DataSource";
+import * as PermissionsDataSource from "./PermissionsDataSource";
 import FormUtils from "../../../_utils/FormUtils";
 
 export default function PermissionsFormPage() {
@@ -24,7 +24,7 @@ export default function PermissionsFormPage() {
             try {
                 if (!isCreateMode) {
                     // Fetch current permission data
-                    const permissionData = await DataSource.fetchPermissionById(params.idOrCreate);
+                    const permissionData = await PermissionsDataSource.fetchPermissionById(params.idOrCreate);
                     form.setFieldsValue({
                         name: permissionData.name
                     })
@@ -49,7 +49,7 @@ export default function PermissionsFormPage() {
         if (isCreateMode) {
             payload.id = null;
             try {
-                await DataSource.createPermission(payload);
+                await PermissionsDataSource.createPermission(payload);
                 formUtils.showSuccessNotification("Organization permission successfully!");
                 navigate(-1);
             } catch (err) {
@@ -58,7 +58,7 @@ export default function PermissionsFormPage() {
             }
         } else {
             try {
-                await DataSource.updatePermission(params.idOrCreate, payload);
+                await PermissionsDataSource.updatePermission(params.idOrCreate, payload);
                 formUtils.showSuccessNotification("Organization permission successfully!");
                 navigate(-1);
             } catch (err) {

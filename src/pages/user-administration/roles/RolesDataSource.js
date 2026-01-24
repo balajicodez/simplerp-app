@@ -1,9 +1,9 @@
 import {deleteWithAuth, fetchWithAuth, postWithAuthAndBody, putWithAuthAndBody} from "../../../_utils/datasource-utils";
 
+
 export async function fetchRoles(page, size) {
     return fetchWithAuth(`/roles?page=${page}&size=${size}`);
 }
-
 
 export async function fetchRoleById(id) {
     return fetchWithAuth(`/roles/${id}`);

@@ -1,13 +1,18 @@
 import React, {useEffect, useState} from 'react';
-import PageCard from '../_components/PageCard';
-import './PettyCash.css';
-import {APP_SERVER_URL_PREFIX} from '../constants.js';
+import PageCard from '../../../_components/PageCard';
+import '../../../pettycash/PettyCash.css';
+import {APP_SERVER_URL_PREFIX} from '../../../constants.js';
 import {useNavigate, useSearchParams} from 'react-router-dom';
-import Utils from '../Utils';
-import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import Utils from '../../../Utils';
+import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import * as ExpensesDataSource from "./ExpensesDataSource";
+import {Button, Card, DatePicker, Form, Input, Modal, Select, Statistic, Typography} from "antd";
+import {PlusOutlined} from "@ant-design/icons";
+import {safeToLocaleString} from "../../reports/day-closing/utils";
+import dayjs from "dayjs";
 
-function ExpensesInward() {
+function ExpensesInwardsListPage() {
     const [items, setItems] = useState([]);
     const [links, setLinks] = useState({});
     const [loading, setLoading] = useState(false);
@@ -15,7 +20,6 @@ function ExpensesInward() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [organizations, setOrganizations] = useState([]);
     const [selectedOrgId, setSelectedOrgId] = useState("");
-    const [searchTerm, setSearchTerm] = useState("");
     const [sortConfig, setSortConfig] = useState({key: "", direction: ""});
 
     const navigate = useNavigate();
@@ -31,8 +35,6 @@ function ExpensesInward() {
     const fetchUrl = async () => {
         setLoading(true);
         try {
-            const bearerToken = localStorage.getItem("token");
-
             let orgId = null;
 
             // 👇 If NOT admin → always use logged-in org
@@ -48,27 +50,11 @@ function ExpensesInward() {
                 }
             }
 
-            let url =
-                `${APP_SERVER_URL_PREFIX}/expenses?` +
-                `page=${pageParam}&size=${sizeParam}` +
-                `&expenseType=CASH-IN` +
-                `&startDate=${fromDate}` +
-                `&endDate=${toDate}`;
-
-            // add orgId only when required
-            if (orgId) {
-                url += `&organizationId=${orgId}`;
-            }
-
-            const res = await fetch(url, {
-                headers: {Authorization: `Bearer ${bearerToken}`},
-            });
-
-            const json = await res.json();
-            const list = json.content || json._embedded?.expenses || [];
+            let json = await ExpensesDataSource.fetchExpenses(pageParam, sizeParam, "CASH-IN", fromDate, toDate, orgId);
+            const list = json.content || [];
 
             setItems(list);
-            setLinks(json._links || {});
+            setLinks( {});
         } catch (e) {
             console.error("Failed to fetch expenses:", e);
         } finally {
@@ -80,10 +66,6 @@ function ExpensesInward() {
         const value = e.target.value;
         setSelectedOrgId(value);
         setSearchParams({page: 0, size: sizeParam});
-    };
-
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
     };
 
     // Safe string conversion function
@@ -116,29 +98,13 @@ function ExpensesInward() {
     const [fromDate, setFromDate] = useState(last7Days);
     const [toDate, setToDate] = useState(today);
 
-    // Filter items based on search term
-    const filteredItems = items.filter((item) => {
-        if (!searchTerm) return true;
 
-        const searchLower = safeToString(searchTerm).toLowerCase();
-
-        return (
-            safeToString(item.branchName).toLowerCase().includes(searchLower) ||
-            safeToString(item.employeeId).toLowerCase().includes(searchLower) ||
-            safeToString(item.expenseSubType).toLowerCase().includes(searchLower) ||
-            safeToString(item.amount).includes(searchTerm) || // Direct number comparison without toLowerCase
-            safeToString(item.expenseDate).toLowerCase().includes(searchLower) ||
-            safeToString(item.createdDate).toLowerCase().includes(searchLower) ||
-            safeToString(item.referenceNumber).toLowerCase().includes(searchLower) ||
-            safeToString(item.gstapplicable).toLowerCase().includes(searchLower)
-        );
-    });
 
     // Sort items
     const sortedItems = React.useMemo(() => {
-        if (!sortConfig.key) return filteredItems;
+        if (!sortConfig.key) return items;
 
-        return [...filteredItems].sort((a, b) => {
+        return [...items].sort((a, b) => {
             const aValue = a[sortConfig.key];
             const bValue = b[sortConfig.key];
 
@@ -175,7 +141,7 @@ function ExpensesInward() {
             }
             return 0;
         });
-    }, [filteredItems, sortConfig]);
+    }, [items, sortConfig]);
 
     // Helper function to check if date is today
     const isToday = (dateString) => {
@@ -235,50 +201,79 @@ function ExpensesInward() {
     return (
         <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
 
-            <PageCard title="Cash Inward Management">
-                <div className="dashboard-header1">
-                    {enableCreate && (
-                        <div className="header-content">
-                            <div></div>
-                            <button
-                                className="btn-primary1"
-                                onClick={() =>
-                                    navigate("/pettycash/expenses/create?type=CASH-IN")
-                                }
-                            >
-                                {" "}
-                                <span className="btn-icon">+</span>
-                                Create New Inward
-                            </button>
-                        </div>
-                    )}
-
-                    <div className="stats-grid1">
-                        <div className="stat-card">
-                            {/* <div className="stat-icon">💰</div> */}
-                            <div className="stat-content">
-                                <div className="stat-value">
-                                    ₹{totalAmount.toLocaleString()}
-                                </div>
-                                <div className="stat-label">Total Inward</div>
-                            </div>
-                        </div>
-                        <div className="stat-card">
-                            {/* <div className="stat-icon">📊</div> */}
-                            <div className="stat-content">
-                                <div className="stat-value">{totalTransactions}</div>
-                                <div className="stat-label">Total Transactions</div>
-                            </div>
-                        </div>
-                        <div className="stat-card">
-                            {/* <div className="stat-icon">🏢</div> */}
-                            <div className="stat-content">
-                                <div className="stat-value">{organizations.length}</div>
-                                <div className="stat-label">Organizations</div>
-                            </div>
-                        </div>
+            <div className="list-page">
+                <div className='list-page-header'>
+                    <div className={'page-title-section'}>
+                        <Typography.Title className='page-title' level={2}>Cash Inward Management</Typography.Title>
                     </div>
+
+                    {enableCreate && <div className={'page-actions'}>
+                        <Button type={'primary'}
+                                size={'large'}
+                                onClick={() =>  navigate("/pettycash/expenses/create?type=CASH-IN")} icon={<PlusOutlined/>}>
+                            Create New Inward
+                        </Button>
+                    </div>}
                 </div>
+
+                <div className={'list-dashboard'}>
+                    <Card>
+                        <Statistic
+                            styles={{
+                                content: { color: 'green' },
+                            }}
+                            title="Total Inward"
+                            value={totalAmount?.toLocaleString()}
+                            precision={2}
+                            prefix={'₹'}
+                        />
+                    </Card>
+
+                    <Card>
+                        <Statistic
+                            title="Total Transactions"
+                            value={totalTransactions}
+                            precision={0}
+                        />
+                    </Card>
+
+                    <Card>
+                        <Statistic
+                            title="Organizations"
+                            value={organizations.length}
+                            precision={0}
+                        />
+                    </Card>
+                </div>
+
+               {/* <Form className="filter-form"
+                      layout={'vertical'}>
+                    <Form.Item
+                        label={"Branch"}
+                        name={"organizationId"}
+                        size={'large'}
+                        rules={[{required: true, message: 'Please select an organization'}]}>
+                        <Select
+                            placeholder="Select Organization"
+                            options={organizations.map((org) => ({label: org.name, value: org.id}))}
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        label={"From Date"}
+                    >
+                        <DatePicker
+                            format={'DD-MM-YYYY'}
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        label={'To Date'}>
+                        <DatePicker
+                            format={'DD-MM-YYYY'}
+                        />
+                    </Form.Item>
+                </Form>*/}
 
                 <div className="filters-section1">
                     <div className="filters-grid">
@@ -349,18 +344,7 @@ function ExpensesInward() {
                     </div>
                 </div>
 
-                {/* Search Results Info */}
-                {searchTerm && (
-                    <div className="search-results-info">
-                        Found {filteredItems.length} transactions matching "{searchTerm}"
-                        <button
-                            className="clear-search-btn"
-                            onClick={() => setSearchTerm("")}
-                        >
-                            Clear search
-                        </button>
-                    </div>
-                )}
+
 
                 {/* Data Table */}
                 {loading ? (
@@ -404,19 +388,8 @@ function ExpensesInward() {
                                             <div className="no-data-content">
                                                 <div className="no-data-icon">📝</div>
                                                 <p>
-                                                    {searchTerm
-                                                        ? `No transactions found for "${searchTerm}"`
-                                                        : "No inward transactions found"}
+                                                    No inward transactions found
                                                 </p>
-
-                                                {searchTerm && (
-                                                    <button
-                                                        className="btn-secondary"
-                                                        onClick={() => setSearchTerm("")}
-                                                    >
-                                                        Clear Search
-                                                    </button>
-                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -515,48 +488,34 @@ function ExpensesInward() {
                     </>
                 )}
 
-                {/* Receipt Modal */}
-                {modalFile && (
-                    <div className="modal-overlay" onClick={() => setModalFile(null)}>
-                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3>Receipt Preview</h3>
-                                <button
-                                    className="modal-close"
-                                    onClick={() => setModalFile(null)}
-                                >
-                                    ×
-                                </button>
-                            </div>
-                            <div className="modal-body">
-                                {modalFile.startsWith("data:image") ? (
-                                    <img
-                                        src={modalFile}
-                                        alt="Expense Receipt"
-                                        className="receipt-image"
-                                    />
-                                ) : (
-                                    <img
-                                        src={`data:image/png;base64,${modalFile}`}
-                                        alt="Expense Receipt"
-                                        className="receipt-image"
-                                    />
-                                )}
-                            </div>
-                            <div className="modal-footer">
-                                <button
-                                    className="btn-primary"
-                                    onClick={() => setModalFile(null)}
-                                >
-                                    Close Preview
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </PageCard>
+                <Modal
+                    title="Receipt Preview"
+                    centered
+                    open={!!modalFile}
+                    width={1000}
+                    onCancel={() => setModalFile(null)}
+                    footer={[
+                        <Button onClick={() => setModalFile(null)}>Cancel</Button>,
+                    ]}
+                >
+                    {modalFile && modalFile.startsWith("data:image") ? (
+                        <img
+                            src={modalFile}
+                            alt="Expense Receipt"
+                            className="receipt-image"
+                        />
+                    ) : (
+                        <img
+                            src={`data:image/png;base64,${modalFile}`}
+                            alt="Expense Receipt"
+                            className="receipt-image"
+                        />
+                    )}
+                </Modal>
+
+            </div>
         </DefaultAppSidebarLayout>
     );
 }
 
-export default ExpensesInward;
+export default ExpensesInwardsListPage;

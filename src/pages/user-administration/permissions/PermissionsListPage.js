@@ -3,7 +3,7 @@ import {useNavigate} from "react-router-dom";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {App as AntApp, Button, Form, Input, Table, Tooltip, Typography} from "antd";
 import {DeleteOutlined, EditOutlined, ExclamationCircleFilled, PlusOutlined} from "@ant-design/icons";
-import * as DataSource from "./DataSource";
+import * as DataSource from "./PermissionsDataSource";
 import {searchListByFields} from "../../../_layout/default-app-sidebar-layout/utils";
 import FormUtils from "../../../_utils/FormUtils";
 

@@ -5,6 +5,8 @@ import {APP_SERVER_URL_PREFIX} from "../constants";
 // and can cause duplicate network calls for the same resource.
 const inFlightRequests = new Map();
 
+
+
 export async function fetchWithAuth(url) {
     const fullUrl = `${APP_SERVER_URL_PREFIX}${url}`;
     const key = `GET:${fullUrl}`;
@@ -18,6 +20,10 @@ export async function fetchWithAuth(url) {
     // Create the actual fetch promise and store it in the cache
     const fetchPromise = (async () => {
         const bearerToken = localStorage.getItem('token');
+
+        if (!bearerToken) {
+            throw new Error("NO_TOKEN");
+        }
 
         // Await the fetch call to get the Response object
         const response = await fetch(fullUrl, {
@@ -48,7 +54,7 @@ export async function fetchWithAuth(url) {
     }
 }
 
-export async function postWithAuthAndBody(url, body) {
+export async function postWithAuthAndBody(url, body, isTextResponse = false) {
     const bearerToken = localStorage.getItem('token');
 
     // Await the fetch call to get the Response object
@@ -60,12 +66,20 @@ export async function postWithAuthAndBody(url, body) {
 
     // Check if the request was successful (status in the range 200-299)
     if (!response.ok) {
-        const message = `An error occurred: ${response.status}`;
-        throw new Error(message);
+        const text = await response.text();
+        if (text) {
+            throw new Error(text);
+        } else {
+            const message = `An error occurred: ${response.status}`;
+            throw new Error(message);
+        }
     }
 
-    // Await the response.json() call to parse the body as a JSON object
-    const data = await response.json();
+    let data;
+
+    if (isTextResponse) data = await response.text();
+    else
+        data = await response.json(); // Await the response.json() call to parse the body as a JSON object
 
     // console.log(data); // The fetched data
 

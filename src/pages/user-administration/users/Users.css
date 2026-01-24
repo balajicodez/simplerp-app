@@ -448,3 +448,15 @@ Users Page Styling
   border: 1px solid #cfc;
   color: #080;
 }
+
+.form-page .role-checkbox {
+  padding: .5rem;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: var(--ant-layout-body-bg);
+}
+
+.form-page .roles-alert {
+  margin-bottom: 1rem;
+}

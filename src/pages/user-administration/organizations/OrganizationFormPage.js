@@ -3,7 +3,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {App as AntApp, Button, Col, Divider, Form, Input, InputNumber, Row, Select, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
-import * as DataSource from "./DataSource";
+import * as OrganizationDataSource from "./OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
 
 export default function OrganizationFormPage() {
@@ -28,7 +28,7 @@ export default function OrganizationFormPage() {
 
             try {
                 // Fetch All Branches for parent dropdown
-                const data = await DataSource.fetchOrganizations(0, 1000);
+                const data = await OrganizationDataSource.fetchOrganizations(0, 1000);
                 const orgs = data._embedded ? data._embedded.organizations || [] : data;
                 setOrganizations(orgs);
 
@@ -39,7 +39,7 @@ export default function OrganizationFormPage() {
                 }  else {
 
                     // Fetch current organization data
-                    const organizationData = await DataSource.fetchOrganizationById(params.idOrCreate);
+                    const organizationData = await OrganizationDataSource.fetchOrganizationById(params.idOrCreate);
                     form.setFieldsValue({
                         name: organizationData.name,
                         registrationNo: organizationData.registrationNo ,
@@ -98,7 +98,7 @@ export default function OrganizationFormPage() {
         if (isCreateMode) {
             payload.id = null;
             try {
-                await DataSource.createOrganization(payload);
+                await OrganizationDataSource.createOrganization(payload);
                 formUtils.showSuccessNotification("Organization created successfully!");
                 navigate("/user-administration/organizations");
             } catch (err) {
@@ -107,7 +107,7 @@ export default function OrganizationFormPage() {
             }
         } else {
             try {
-                await DataSource.updateOrganization(params.idOrCreate, payload);
+                await OrganizationDataSource.updateOrganization(params.idOrCreate, payload);
                 formUtils.showSuccessNotification("Organization updated successfully!");
                 navigate("/user-administration/organizations");
             } catch (err) {

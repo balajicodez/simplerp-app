@@ -5,15 +5,14 @@ import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout
 import {App as AntApp, Button, Form, Input, Table, Tooltip, Typography} from "antd";
 import {DeleteOutlined, EditOutlined, LockOutlined, PlusOutlined} from "@ant-design/icons";
 import FormUtils from "../../../_utils/FormUtils";
-import * as DataSource from "./DataSource";
-import * as PermissionsDataSource from "../permissions/DataSource";
+import * as DataSource from "./RolesDataSource";
+import * as PermissionsDataSource from "../permissions/PermissionsDataSource";
+import RolePermissionsTags from "./RolePermissionsTags";
 
 export default function RolesListPage() {
     const navigate = useNavigate();
-    const token = localStorage.getItem("token");
 
     const [records, setRecords] = useState([]);
-    const [permissions, setPermissions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [pagination, setPagination] = useState({
@@ -25,7 +24,6 @@ export default function RolesListPage() {
 
     useEffect(() => {
         fetchData(pagination.current, pagination.pageSize);
-        fetchPermissions();
     }, []);
 
     const fetchData = async (currentPage, pageSize) => {
@@ -49,12 +47,6 @@ export default function RolesListPage() {
         }
     };
 
-    const fetchPermissions = async () => {
-        const data = await PermissionsDataSource.fetchPermissions(0, 1000)
-        setPermissions(data._embedded?.permissions || []);
-    };
-
-
     const deleteRole = async (role) => {
 
         const confirmed = await formUtils.confirmDelete(`Are you sure you want to delete role "${role.name}"? This action cannot be undone.`);
@@ -67,7 +59,7 @@ export default function RolesListPage() {
         try {
             await DataSource.deleteRole(role.id);
             formUtils.showSuccessNotification("Role deleted successfully!");
-            fetchData();
+            fetchData(pagination.current, pagination.pageSize);
         } catch (err) {
             console.error(err.message);
             formUtils.showErrorNotification("Failed to delete role");
@@ -82,7 +74,7 @@ export default function RolesListPage() {
         fetchData(pagination.current, pagination.pageSize);
     }
 
-    const filteredRecords = FormUtils.searchListByFields(records, ['name', 'description'], searchTerm);
+    const filteredRecords = FormUtils.searchListByFields(records, ['name'], searchTerm);
 
     return (
         <DefaultAppSidebarLayout pageTitle={'User Administration'}>
@@ -139,9 +131,11 @@ export default function RolesListPage() {
                             key: 'name',
                         },
                         {
-                            title: 'Description',
-                            dataIndex: 'description',
-                            key: 'description',
+                            title: 'Permissions',
+                            key: 'permissions',
+                            render: (role) => {
+                                return <RolePermissionsTags roleId={role.id} />
+                            }
                         },
                         {
                             title: 'Actions',

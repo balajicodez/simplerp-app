@@ -1,10 +1,9 @@
 import React, {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {fetchOrganizations} from "./DataSource";
+import {fetchOrganizations} from "./OrganizationDataSource";
 import {App as AntApp, Button, Form, Input, Table, Tag, Tooltip, Typography} from "antd";
 import {EditOutlined, PlusOutlined} from "@ant-design/icons";
-import {searchListByFields} from "../../../_layout/default-app-sidebar-layout/utils";
 import FormUtils from "../../../_utils/FormUtils";
 
 

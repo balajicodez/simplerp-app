@@ -5,7 +5,7 @@ import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout
 import {App as AntApp, Button, Col, Form, Input, Row, Select, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
 import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
-import * as DataSource from "./DataSource";
+import * as DataSource from "./ExpenseMastersDataSource";
 import FormUtils from "../../../_utils/FormUtils";
 
 export default function ExpenseMasterFormPage() {

@@ -19,9 +19,10 @@ export default class FormUtils {
         });
     }
 
-    showErrorNotification(message) {
+    showErrorNotification(title, description) {
         this._notification.error({
-            title: message,
+            title: title,
+            description: description,
             placement: 'top',
         });
     }

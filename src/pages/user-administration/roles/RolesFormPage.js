@@ -3,9 +3,9 @@ import {useNavigate, useParams} from "react-router-dom";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {App as AntApp, Button, Checkbox, Col, Form, Input, Row, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
-import * as DataSource from "./DataSource";
+import * as RolesDataSource from "./RolesDataSource";
 import FormUtils from "../../../_utils/FormUtils";
-import * as PermissionsDataSource from "../permissions/DataSource";
+import * as PermissionsDataSource from "../permissions/PermissionsDataSource";
 
 export default function RolesFormPage() {
     const params = useParams();
@@ -32,12 +32,12 @@ export default function RolesFormPage() {
 
                 if (!isCreateMode) {
                     // Fetch current permission data
-                    const roleData = await DataSource.fetchRoleById(params.idOrCreate);
+                    const roleData = await RolesDataSource.fetchRoleById(params.idOrCreate);
                     form.setFieldsValue({
                         name: roleData.name
                     });
 
-                    const rolePermissionsData = await DataSource.fetchRolePermissions(params.idOrCreate);
+                    const rolePermissionsData = await RolesDataSource.fetchRolePermissions(params.idOrCreate);
                     const rolePermissionIds = rolePermissionsData._embedded.permissions.map(permission => permission.id);
                     setSelectedPermissionMap(rolePermissionIds.reduce((acc, permissionId) => ({...acc, [Number(permissionId)]: true}), {}));
                 }
@@ -68,7 +68,7 @@ export default function RolesFormPage() {
         const formValues = form.getFieldsValue();
 
         const validationResult = validateRoleName(formValues.name)
-        if (validationResult) {
+        if (isCreateMode && validationResult) {
             formUtils.showErrorNotification(validationResult);
             setLoading(false);
             return;
@@ -87,8 +87,8 @@ export default function RolesFormPage() {
         if (isCreateMode) {
             payload.id = null;
             try {
-                await DataSource.createRole(payload);
-              // await DataSource.updateRolePermissions(params.idOrCreate, payload);
+                await RolesDataSource.createRole(payload);
+              // await RolesDataSource.updateRolePermissions(params.idOrCreate, payload);
                 formUtils.showSuccessNotification("Role created successfully!");
                 navigate(-1);
             } catch (err) {
@@ -97,8 +97,8 @@ export default function RolesFormPage() {
             }
         } else {
             try {
-                await DataSource.updateRole(params.idOrCreate, payload);
-                await DataSource.updateRolePermissions(params.idOrCreate, Object.keys(selectedPermissionMap).filter(permissionId => selectedPermissionMap[permissionId])
+                await RolesDataSource.updateRole(params.idOrCreate, payload);
+                await RolesDataSource.updateRolePermissions(params.idOrCreate, Object.keys(selectedPermissionMap).filter(permissionId => selectedPermissionMap[permissionId])
                     .map(permissionId => Number(permissionId)));
                 formUtils.showSuccessNotification("Role updated successfully!");
                 navigate(-1);

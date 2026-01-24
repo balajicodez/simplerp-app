@@ -9,7 +9,7 @@ import OrganizationFormPage from './pages/user-administration/organizations/Orga
 
 import LoginPage from './pages/login/LoginPage';
 import Signup from "./login/Signup";
-import Users from "./login/Users";
+import UsersListPage from "./pages/user-administration/users/UsersListPage";
 import PermissionsListPage from "./pages/user-administration/permissions/PermissionsListPage";
 import DashboardPage from './pages/dashboard/DashboardPage';
 import Upload from './uploads/Upload';
@@ -20,8 +20,8 @@ import CreateEmployee from './employees/CreateEmployee';
 import EmployeeView from './employees/EmployeeView';
 import EditEmployee from './employees/EditEmployee';
 import Expenses from './pettycash/Expenses';
-import ExpensesInward from './pettycash/ExpensesInward';
-import ExpensesOutward from './pettycash/ExpensesOutward';
+import ExpensesInwardsListPage from './pages/petty-cash/expenses/ExpensesInwardsListPage';
+import ExpensesOutwardsListPage from './pages/petty-cash/expenses/ExpensesOutwardsListPage';
 import DayClosing from './pettycash/DayClosing';
 import CreateDayClosing from './pettycash/CreateDayClosing';
 import DayClosingReportPage from './pages/reports/day-closing/DayClosingReportPage';
@@ -38,6 +38,7 @@ import LogoutPage from "./pages/logout/LogoutPage";
 import NotFoundPage from "./pages/not-found/NotFoundPage";
 import PermissionsFormPage from "./pages/user-administration/permissions/PermissionsFormPage";
 import RolesFormPage from "./pages/user-administration/roles/RolesFormPage";
+import UsersFormPage from "./pages/user-administration/users/UsersFormPage";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -45,7 +46,7 @@ root.render(
         <ConfigProvider
             theme={{
                 token: {
-                    fontFamily: '"Noto Sans", sans-serif',
+                    fontFamily: '"Roboto", serif',
                 },
             }}
         >
@@ -69,7 +70,7 @@ root.render(
 
 
                             <Route path="/pettycash/expenses" element={<Expenses/>}/>
-                            <Route path="/pettycash/expenses-inward" element={<ExpensesInward/>}/>
+                            <Route path="/pettycash/expenses-inward" element={<ExpensesInwardsListPage/>}/>
 
                             <Route path="/pettycash/handloans" element={<HandLoanManagement/>}/>
 
@@ -88,7 +89,12 @@ root.render(
 
                             {/* User Administration Routes */}
                             <Route path="/user-administration/users"
-                                   element={<ProtectedRoute><Users/></ProtectedRoute>}/>
+                                   element={<ProtectedRoute><UsersListPage/></ProtectedRoute>}/>
+
+                            <Route path="/user-administration/user/:idOrCreate"
+                                   element={<ProtectedRoute><UsersFormPage/></ProtectedRoute>}/>
+
+
                             <Route path="/user-administration/roles"
                                    element={<ProtectedRoute><RolesListPage/></ProtectedRoute>}/>
                             <Route path="/user-administration/role/:idOrCreate"
@@ -109,7 +115,7 @@ root.render(
 
                             <Route
                                 path="/pettycash/expenses-outward"
-                                element={<ExpensesOutward/>}
+                                element={<ExpensesOutwardsListPage/>}
                             />
                             <Route path="/pettycash/day-closing" element={<DayClosing/>}/>
                             <Route

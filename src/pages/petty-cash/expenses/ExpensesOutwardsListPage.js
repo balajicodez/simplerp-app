@@ -1,13 +1,15 @@
 import React, {useEffect, useState} from 'react';
-import PageCard from '../_components/PageCard';
-import './PettyCash.css';
-import {APP_SERVER_URL_PREFIX} from '../constants.js';
+import PageCard from '../../../_components/PageCard';
+import '../../../pettycash/PettyCash.css';
+import {APP_SERVER_URL_PREFIX} from '../../../constants.js';
 import {useNavigate, useSearchParams} from 'react-router-dom';
-import Utils from '../Utils';
-import {PRETTY_CASE_PAGE_TITLE} from "../pages/petty-cash/PrettyCaseConstants";
-import DefaultAppSidebarLayout from "../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import Utils from '../../../Utils';
+import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import {Button, Card, Statistic, Typography} from "antd";
+import {PlusOutlined} from "@ant-design/icons";
 
-function ExpensesOutward() {
+function ExpensesOutwardsListPage() {
     const [items, setItems] = useState([]);
     const [links, setLinks] = useState({});
     const [loading, setLoading] = useState(false);
@@ -291,61 +293,60 @@ function ExpensesOutward() {
 
     return (
         <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
-            <PageCard title="Cash Outward Management">
-                {/* Header Section with Stats */}
-                <div className="dashboard-header1">
-                    <div className="header-content">
-                        <div></div>
-                        <button
-                            className="btn-primary1"
-                            onClick={() =>
-                                navigate("/pettycash/expenses/create?type=CASH-OUT")
-                            }
-                        >
-                            <span className="btn-icon">+</span>
-                            Create New Outward
-                        </button>
+
+            <div className="list-page">
+                <div className='list-page-header'>
+                    <div className={'page-title-section'}>
+                        <Typography.Title className='page-title' level={2}>Cash Inward Management</Typography.Title>
                     </div>
 
-                    {/* Statistics Cards */}
-                    <div className="stats-grid">
-                        <div className="stat-card outward-stat">
-                            {/* <div className="stat-icon">💸</div> */}
-                            <div className="stat-content">
-                                <div className="stat-value">
-                                    ₹{totalAmount.toLocaleString()}
-                                </div>
-                                <div className="stat-label">Total Outflow</div>
-                            </div>
-                        </div>
-                        <div className="stat-card outward-stat">
-                            {/* <div className="stat-icon">📤</div> */}
-                            <div className="stat-content">
-                                <div className="stat-value">{totalTransactions}</div>
-                                <div className="stat-label">Expenses</div>
-                            </div>
-                        </div>
-                        <div className="stat-card outward-stat">
-                            {/* <div className="stat-icon">📊</div> */}
-                            <div className="stat-content">
-                                <div className="stat-value">
-                                    ₹{Math.round(averageExpense).toLocaleString()}
-                                </div>
-                                <div className="stat-label">Average per Expense</div>
-                            </div>
-                        </div>
-                        <div className="stat-card outward-stat">
-                            {/* <div className="stat-icon">🏢</div> */}
-                            <div className="stat-content">
-                                <div className="stat-value">
-                                    {selectedOrgId ? "1" : organizations.length}
-                                </div>
-                                <div className="stat-label">
-                                    {selectedOrgId ? "Selected Org" : "Organizations"}
-                                </div>
-                            </div>
-                        </div>
+                    <div className={'page-actions'}>
+                        <Button type={'primary'}
+                                size={'large'}
+                                onClick={() =>  navigate("/pettycash/expenses/create?type=CASH-OUT")} icon={<PlusOutlined/>}>
+                            Cash New Outward
+                        </Button>
                     </div>
+
+                </div>
+
+                <div className={'list-dashboard'}>
+                    <Card>
+                        <Statistic
+                            styles={{
+                                content: { color: 'red' },
+                            }}
+                            title="Total Outflow"
+                            value={totalAmount?.toLocaleString() || '0'}
+                            precision={2}
+                            prefix={'₹'}
+                        />
+                    </Card>
+
+                    <Card>
+                        <Statistic
+                            title="Total Transactions"
+                            value={totalTransactions}
+                            precision={0}
+                        />
+                    </Card>
+
+                    <Card>
+                        <Statistic
+                            title="Average per Expense"
+                            value={Math.round(averageExpense).toLocaleString()}
+                            precision={2}
+                            prefix={'₹'}
+                        />
+                    </Card>
+
+                    <Card>
+                        <Statistic
+                            title="Organizations"
+                            value={organizations.length}
+                            precision={0}
+                        />
+                    </Card>
                 </div>
 
                 {/* Filters and Search Section */}
@@ -689,9 +690,9 @@ function ExpensesOutward() {
                         </div>
                     </div>
                 )}
-            </PageCard>
+            </div>
         </DefaultAppSidebarLayout>
     );
 }
 
-export default ExpensesOutward;
+export default ExpensesOutwardsListPage;
