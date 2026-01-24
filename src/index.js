@@ -46,7 +46,7 @@ root.render(
         <ConfigProvider
             theme={{
                 token: {
-                    fontFamily: '"Roboto", serif',
+                    fontFamily: '"Google Sans", serif',
                 },
             }}
         >
