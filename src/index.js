@@ -10,16 +10,16 @@ import CreateEmployee from './employees/CreateEmployee';
 import EmployeeView from './employees/EmployeeView';
 import EditEmployee from './employees/EditEmployee';
 import Expenses from './pettycash/Expenses';
-import ExpensesInward from './pettycash/ExpensesInward';
-import ExpensesOutward from './pettycash/ExpensesOutward';
+import ExpensesInwardsListPage from './pages/petty-cash/expenses/ExpensesInwardsListPage';
+import ExpensesOutwardListPage from './pages/petty-cash/expenses/ExpensesOutwardListPage';
 import DayClosing from './pettycash/DayClosing';
 import CreateDayClosing from './pettycash/CreateDayClosing';
 import DayClosingReport from './reports/DayClosingReport';
-import CreateExpense from './pettycash/CreateExpense';
+import ExpenseFormPage from './pages/petty-cash/expenses/ExpenseFormPage';
 import ExpenseView from './pettycash/ExpenseView';
 import EditExpense from './pettycash/EditExpense';
 import HolidayCalendar from './holidays/HolidayCalendar';
-import HandLoanManagement from './HandloanManagement/HandloanManagement';
+import HandLoansListPage from './pages/petty-cash/hand-loans/HandLoansListPage';
 import LoginPage from "./pages/login/LoginPage";
 import {AuthProvider} from "./hooks/useAuth";
 import LogoutPage from "./pages/logout/LogoutPage";
@@ -67,12 +67,12 @@ root.render(
 
                             {/* Petty Cash Routes */}
                             <Route path="/pettycash/expenses" element={<Expenses/>}/>
-                            <Route path="/pettycash/expenses-inward" element={<ExpensesInward/>}/>
+                            <Route path="/pettycash/expenses-inward" element={<ExpensesInwardsListPage/>}/>
 
-                            <Route path="/pettycash/handloans" element={<HandLoanManagement/>}/>
+                            <Route path="/pettycash/handloans" element={<HandLoansListPage/>}/>
                             <Route
                                 path="/pettycash/expenses-outward"
-                                element={<ExpensesOutward/>}
+                                element={<ExpensesOutwardListPage/>}
                             />
                             <Route path="/pettycash/day-closing" element={<DayClosing/>}/>
 
@@ -118,7 +118,7 @@ root.render(
                                 element={<CreateDayClosing/>}
                             />
                             <Route path="/reports/day-closing" element={<DayClosingReport/>}/>
-                            <Route path="/pettycash/expenses/create" element={<CreateExpense/>}/>
+                            <Route path="/pettycash/expenses/create" element={<ExpenseFormPage/>}/>
                             <Route path="/pettycash/expenses/:id" element={<ExpenseView/>}/>
                             <Route path="/pettycash/expenses/:id/edit" element={<EditExpense/>}/>
 
