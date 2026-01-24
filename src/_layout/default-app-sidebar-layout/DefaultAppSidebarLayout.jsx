@@ -153,10 +153,6 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
         return {
             items: [
                 {
-                    key: 'profile',
-                    label: 'Profile',
-                },
-                {
                     key: 'logout',
                     label: 'Logout',
                     icon: <LogoutOutlined/>,
