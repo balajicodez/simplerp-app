@@ -1,0 +1,51 @@
+.form-page .form-page-header,
+.form-page .form-page-fields-section,
+.form-page .form-page-footer {
+    max-width: 960px;
+}
+
+.form-page .form-page-header {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-page .form-page-header .page-title-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.form-page .form-page-header .page-title {
+    margin: 0;
+}
+
+.form-page .form-page-fields-section {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--elevate-1);
+    margin-bottom: 2rem;
+}
+
+.form-page .form-page-fields-section .form-section-title {
+    margin-bottom: 2rem;
+    margin-top: 1rem;
+}
+
+.form-page .form-page-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.form-page .form-page-footer .page-actions {
+    display: flex;
+    gap: 1rem;
+    align-self: end;
+}
+

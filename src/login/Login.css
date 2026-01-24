@@ -1,13 +1,25 @@
 .login-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: row;
+  background: linear-gradient(135deg, #a1c4fd, #1f5872);
+
+}
+
+.login-page .login-illustration-section {
+  width: 50%;
+  display: flex;
   align-items: center;
   justify-content: center;
-background: linear-gradient(135deg, #a1c4fd, #1f5872);
-  padding: 24px;
+  flex-direction: column;
+}
+
+.login-page .login-form-section {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 
