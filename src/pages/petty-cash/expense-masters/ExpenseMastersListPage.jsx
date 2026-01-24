@@ -38,6 +38,7 @@ export default function ExpenseMastersListPage() {
             setPagination(prev => ({
                 ...prev,
                 current: currentPage,
+                pageSize,
                 total: data.page.totalElements, // Total records from the API
             }));
         } catch (error) {
@@ -121,7 +122,8 @@ export default function ExpenseMastersListPage() {
                     pagination={{
                         ...pagination,
                         showTotal: FormUtils.listPaginationShowTotal,
-                        itemRender: FormUtils.listPaginationItemRender
+                        itemRender: FormUtils.listPaginationItemRender,
+                        showSizeChanger: true
                     }}
                     loading={loading}/>
             </div>

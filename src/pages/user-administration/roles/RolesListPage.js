@@ -36,6 +36,7 @@ export default function RolesListPage() {
             setPagination(prev => ({
                 ...prev,
                 current: currentPage,
+                pageSize,
                 total: data.page.totalElements, // Total records from the API
             }));
 
@@ -164,7 +165,8 @@ export default function RolesListPage() {
                     pagination={{
                         ...pagination,
                         showTotal: FormUtils.listPaginationShowTotal,
-                        itemRender: FormUtils.listPaginationItemRender
+                        itemRender: FormUtils.listPaginationItemRender,
+                        showSizeChanger: true
                     }}
                     loading={loading}/>
             </div>

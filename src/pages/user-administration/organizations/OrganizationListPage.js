@@ -31,6 +31,7 @@ function OrganizationListPage() {
             setPagination(prev => ({
                 ...prev,
                 current: currentPage,
+                pageSize,
                 total: data.page.totalElements, // Total records from the API
             }));
         } catch (error) {
@@ -144,7 +145,8 @@ function OrganizationListPage() {
                     pagination={{
                         ...pagination,
                         showTotal: FormUtils.listPaginationShowTotal,
-                        itemRender: FormUtils.listPaginationItemRender
+                        itemRender: FormUtils.listPaginationItemRender,
+                        showSizeChanger: true
                     }}
                     loading={loading}/>
             </div>

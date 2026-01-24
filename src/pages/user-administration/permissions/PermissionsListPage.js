@@ -147,7 +147,8 @@ export default function PermissionsListPage() {
                     pagination={{
                         ...pagination,
                         showTotal: FormUtils.listPaginationShowTotal,
-                        itemRender: FormUtils.listPaginationItemRender
+                        itemRender: FormUtils.listPaginationItemRender,
+                        showSizeChanger: true
                     }}
                     loading={loading}/>
             </div>

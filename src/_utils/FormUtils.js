@@ -4,7 +4,7 @@ import {Button} from "antd";
 
 export default class FormUtils {
 
-    static LIST_DEFAULT_PAGE_SIZE = 20;
+    static LIST_DEFAULT_PAGE_SIZE = 10;
 
     constructor(app) {
         const {notification, modal} = app;
@@ -47,7 +47,7 @@ export default class FormUtils {
     static listPaginationItemRender(_, type, originalElement) {
         if (type === 'next') {
             return (
-                <Button type="default" icon={<ArrowRightOutlined />} iconPlacement="end" style={{marginInlineEnd: '1rem'}}>
+                <Button type="default" icon={<ArrowRightOutlined />} iconPlacement="end">
                     Next
                 </Button>
             );

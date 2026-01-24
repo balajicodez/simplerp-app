@@ -5,11 +5,26 @@ import {useNavigate, useSearchParams} from 'react-router-dom';
 import Utils from '../../../Utils';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
-import {App as AntApp, Button, Card, Statistic, Typography} from "antd";
+import {
+    App as AntApp,
+    Button,
+    Card,
+    Col,
+    DatePicker,
+    Form,
+    Input,
+    Modal,
+    Row,
+    Select,
+    Statistic,
+    Typography
+} from "antd";
 import {PlusOutlined} from "@ant-design/icons";
 import {fetchExpenses} from "./ExpensesDataSource";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
+import {checkPasswordStrength} from "../../user-administration/users/utils";
+import dayjs from "dayjs";
 
 function ExpensesInwardsListPage() {
     const [items, setItems] = useState([]);
@@ -18,11 +33,12 @@ function ExpensesInwardsListPage() {
     const [modalFile, setModalFile] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
     const [organizations, setOrganizations] = useState([]);
-    const [selectedOrgId, setSelectedOrgId] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const [sortConfig, setSortConfig] = useState({key: "", direction: ""});
 
     const navigate = useNavigate();
+
+    const [filterForm] = Form.useForm();
 
     const formUtils = new FormUtils(AntApp.useApp());
     const pageParam = Number(searchParams.get("page") || 0);
@@ -38,20 +54,9 @@ function ExpensesInwardsListPage() {
         setLoading(true);
         try {
 
-            let orgId = null;
-
-            // 👇 If NOT admin → always use logged-in org
-            if (!isAdmin) {
-                orgId = localStorage.getItem("organizationId");
-            }
-            // 👇 If admin
-            else {
-                if (selectedOrgId) {
-                    orgId = selectedOrgId;
-                } else {
-                    orgId = null; // fetch ALL orgs
-                }
-            }
+            const orgId = filterForm.getFieldValue('organizationId');
+            const fromDate = filterForm.getFieldValue('fromDate').format('YYYY-MM-DD');
+            const toDate = filterForm.getFieldValue('toDate').format('YYYY-MM-DD');
 
             const json = await fetchExpenses(pageParam, sizeParam, 'CASH-IN', fromDate, toDate, orgId);
             const list = json.content || json._embedded?.expenses || [];
@@ -63,12 +68,6 @@ function ExpensesInwardsListPage() {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleOrganizationChange = (e) => {
-        const value = e.target.value;
-        setSelectedOrgId(value);
-        setSearchParams({page: 0, size: sizeParam});
     };
 
 
@@ -93,14 +92,6 @@ function ExpensesInwardsListPage() {
 
         return `${day}-${month}-${year}`;
     };
-    // Default = last 30 days
-    // const getToday = () => new Date().toISOString().split("T")[0];
-    const today = new Date().toISOString().split("T")[0];
-    const last7Days = new Date(Date.now() - 7 * 86400000)
-        .toISOString()
-        .split("T")[0];
-    const [fromDate, setFromDate] = useState(last7Days);
-    const [toDate, setToDate] = useState(today);
 
     // Filter items based on search term
     const filteredItems = items.filter((item) => {
@@ -163,45 +154,25 @@ function ExpensesInwardsListPage() {
         });
     }, [filteredItems, sortConfig]);
 
-    // Helper function to check if date is today
-    const isToday = (dateString) => {
-        if (!dateString) return false;
-
-        try {
-            const itemDate = new Date(dateString);
-            const today = new Date();
-
-            return (
-                itemDate.getDate() === today.getDate() &&
-                itemDate.getMonth() === today.getMonth() &&
-                itemDate.getFullYear() === today.getFullYear()
-            );
-        } catch (e) {
-            console.error("Invalid date:", dateString, e);
-            return false;
-        }
-    };
-    const handleSort = (key) => {
-        setSortConfig((current) => ({
-            key,
-            direction:
-                current.key === key && current.direction === "ascending"
-                    ? "descending"
-                    : "ascending",
-        }));
-    };
 
     useEffect(() => {
         fetchUrl();
-    }, [pageParam, sizeParam, selectedOrgId, fromDate, toDate, isAdmin]);
+    }, [pageParam, sizeParam, isAdmin]);
 
 
     useEffect(() => {
+
+        filterForm.setFieldsValue({
+            organizationId: !isAdmin ? localStorage.getItem("organizationId") : null,
+            fromDate: dayjs(new Date()).subtract(7, 'days'), // last 7 days
+            toDate: dayjs(new Date()) // today
+        });
+
+
         const fetchLoadData = async () => {
             try {
                 const data = await fetchOrganizations(0, 1000);
                 setOrganizations(data._embedded ? data._embedded.organizations || [] : data);
-                setLoading(false);
             } catch (error) {
                 console.error("Error fetching data:", error);
                 formUtils.showErrorNotification("Failed to fetch organizations");
@@ -209,6 +180,27 @@ function ExpensesInwardsListPage() {
         };
         fetchLoadData();
     }, []);
+
+
+    const handleValueChange = (changedValues, allValues) => {
+        if (changedValues.hasOwnProperty('organizationId')
+            || changedValues.hasOwnProperty('fromDate')
+            || changedValues.hasOwnProperty('toDate')) {
+            setSearchParams({page: 0, size: sizeParam});
+            fetchUrl();
+        }
+    }
+
+
+    let organizationOptions = [{
+        label: "All Branches",
+        value: null
+    }];
+
+    organizationOptions = organizationOptions.concat(organizations.map(item => ({
+        label: item.name,
+        value: item.id
+    })))
 
 
     return (
@@ -234,7 +226,7 @@ function ExpensesInwardsListPage() {
                     <Card>
                         <Statistic
                             styles={{
-                                content: { color: 'green' },
+                                content: {color: 'green'},
                             }}
                             title="Total Inward"
                             value={totalAmount?.toLocaleString()}
@@ -253,81 +245,61 @@ function ExpensesInwardsListPage() {
 
                     <Card>
                         <Statistic
-                            title= {selectedOrgId ? "Selected Branch" : "Branches"}
-                            value={selectedOrgId ? 1 : organizations.length}
+                            title={filterForm.getFieldValue('organizationId') ? "Selected Branch" : "Branches"}
+                            value={filterForm.getFieldValue('organizationId') ? 1 : organizations.length}
                             precision={0}
                         />
                     </Card>
                 </div>
 
-                <div className="filters-section1">
-                    <div className="filters-grid">
-                        <div className="filter-group">
-                            <label>Branch</label>
-                            <select
-                                value={
-                                    isAdmin
-                                        ? selectedOrgId
-                                        : localStorage.getItem("organizationId")
-                                }
-                                onChange={handleOrganizationChange}
-                                className="filter-select"
-                                disabled={!isAdmin}
-                            >
-                                <option value="">All Branches</option>
-                                {organizations.map((org) => (
-                                    <option
-                                        key={org.id || org._links?.self?.href}
-                                        value={org.id || org._links?.self?.href.split("/").pop()}
-                                    >
-                                        {org.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="filter-group">
-                            <label>From Date</label>
-                            <input
-                                type="date"
-                                value={fromDate}
-                                onChange={(e) => {
-                                    setFromDate(e.target.value);
-                                    setSearchParams({page: 0, size: sizeParam});
-                                }}
-                                className="filter-select"
-                            />
-                        </div>
+                <Form className="filter-form"
+                      form={filterForm}
+                      onValuesChange={handleValueChange}
+                      layout={'vertical'}>
 
-                        <div className="filter-group">
-                            <label>To Date</label>
-                            <input
-                                type="date"
-                                value={toDate}
-                                onChange={(e) => {
-                                    setToDate(e.target.value);
-                                    setSearchParams({page: 0, size: sizeParam});
-                                }}
-                                className="filter-select"
-                            />
-                        </div>
-
-                        <div className="filter-group">
-                            <label>Items per page</label>
-                            <select
-                                value={sizeParam}
-                                onChange={(e) =>
-                                    setSearchParams({page: 0, size: e.target.value})
-                                }
-                                className="filter-select"
+                    <Row gutter={24}>
+                        <Col span={4}>
+                            <Form.Item
+                                name="organizationId"
+                                label="Branch"
                             >
-                                <option value={10}>10</option>
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                                <option value={100}>100</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                                <Select
+                                    style={{width: "100%"}}
+                                    disabled={!isAdmin}
+                                    placeholder={'Select branch'}
+                                    options={organizationOptions}
+                                />
+                            </Form.Item>
+                        </Col>
+
+                        <Col span={4}>
+                            <Form.Item
+                                name="fromDate"
+                                label="From Date"
+                            >
+                                <DatePicker
+                                    format={'DD-MM-YYYY'}
+                                    style={{width: "100%"}}
+                                />
+                            </Form.Item>
+                        </Col>
+
+                        <Col span={4}>
+                            <Form.Item
+                                name="toDate"
+                                label="To Date"
+                            >
+                                <DatePicker
+                                    format={'DD-MM-YYYY'}
+                                    style={{width: "100%"}}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                </Form>
+
+
 
                 {/* Search Results Info */}
                 {searchTerm && (
@@ -495,45 +467,26 @@ function ExpensesInwardsListPage() {
                     </>
                 )}
 
-                {/* Receipt Modal */}
-                {modalFile && (
-                    <div className="modal-overlay" onClick={() => setModalFile(null)}>
-                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3>Receipt Preview</h3>
-                                <button
-                                    className="modal-close"
-                                    onClick={() => setModalFile(null)}
-                                >
-                                    ×
-                                </button>
-                            </div>
-                            <div className="modal-body">
-                                {modalFile.startsWith("data:image") ? (
-                                    <img
-                                        src={modalFile}
-                                        alt="Expense Receipt"
-                                        className="receipt-image"
-                                    />
-                                ) : (
-                                    <img
-                                        src={`data:image/png;base64,${modalFile}`}
-                                        alt="Expense Receipt"
-                                        className="receipt-image"
-                                    />
-                                )}
-                            </div>
-                            <div className="modal-footer">
-                                <button
-                                    className="btn-primary"
-                                    onClick={() => setModalFile(null)}
-                                >
-                                    Close Preview
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <Modal
+                    title="Receipt Preview"
+                    centered
+                    open={!!modalFile}
+                    width={1000}
+                    onCancel={() => setModalFile(null)}
+                    footer={[
+                        <Button onClick={() => setModalFile(null)}>Close</Button>,
+                    ]}
+                >
+                    <img
+                        src={modalFile && modalFile.startsWith("data:image")
+                            ? modalFile
+                            : `data:image/png;base64,${modalFile}`
+                        }
+                        alt="Expense Receipt"
+                        className="list-preview-image"
+                    />
+                </Modal>
+
             </div>
         </DefaultAppSidebarLayout>
     );

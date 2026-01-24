@@ -17,10 +17,7 @@ export default function UsersListPage() {
         token: {colorPrimary},
     } = theme.useToken();
 
-    const [pagination, setPagination] = useState({
-        current: 1,
-        pageSize: FormUtils.LIST_DEFAULT_PAGE_SIZE
-    })
+    const [pagination, setPagination] = useState({current: 1, pageSize: FormUtils.LIST_DEFAULT_PAGE_SIZE})
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -53,6 +50,7 @@ export default function UsersListPage() {
             setPagination(prev => ({
                 ...prev,
                 current: currentPage,
+                pageSize,
                 total: data.page.totalElements, // Total records from the API
             }));
         } catch (err) {
@@ -79,6 +77,7 @@ export default function UsersListPage() {
 
     const handleTableChange = (pagination) => {
         // This function is triggered when the user changes the page
+
         fetchUsers(pagination.current, pagination.pageSize);
     }
 
@@ -198,7 +197,8 @@ export default function UsersListPage() {
                     pagination={{
                         ...pagination,
                         showTotal: FormUtils.listPaginationShowTotal,
-                        itemRender: FormUtils.listPaginationItemRender
+                        itemRender: FormUtils.listPaginationItemRender,
+                        showSizeChanger: true
                     }}
                     loading={loading}/>
 

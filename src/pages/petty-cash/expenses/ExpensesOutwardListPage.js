@@ -5,7 +5,7 @@ import {useNavigate, useSearchParams} from 'react-router-dom';
 import Utils from '../../../Utils';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {App as AntApp, Button, Card, Statistic, Typography} from "antd";
+import {App as AntApp, Button, Card, Modal, Statistic, Typography} from "antd";
 import {PlusOutlined} from "@ant-design/icons";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
@@ -651,45 +651,25 @@ function ExpensesOutwardListPage() {
                     </>
                 )}
 
-                {/* Receipt Modal */}
-                {modalFile && (
-                    <div className="modal-overlay" onClick={() => setModalFile(null)}>
-                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3>Expense Receipt</h3>
-                                <button
-                                    className="modal-close"
-                                    onClick={() => setModalFile(null)}
-                                >
-                                    ×
-                                </button>
-                            </div>
-                            <div className="modal-body">
-                                {modalFile.startsWith("data:image") ? (
-                                    <img
-                                        src={modalFile}
-                                        alt="Expense Receipt"
-                                        className="receipt-image"
-                                    />
-                                ) : (
-                                    <img
-                                        src={`data:image/png;base64,${modalFile}`}
-                                        alt="Expense Receipt"
-                                        className="receipt-image"
-                                    />
-                                )}
-                            </div>
-                            <div className="modal-footer">
-                                <button
-                                    className="btn-primary"
-                                    onClick={() => setModalFile(null)}
-                                >
-                                    Close Preview
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <Modal
+                    title="Receipt Preview"
+                    centered
+                    open={!!modalFile}
+                    width={1000}
+                    onCancel={() => setModalFile(null)}
+                    footer={[
+                        <Button onClick={() => setModalFile(null)}>Close</Button>,
+                    ]}
+                >
+                    <img
+                        src={modalFile && modalFile.startsWith("data:image")
+                            ? modalFile
+                            : `data:image/png;base64,${modalFile}`
+                        }
+                        alt="Expense Receipt"
+                        className="list-preview-image"
+                    />
+                </Modal>
             </div>
         </DefaultAppSidebarLayout>
     );
