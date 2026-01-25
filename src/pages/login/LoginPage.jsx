@@ -62,7 +62,9 @@ export default function LoginPage() {
 
             <div className={'login-illustration-section'}>
                 <img src={'/images/logo.jpg'} alt="Logo" width={'400px'}/>
+                <Typography.Title level={4} style={{margin: '0.25rem'}}>శ్రీ దివ్య సారీస్ ప్రై.లి.</Typography.Title>
                 <Typography.Title level={1} style={{margin: 0}}>{CUSTOMER_TITLE}</Typography.Title>
+
             </div>
 
             <div className={'login-form-section'}>

@@ -86,6 +86,40 @@ export async function postWithAuthAndBody(url, body, isTextResponse = false) {
     return data;
 }
 
+export async function postWithAuthAndFormData(url, formData, isTextResponse = false) {
+    const bearerToken = localStorage.getItem('token');
+
+    // Await the fetch call to get the Response object
+    const response = await fetch(`${APP_SERVER_URL_PREFIX}${url}`, {
+        method: 'POST',
+        headers: {'Authorization': `Bearer ${bearerToken}`},
+        body: formData
+    });
+
+    // Check if the request was successful (status in the range 200-299)
+    if (!response.ok) {
+        const text = await response.text();
+        if (text) {
+            throw new Error(text);
+        } else {
+            const message = `An error occurred: ${response.status}`;
+            throw new Error(message);
+        }
+    }
+
+    let data;
+
+    if (isTextResponse) data = await response.text();
+    else
+        data = await response.json(); // Await the response.json() call to parse the body as a JSON object
+
+    // console.log(data); // The fetched data
+
+    return data;
+}
+
+
+
 export async function putWithAuthAndBody(url, body) {
     const bearerToken = localStorage.getItem('token');
 
@@ -132,3 +166,11 @@ export async function deleteWithAuth(url) {
 
     return data;
 }
+
+export const getBase64 = (file) =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+    })

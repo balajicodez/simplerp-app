@@ -13,6 +13,7 @@ if (process.env.REACT_APP_API_URL) {
 
 
 export const DATE_DISPLAY_FORMAT = 'DD-MM-YYYY';
+export const DATE_SYSTEM_FORMAT = 'YYYY-MM-DD';
 
 
 export const APP_TITLE = 'SimplERP';

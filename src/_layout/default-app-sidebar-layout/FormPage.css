@@ -33,6 +33,12 @@
 .form-page .form-page-fields-section .form-section-title {
     margin-bottom: 2rem;
     margin-top: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.form-section-title .title-tag {
+    margin-left: auto;
 }
 
 .form-page .form-page-footer {

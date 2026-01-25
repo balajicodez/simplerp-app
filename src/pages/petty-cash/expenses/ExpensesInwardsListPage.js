@@ -19,7 +19,7 @@ import {fetchExpense, fetchExpenses} from "./ExpensesDataSource";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
 import dayjs from "dayjs";
-import {DATE_DISPLAY_FORMAT} from "../../../constants";
+import {DATE_DISPLAY_FORMAT, DATE_SYSTEM_FORMAT} from "../../../constants";
 
 function ExpensesInwardsListPage() {
     const [items, setItems] = useState([]);
@@ -50,8 +50,8 @@ function ExpensesInwardsListPage() {
         try {
 
             const orgId = filterForm.getFieldValue('organizationId');
-            const fromDate = filterForm.getFieldValue('fromDate').format('YYYY-MM-DD');
-            const toDate = filterForm.getFieldValue('toDate').format('YYYY-MM-DD');
+            const fromDate = filterForm.getFieldValue('fromDate').format(DATE_SYSTEM_FORMAT);
+            const toDate = filterForm.getFieldValue('toDate').format(DATE_SYSTEM_FORMAT);
 
             const data = await fetchExpenses(currentPage - 1, pageSize, 'CASH-IN', fromDate, toDate, orgId);
             const list = data.content || data._embedded?.expenses || [];

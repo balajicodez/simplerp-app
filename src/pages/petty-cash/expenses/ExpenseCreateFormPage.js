@@ -1,147 +1,73 @@
 import React, {useState, useEffect} from "react";
 import "./pettyCashCreateExpense.css";
 import {useNavigate, useLocation} from "react-router-dom";
-import {APP_SERVER_URL_PREFIX} from "../../../constants.js";
+import {DATE_DISPLAY_FORMAT, DATE_SYSTEM_FORMAT} from "../../../constants.js";
 import Utils from '../../../Utils';
 import CameraCapture from '../../../_components/camera-capture/CameraCapture';
-import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {Button, Form, Spin, Typography} from "antd";
-import {LeftOutlined} from "@ant-design/icons";
+import {
+    App as AntApp,
+    Button,
+    Col,
+    DatePicker,
+    Form,
+    Input,
+    InputNumber, Modal,
+    Row,
+    Select,
+    Spin,
+    Tag,
+    Typography
+} from "antd";
+import {InboxOutlined, LeftOutlined} from "@ant-design/icons";
+import FormUtils from "../../../_utils/FormUtils";
+import dayjs from "dayjs";
+import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
+import Dragger from "antd/lib/upload/Dragger";
+import {fetchExpenseMasters} from "../expense-masters/ExpenseMastersDataSource";
+import {fetchCurrentBalance, postExpenseFormData} from "./ExpensesDataSource";
+import {getBase64} from "../../../_utils/datasource-utils";
 
-const getLocalDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-};
 
 function ExpenseCreateFormPage() {
-    const [form, setForm] = useState({
-        transactionDate: getLocalDate(),
-        amount: "",
-        employeeId: "",
-        subtype: "",
-        type: "",
-        expenseDate: "",
-        referenceNumber: "",
-        file: null,
-        description: "",
-        organizationId: "",
-        organizationName: "",
-        currentBalance: "",
-    });
+
+    const [antForm] = Form.useForm();
+    const [transactionDate, setTransactionDate] = useState(null);
+    const [modalFile, setModalFile] = useState(null);
     const [organizations, setOrganizations] = useState([]);
-    const [subtypes, setSubtypes] = useState([]);
+    const [subTypes, setSubTypes] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
-    const [previewUrl, setPreviewUrl] = useState("");
     const [fetchedBalance, setFetchedBalance] = useState(0);
     const [balanceLoading, setBalanceLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-    const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
-
-    const getExpenseType = () => {
-        const params = new URLSearchParams(location.search);
-        let filterType = params.get("type");
-        if (!filterType) {
-            if (
-                location.pathname.includes("expenses-inward") ||
-                (location.pathname.includes("create") &&
-                    location.search.includes("CASH-IN"))
-            ) {
-                filterType = "CASH-IN";
-            }
-            if (
-                location.pathname.includes("expenses-outward") ||
-                (location.pathname.includes("create") &&
-                    location.search.includes("CASH-OUT"))
-            ) {
-                filterType = "CASH-OUT";
-            }
-        }
-        return filterType || "";
-    };
-
-    const getPageTitle = () => {
-        const type = getExpenseType();
-        if (type === "CASH-IN") return "Create Inward ";
-        if (type === "CASH-OUT") return "Create Outward ";
-        return "Create Expense";
-    };
+    const isAdmin = Utils.isRoleApplicable("ADMIN");
 
 
-    // Debug useEffect
-    useEffect(() => {
-        console.log("Form state updated:", {
-            organizationId: form.organizationId,
-            transactionDate: form.transactionDate,
-            currentBalance: form.currentBalance,
-            fetchedBalance: fetchedBalance,
-            expenseType: getExpenseType(),
-        });
-    }, [
-        form.organizationId,
-        form.transactionDate,
-        form.currentBalance,
-        fetchedBalance,
-    ]);
+    const params = new URLSearchParams(location.search);
+    const expenseType = params.get("type");
+    const formUtils = new FormUtils(AntApp.useApp());
 
-    // Auto-fetch balance when both organization and date are selected for CASH-OUT
-    // Fetch balance ONLY when organizationId + expenseDate are selected
-    useEffect(() => {
+    // Check if current balance section should be shown
+    const showCurrentBalanceSection = expenseType === "CASH-OUT";
 
-        if (!enableOrgDropDown) {
-            form.organizationId = localStorage.getItem("organizationId");
+
+    const fetchCurrentBalanceData = async (organizationId, expenseDate) => {
+
+        if (expenseType !== "CASH-OUT") {
+            return;
         }
 
-        if (
-            getExpenseType() === "CASH-OUT" &&
-            form.organizationId &&
-            form.expenseDate
-        ) {
-            console.log("Fetching balance (org + expenseDate):", {
-                orgId: form.organizationId,
-                expenseDate: form.expenseDate,
-            });
-
-            fetchCurrentBalance(form.organizationId, form.expenseDate);
-        } else {
-            // Clear balance if either field is missing
-            setForm((f) => ({...f, currentBalance: ""}));
-            setFetchedBalance(0);
-        }
-    }, [form.organizationId, form.expenseDate]);
-
-    const fetchCurrentBalance = async (organizationId, expenseDate) => {
-        if (!organizationId || !expenseDate || getExpenseType() !== "CASH-OUT") {
-            setForm((f) => ({...f, currentBalance: ""}));
+        if (!organizationId || !expenseDate) {
             setFetchedBalance(0);
             return;
         }
 
         setBalanceLoading(true);
-
         try {
-            const bearerToken = localStorage.getItem("token");
 
-            const response = await fetch(
-                `${APP_SERVER_URL_PREFIX}/expenses/current_balance?organizationId=${organizationId}&createdDate=${expenseDate}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${bearerToken}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-
-            if (!response.ok) throw new Error("Balance fetch failed");
-
-            const balanceData = await response.json();
-
+            const balanceData = await fetchCurrentBalance(organizationId, expenseDate.format(DATE_SYSTEM_FORMAT));
             let balance = 0;
             if (balanceData.totalBalance != null) {
                 balance = balanceData.totalBalance;
@@ -155,195 +81,57 @@ function ExpenseCreateFormPage() {
             }
 
             balance = Number(balance) || 0;
-
             setFetchedBalance(balance);
-            setForm((f) => ({
-                ...f,
-                currentBalance: balance.toString(),
-            }));
         } catch (err) {
             setFetchedBalance(0);
-            setForm((f) => ({...f, currentBalance: ""}));
-            setError("Failed to fetch current balance");
+            formUtils.showErrorNotification("Failed to fetch current balance");
         } finally {
             setBalanceLoading(false);
         }
     };
 
-
-    const handleChange = (e) => {
-        const {name, value, type, files} = e.target;
-        setError("");
-        setSuccess("");
-
-        if (type === "file") {
-            const file = files[0];
-            setForm((f) => ({...f, file}));
-            return;
+    const fetchOrganizationsData = async () => {
+        try {
+            const data = await fetchOrganizations(0, 1000);
+            setOrganizations(data._embedded ? data._embedded.organizations || [] : data);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            formUtils.showErrorNotification("Failed to fetch organizations");
         }
-
-        // Organization change
-        if (name === "organizationId") {
-            const orgName =
-                e.currentTarget.options[e.currentTarget.selectedIndex].text;
-
-            setForm((f) => ({
-                ...f,
-                organizationId: value,
-                organizationName: orgName,
-                currentBalance: "",
-            }));
-            return;
-        }
-
-        // Expense Date change (THIS is used for balance)
-        if (name === "expenseDate") {
-            setForm((f) => ({
-                ...f,
-                expenseDate: value,
-                currentBalance: "",
-            }));
-            return;
-        }
-
-        // Amount validation
-        if (name === "amount") {
-            const amountValue = Number(value);
-            const balanceValue = Number(form.currentBalance) || fetchedBalance;
-
-            if (getExpenseType() === "CASH-OUT" && amountValue > balanceValue) {
-                setError(
-                    `Amount cannot exceed current balance of ₹${balanceValue.toLocaleString()}`
-                );
-            }
-
-            setForm((f) => ({...f, amount: value}));
-            return;
-        }
-
-        setForm((f) => ({...f, [name]: value}));
     };
 
-
-    const handleFetchBalance = () => {
-        if (getExpenseType() !== "CASH-OUT") {
-            setError("Current balance is only available for CASH-OUT transactions");
-            return;
-        }
-
-        if (!form.organizationId && !form.transactionDate) {
-            setError("Please select organization and transaction date first");
-        } else if (!form.organizationId) {
-            setError("Please select organization first");
-        } else if (!form.transactionDate) {
-            setError("Please select transaction date first");
-        } else {
-            fetchCurrentBalance(form.organizationId, form.transactionDate);
+    const fetchExpenseMastersData = async () => {
+        try {
+            const data = await fetchExpenseMasters(0, 1000);
+            const subTypes = data._embedded ? data._embedded.expenseTypeMasters || [] : data;
+            setSubTypes(subTypes.filter((s) => s.type === expenseType));
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            formUtils.showErrorNotification("Failed to fetch organizations");
         }
     };
 
     useEffect(() => {
-        let mounted = true;
-        const expenseType = getExpenseType();
 
-        setForm((f) => ({...f, type: expenseType}));
-        if (!enableOrgDropDown) {
-            form.organizationId = localStorage.getItem("organizationId");
-        }
+        setTransactionDate(dayjs(new Date()));
 
-        const bearerToken = localStorage.getItem("token");
-        fetch(`${APP_SERVER_URL_PREFIX}/expenseTypeMasters?page=0&size=1000`, {
-            headers: {Authorization: `Bearer ${bearerToken}`},
-        })
-            .then((res) => {
-                if (!res.ok) throw new Error("no masters");
-                return res.json();
-            })
-            .then((json) => {
-                const list =
-                    (json._embedded && json._embedded.expenseTypeMasters) ||
-                    json._embedded ||
-                    json ||
-                    [];
-                const vals = list
-                    .filter((m) => m.type === expenseType)
-                    .map((m) => m.subtype || m.subType)
-                    .filter(Boolean);
-                const uniq = Array.from(new Set(vals));
-                if (mounted) setSubtypes(uniq);
-            })
-            .catch(() => {
-                // ignore failures
-            });
+        antForm.setFieldsValue({
+            organizationId: !isAdmin ? parseInt(localStorage.getItem("organizationId")) : null,
+            gstapplicable: false
+        });
 
-        const token = localStorage.getItem("token");
-        fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                const orgs = data._embedded ? data._embedded.organizations || [] : data;
-                if (mounted) setOrganizations(orgs);
-            })
-            .catch(() => {
-            });
+        fetchOrganizationsData();
+        fetchExpenseMastersData();
+    }, []);
 
-        return () => {
-            mounted = false;
-        };
-    }, [location.pathname, location.search]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
-        setSuccess("");
-
-        if (!enableOrgDropDown) {
-            form.organizationId = localStorage.getItem("organizationId");
-        }
-
-        // Enhanced validation
-        if (!form.organizationId) {
-            setError("Please select an organization");
-            return;
-        }
-        if (!form.transactionDate) {
-            setError("Please enter a transaction date");
-            return;
-        }
-        if (!form.amount || Number(form.amount) <= 0) {
-            setError("Please enter a valid amount");
-            return;
-        }
-
-        // Validate current balance field only for CASH-OUT
-        if (getExpenseType() === "CASH-OUT") {
-            if (!form.currentBalance || Number(form.currentBalance) < 0) {
-                setError("Please enter a valid current balance");
-                return;
-            }
-
-            // Validate amount doesn't exceed current balance for CASH-OUT
-            const currentBalanceValue = Number(form.currentBalance);
-            if (Number(form.amount) > currentBalanceValue) {
-                setError(
-                    `Amount cannot exceed current balance of ₹${currentBalanceValue.toLocaleString()}`
-                );
-                return;
-            }
-        }
-
-        if (subtypes.length > 0 && !form.subtype) {
-            setError("Please select an expense category");
-            return;
-        }
-
+    const handleAntSubmit = async (values) => {
         setLoading(true);
+
+        const formValues = antForm.getFieldsValue();
+
         try {
+
             let storedUser = null;
             try {
                 storedUser = JSON.parse(localStorage.getItem("currentUser") || "null");
@@ -360,94 +148,56 @@ function ExpenseCreateFormPage() {
                 (storedUser.name || storedUser.username || storedUser.email)
                     ? storedUser.name || storedUser.username || storedUser.email
                     : localStorage.getItem("rememberedEmail") || "";
-            const createdDate = "";
+
+
 
             const expensePayload = {
-                transactionDate: form.transactionDate,
-                amount: Number(form.amount),
-                employeeId: form.employeeId ? Number(form.employeeId) : undefined,
-                expenseSubType: form.subtype,
-                expenseType: form.type,
-                organizationId: form.organizationId || undefined,
-                organizationName: form.organizationName || undefined,
-                createdByUserId,
-                description: form.description || "",
+                transactionDate: transactionDate.format(DATE_SYSTEM_FORMAT),
+                amount: Number(formValues.amount),
+                employeeId: formValues.employeeId ? Number(formValues.employeeId) : undefined,
+                expenseSubType: formValues.subtype,
+                expenseType: expenseType,
+                organizationId: formValues.organizationId,
                 createdByUser,
-                createdDate: form.expenseDate,
-                referenceNumber: form.referenceNumber || undefined,
-                gstapplicable: form.book === "YES",
-                currentBalance:
-                    getExpenseType() === "CASH-OUT"
-                        ? Number(form.currentBalance)
-                        : undefined, // Only include for CASH-OUT
-            };
-            console.log(expensePayload);
+                createdByUserId,
+                createdDate: formValues.expenseDate.format(DATE_SYSTEM_FORMAT),
+                description: formValues.description,
+            }
 
             const formData = new FormData();
             formData.append(
                 "expense",
                 new Blob([JSON.stringify(expensePayload)], {type: "application/json"})
             );
-            if (form.file) formData.append("file", form.file);
+            if (formValues.file && formValues.file.file) formData.append("file", formValues.file.file);
 
-            const bearerToken = localStorage.getItem("token");
-            const res = await fetch(`${APP_SERVER_URL_PREFIX}/expenses`, {
-                method: "POST",
-                body: formData,
-                headers: {Authorization: `Bearer ${bearerToken}`},
-            });
 
-            if (!res.ok) {
-                const data = await res.text();
-                setError(data);
-            } else {
-                setSuccess('Expense created successfully! Redirecting...');
+            await postExpenseFormData(formData);
 
-                setSuccess("Expense created successfully! Redirecting...");
-                setTimeout(() => {
-                    if (form.type === "CASH-IN") {
-                        navigate("/pettycash/expenses-inward");
-                    } else if (form.type === "CASH-OUT") {
-                        navigate("/pettycash/expenses-outward");
-                    } else {
-                        navigate("/pettycash/expenses");
-                    }
-                }, 2000);
-            }
+            formUtils.showSuccessNotification('Created expense successfully');
+            navigate(-1); // Redirect to previous page
 
-        } catch (err) {
-            setError("Failed to create expense. Please try again.");
+        } catch (error) {
+            formUtils.showErrorNotification('Failed to create expense', error.message);
+            console.error('Error creating expense:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }
 
-    const clearForm = () => {
-        setForm({
-            transactionDate: new Date().toISOString().slice(0, 10),
-            amount: "",
-            employeeId: "",
-            subtype: "",
-            type: getExpenseType(),
-            expenseDate: "",
-            referenceNumber: "",
-            file: null,
-            organizationId: "",
-            organizationName: "",
-            currentBalance: "",
-            gstapplicable: "NO",
-            description: "",
-        });
-        setPreviewUrl("");
-        setError("");
-        setSuccess("");
-        setFetchedBalance(0);
-        navigate("/pettycash/expenses-inward");
-    };
+    const handleValueChange = (changedValues, allValues) => {
+        if (changedValues.hasOwnProperty('organizationId')
+            || changedValues.hasOwnProperty('expenseDate')) {
+            fetchCurrentBalanceData(allValues.organizationId, allValues.expenseDate);
+        }
+    }
 
 
-    // Check if current balance section should be shown
-    const showCurrentBalanceSection = getExpenseType() === "CASH-OUT";
+
+    const onFinishFailed = (errorInfo) => {
+        formUtils.showErrorNotification(errorInfo.message);
+    }
+
 
     return (
         <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
@@ -467,9 +217,14 @@ function ExpenseCreateFormPage() {
 
                 <Spin spinning={loading} tip="Loading..." size={'large'}>
 
-                    <div
+                    <Form
+                        form={antForm}
                         noValidate={true}
+                        onValuesChange={handleValueChange}
+                        onFinish={handleAntSubmit}
+                        onFinishFailed={onFinishFailed}
                         className="form-page"
+                        encType="multipart/form-data"
                         layout="vertical">
 
                         <div className='form-page-header'>
@@ -479,7 +234,11 @@ function ExpenseCreateFormPage() {
 
 
                                 <Typography.Title className='page-title' level={2}>
-                                    {getPageTitle()}
+                                    {() => {
+                                        if (expenseType === PRETTY_CASE_TYPES.CASH_IN.value) return "Create Inward ";
+                                        else if (expenseType === PRETTY_CASE_TYPES.CASH_OUT.value) return "Create Outward ";
+                                        return "Create Expense";
+                                    }}
                                 </Typography.Title>
                             </div>
 
@@ -487,224 +246,156 @@ function ExpenseCreateFormPage() {
                             <div className={'page-actions'}></div>
                         </div>
 
+                        <div className="form-page-fields-section">
 
-                        <div className="create-expense-form">
-                            {error && (
-                                <div className="alert alert-error">
-                                    <div className="alert-icon">⚠️</div>
-                                    <div className="alert-content">
-                                        <strong>Error:</strong> {error}
-                                    </div>
-                                </div>
-                            )}
 
-                            {success && (
-                                <div className="alert alert-success">
-                                    <div className="alert-icon">✅</div>
-                                    <div className="alert-content">
-                                        <strong>Success:</strong> {success}
-                                    </div>
-                                </div>
-                            )}
+                            <Typography.Title level={4} className="form-section-title">
+                                Details
+                                <Tag className={'title-tag'}>Transaction
+                                    date: {transactionDate?.format(DATE_DISPLAY_FORMAT)}</Tag>
+                            </Typography.Title>
 
-                            <form onSubmit={handleSubmit} encType="multipart/form-data">
-                                <div className="form-sections">
-                                    <div className="form-section1">
-                                        <div className="enhanced-grid2 grid grid-cols-3 md:grid-cols-3 gap-4">
-                                            <div className="form-group">
-                                                <label className="form-label required">Branch</label>
-                                                <select
-                                                    name="organizationId"
-                                                    value={
-                                                        enableOrgDropDown
-                                                            ? form.organizationId
-                                                            : localStorage.getItem("organizationId")
-                                                    }
-                                                    onChange={handleChange}
-                                                    className="form-select"
-                                                    required
-                                                    disabled={!enableOrgDropDown}
-                                                >
-                                                    <option value="">Select branch</option>
-                                                    {organizations.map((org) => (
-                                                        <option
-                                                            key={org.id || org._links?.self?.href}
-                                                            value={
-                                                                org.id || org._links?.self?.href.split("/").pop()
-                                                            }
-                                                        >
-                                                            {org.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div className="form-group">
-                                                <label className="form-label required">Expense Date</label>
-                                                <input
-                                                    name="expenseDate"
-                                                    type="date"
-                                                    value={form.expenseDate}
-                                                    onChange={handleChange}
-                                                    className="form-input"
-                                                    required
-                                                />
-                                            </div>
+                            <Row gutter={24}>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="organizationId"
+                                        label="Organization"
+                                        rules={[{required: true, message: 'Please select organization.'}]}
+                                    >
+                                        <Select
+                                            style={{width: "100%"}}
+                                            disabled={!isAdmin}
+                                            placeholder={'Select branch'}
+                                            options={organizations.map((org) => ({value: org.id, label: org.name}))}
+                                        />
+                                    </Form.Item>
+                                </Col>
 
-                                            {/* Current Balance (conditional) */}
-                                            {showCurrentBalanceSection && (
-                                                <div className="form-group">
-                                                    <label className="form-label required">
-                                                        Current Balance (₹)
-                                                    </label>
-                                                    <div className="balance-input-wrapper">
-                                                        {/* <span
-                          className="currency-symbol"
-                          style={{ marginRight: "2px" }}
-                        >
-                          ₹
-                        </span> */}
-                                                        <input
-                                                            name="currentBalance"
-                                                            type="number"
-                                                            value={form.currentBalance}
-                                                            onChange={handleChange}
-                                                            className="form-input"
-                                                            readOnly
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            className="fetch-balance-btn"
-                                                            onClick={handleFetchBalance}
-                                                            disabled={
-                                                                !form.organizationId ||
-                                                                !form.transactionDate ||
-                                                                balanceLoading
-                                                            }
-                                                        >
-                                                            {balanceLoading ? "..." : "🔄"}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="expenseDate"
+                                        label="Expense Date"
+                                        rules={[{required: true, message: 'Please select organization.'}]}
+                                    >
+                                        <DatePicker
+                                            style={{width: "100%"}}
+                                            format={DATE_DISPLAY_FORMAT}
+                                        />
+                                    </Form.Item>
+                                </Col>
 
-                                            <div className="form-group">
-                                                <label className="form-label required">Amount (₹)</label>
-                                                <div className="amount-input-wrapper">
-                                                    {/* <span className="currency-symbol">₹</span> */}
-                                                    <input
-                                                        name="amount"
-                                                        type="number"
-                                                        value={form.amount}
-                                                        onChange={handleChange}
-                                                        className="form-input"
-                                                        required
-                                                    />
-                                                </div>
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="amount"
+                                        label="Amount"
+                                        rules={[{required: true, message: 'Please enter amount.'},
+                                            {
+                                                validator: (_, value) =>
+                                                    (showCurrentBalanceSection && value && fetchedBalance < value)
+                                                        ? Promise.reject(new Error("Amount cannot exceed current balance"))
+                                                        : Promise.resolve(),
+                                            }]}
+                                    >
+                                        <InputNumber
+                                            style={{width: "100%"}}
+                                            formatter={(value) => {
+                                                if (!value) return "";
+                                                return `₹ ${new Intl.NumberFormat("en-IN").format(value)}`;
+                                            }}
+                                            parser={(value) => value?.replace(/₹\s?|(,*)/g, "")}
+                                        />
+                                    </Form.Item>
+                                </Col>
 
-                                                {showCurrentBalanceSection && form.currentBalance && (
-                                                    <div className="balance-validation">
-                                                        {form.amount &&
-                                                        Number(form.amount) > Number(form.currentBalance) ? (
-                                                            <div className="balance-error">
-                                                                ❌ Amount exceeds current balance by ₹
-                                                                {(
-                                                                    Number(form.amount) - Number(form.currentBalance)
-                                                                ).toLocaleString()}
-                                                            </div>
-                                                        ) : form.amount ? (
-                                                            <div className="balance-success">
-                                                                ✅ Available balance after expense: ₹
-                                                                {(
-                                                                    Number(form.currentBalance) - Number(form.amount)
-                                                                ).toLocaleString()}
-                                                            </div>
-                                                        ) : null}
-                                                    </div>
-                                                )}
-                                            </div>
+                                <Col span={12}>
+                                    {showCurrentBalanceSection && (
+                                        <Form.Item
+                                            name="currentBalance"
+                                            label="Current Balance (₹)">
 
-                                            {/* Expense Category */}
-                                            {subtypes.length > 0 && (
-                                                <div className="form-group">
-                                                    <label className="form-label required">
-                                                        Expense Category
-                                                    </label>
-                                                    <select
-                                                        name="subtype"
-                                                        value={form.subtype}
-                                                        onChange={handleChange}
-                                                        className="form-select"
-                                                        required
-                                                    >
-                                                        <option value="">Select category</option>
-                                                        {subtypes.map((s, i) => (
-                                                            <option key={i} value={s}>
-                                                                {s}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            )}
+                                            <Spin spinning={balanceLoading} tip="Loading..." size={'small'}></Spin>
 
-                                            {/* Transaction Date */}
-                                            <div className="form-group">
-                                                <label className="form-label required">
-                                                    Transaction Date
-                                                </label>
-                                                <input
-                                                    name="transactionDate"
-                                                    type="date"
-                                                    value={form.transactionDate}
-                                                    onChange={handleChange}
-                                                    className="form-input"
-                                                    readOnly
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label className="form-label required">Book</label>
-                                                <select
-                                                    name="book"
-                                                    value={form.book}
-                                                    onChange={handleChange}
-                                                    className="form-select"
-                                                    required
-                                                >
-                                                    <option value="" disabled>
-                                                        Select Book
-                                                    </option>
-                                                    <option value="NO">No</option>
-                                                    <option value="YES">Yes</option>
-                                                </select>
-                                            </div>
+                                            <Typography.Text strong>{fetchedBalance}</Typography.Text>
+                                        </Form.Item>
+                                    )}
 
-                                            <div className="flex wrap gap-4 w-full">
-                                                <div className="w-1/2">
-                                                    <label className="">File Upload</label>
-                                                    <input
-                                                        name="file"
-                                                        type="file"
-                                                        onChange={handleChange}
-                                                        accept="image/*,.pdf,.doc,.docx,.xlsx"
-                                                        className="w-full"
-                                                    />
+                                </Col>
 
-                                                    {form.file && (
-                                                        <div className="file-preview">
-                                                            <span>{form.file.name}</span>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setForm((f) => ({...f, file: null}));
-                                                                    setPreviewUrl("");
-                                                                }}
-                                                            >
-                                                                ×
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            {/* <div className="flex wrap gap-4 w-full">
+                                {subTypes.length > 0 && <Col span={12}>
+                                    <Form.Item
+                                        name={"subtype"}
+                                        label="Expense category"
+                                        rules={[{
+                                            required: true, message: 'Please select expense category.'
+                                        }]}
+                                    >
+                                        <Select
+                                            style={{width: "100%"}}
+                                            placeholder={'Select expense category'}
+                                            options={subTypes.map((sub) => ({value: sub.subtype, label: sub.subtype}))}
+                                        />
+                                    </Form.Item>
+                                </Col>}
+
+                                <Col span={12}>
+                                    <Form.Item
+                                        name={"gstapplicable"}
+                                        label="Book"
+                                        rules={[{required: true, message: 'Please select book.'}]}
+                                    >
+                                        <Select
+                                            style={{width: "100%"}}
+                                            placeholder={'Select book'}
+                                            options={[
+                                                {value: true, label: 'Yes'},
+                                                {value: false, label: 'No'}
+                                            ]}
+                                        />
+                                    </Form.Item>
+                                </Col>
+
+                                <Col span={24}>
+                                    <Form.Item
+                                        name={"file"}
+                                        label="Upload receipt">
+                                        <Dragger
+                                            maxCount={1}
+                                            onPreview={async (file) => {
+                                                setModalFile(await getBase64(file.originFileObj));
+                                            }}
+                                            accept="image/*,.pdf,.doc,.docx,.xlsx"
+                                            beforeUpload={(file) => {
+                                              //  antForm.setFieldsValue({file: file});
+                                                return false;
+                                            }}
+                                        >
+                                            <p className="ant-upload-drag-icon">
+                                                <InboxOutlined/>
+                                            </p>
+                                            <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                                            <p className="ant-upload-hint">
+                                                Strictly prohibited from uploading
+                                                company data or other
+                                                banned files.
+                                            </p>
+                                        </Dragger>
+
+                                    </Form.Item>
+                                </Col>
+
+                                <Col span={24}>
+                                    <Form.Item
+                                        rows="10"
+                                        name={"description"}
+                                        label="Narration"
+                                    >
+                                        <Input.TextArea
+                                            placeholder={'Enter narration / Notes'}
+                                        />
+                                    </Form.Item>
+                                </Col>
+
+                                {/* <div className="flex wrap gap-4 w-full">
                      <div className="w-1/2">
                       <label className="">File/Image Capture</label>
 
@@ -719,60 +410,42 @@ function ExpenseCreateFormPage() {
 
                      </div>
                   </div>   */}
-                                            <div className="w-full">
-                                                <label>Narration</label>
-                                                <textarea
-                                                    name="description"
-                                                    value={form.description}
-                                                    onChange={handleChange}
-                                                    className="form-input w-full"
-                                                    rows="2"
-                                                    placeholder="Enter narration / notes"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="form-actions1">
-                                    <button
-                                        type="button"
-                                        className="btn-secondary"
-                                        onClick={clearForm}
-                                        disabled={loading}
-                                        style={{visibility: "hidden"}}
-                                    >
-                                        ← Back
-                                    </button>
-
-                                    <button
-                                        type="submit"
-                                        style={{padding: "2px"}}
-                                        className={`btn-primary`}
-                                        disabled={
-                                            loading ||
-                                            (showCurrentBalanceSection &&
-                                                form.amount &&
-                                                form.currentBalance &&
-                                                Number(form.amount) > Number(form.currentBalance))
-                                        }
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <div className="loading-spinner-small"></div>
-                                                Creating Expense...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span className="btn-icon">💾</span>
-                                                Save
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
+                            </Row>
                         </div>
-                    </div>
+
+                        <div className='form-page-footer'>
+                            <div className={'page-actions'}>
+                                <Button htmlType="submit"
+                                        size={'large'}
+                                        type="primary"
+                                        loading={loading}>
+                                    Save
+                                </Button>
+                            </div>
+                        </div>
+
+                    </Form>
                 </Spin>
+
+                <Modal
+                    title="Receipt Preview"
+                    centered
+                    open={!!modalFile}
+                    width={1000}
+                    onCancel={() => setModalFile(null)}
+                    footer={[
+                        <Button onClick={() => setModalFile(null)}>Close</Button>,
+                    ]}
+                >
+                    <img
+                        src={modalFile && modalFile.startsWith("data:image")
+                            ? modalFile
+                            : `data:image/png;base64,${modalFile}`
+                        }
+                        alt="Expense Receipt"
+                        className="list-preview-image"
+                    />
+                </Modal>
             </div>
         </DefaultAppSidebarLayout>
     );

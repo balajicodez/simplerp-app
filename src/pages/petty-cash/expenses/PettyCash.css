@@ -12,12 +12,6 @@
 }
 
 /* ===== DASHBOARD STYLES ===== */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 24px;
-  padding: 10px 0;
-}
 
 .stat-card {
   border-radius: 16px;
@@ -419,11 +413,6 @@
 }
 
 /* ===== FORM STYLES ===== */
-.create-expense-form {
-  background: white;
-  border-radius: 12px;
-  padding: 0;
-}
 
 .form-sections {
   display: flex;
@@ -1377,19 +1366,9 @@
 .mr-4 { margin-right: 1rem; }
 
 /* ===== RESPONSIVE DESIGN ===== */
-@media (max-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 20px;
-  }
-}
 
 @media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-  
+
   .stat-card {
     padding: 15px 10px;
   }
@@ -1483,12 +1462,7 @@
 }
 
 @media (max-width: 480px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    padding: 5px 0;
-  }
-  
+
   .stat-card {
     padding: 20px 15px;
   }
