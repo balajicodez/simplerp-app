@@ -7,6 +7,7 @@ import CameraCapture from '../../../_components/camera-capture/CameraCapture';
 import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {
+    Alert,
     App as AntApp,
     Button,
     Col,
@@ -259,8 +260,8 @@ function ExpenseCreateFormPage() {
                                 <Col span={12}>
                                     <Form.Item
                                         name="organizationId"
-                                        label="Organization"
-                                        rules={[{required: true, message: 'Please select organization.'}]}
+                                        label="Branch"
+                                        rules={[{required: true, message: 'Please select branch.'}]}
                                     >
                                         <Select
                                             style={{width: "100%"}}
@@ -275,7 +276,7 @@ function ExpenseCreateFormPage() {
                                     <Form.Item
                                         name="expenseDate"
                                         label="Expense Date"
-                                        rules={[{required: true, message: 'Please select organization.'}]}
+                                        rules={[{required: true, message: 'Please select expense date'}]}
                                     >
                                         <DatePicker
                                             style={{width: "100%"}}
@@ -283,6 +284,15 @@ function ExpenseCreateFormPage() {
                                         />
                                     </Form.Item>
                                 </Col>
+                                {showCurrentBalanceSection && (
+                                    <Col span={24}>
+
+
+                                        <Spin spinning={balanceLoading} tip="Loading..." size={'small'}>
+                                            <Alert title={`Available Balance (Selected branch & date): ${fetchedBalance}`} className={'balance-alert'} type="info" showIcon />
+                                        </Spin>
+                                    </Col>
+                                )}
 
                                 <Col span={12}>
                                     <Form.Item
@@ -307,19 +317,9 @@ function ExpenseCreateFormPage() {
                                     </Form.Item>
                                 </Col>
 
-                                <Col span={12}>
-                                    {showCurrentBalanceSection && (
-                                        <Form.Item
-                                            name="currentBalance"
-                                            label="Current Balance (₹)">
+                                <Col span={12}></Col>
 
-                                            <Spin spinning={balanceLoading} tip="Loading..." size={'small'}></Spin>
 
-                                            <Typography.Text strong>{fetchedBalance}</Typography.Text>
-                                        </Form.Item>
-                                    )}
-
-                                </Col>
 
                                 {subTypes.length > 0 && <Col span={12}>
                                     <Form.Item

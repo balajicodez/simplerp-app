@@ -94,6 +94,7 @@
 /* Header Section */
 .handloan-header {
   margin-bottom: 24px;
+  margin-top: 1rem;
 }
 
 .header-actions {
@@ -1447,3 +1448,8 @@
   }
 }
 
+
+
+.form-page .balance-alert {
+  margin-bottom: 1rem;
+}

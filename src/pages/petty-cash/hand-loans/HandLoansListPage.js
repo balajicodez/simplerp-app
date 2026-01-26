@@ -5,7 +5,7 @@ import './HandLoans.css';
 import Utils from '../../../Utils';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {Button, Typography} from "antd";
+import {Button, Card, Statistic, Typography} from "antd";
 import {PlusOutlined} from "@ant-design/icons";
 
 const HandLoansListPage = () => {
@@ -506,19 +506,52 @@ const HandLoansListPage = () => {
                     </div>
 
                     <div className={'page-actions'}>
-
+                        <Button type={'primary'}
+                                size={'large'}
+                                onClick={handleCreateLoan}
+                                icon={<PlusOutlined/>}>
+                            New Loan
+                        </Button>
                     </div>
                 </div>
 
+                <div className={'list-dashboard'}>
+                    <Card>
+                        <Statistic
+                            size={'small'}
+                            title="Total Loans"
+                            value={summaryStats.totalLoans}
+                        />
+                    </Card>
 
-                {/* Summary Dashboard */}
-                <LoanSummaryDashboard
-                    summary={summaryStats}
-                    viewMode={viewMode}
-                    selectedLoan={selectedLoan}
-                    recoveredLoansCount={recoveredLoansForMainLoan.length}
-                    onCreateLoan={handleCreateLoan}
-                />
+                    <Card>
+                        <Statistic
+                            title="Total Issued"
+                            value={summaryStats.totalIssued}
+                            precision={2}
+                            prefix={'₹'}
+                        />
+                    </Card>
+
+                    <Card>
+                        <Statistic
+                            styles={{
+                                content: {color: '#F6BE00'},
+                            }}
+                            title={"Pending Balance"}
+                            value={formatCurrency(summaryStats.totalBalance)}
+                        />
+                    </Card>
+
+                    <Card>
+                        <Statistic
+                            title={"Recovery Rate"}
+                            value={summaryStats.recoveryRate.toFixed(1)}
+                            precision={1}
+                            prefix={'%'}
+                        />
+                    </Card>
+                </div>
 
                 {/* Header Section */}
                 <div className="handloan-header">
@@ -762,84 +795,6 @@ const HandLoansListPage = () => {
                 )}
             </div>
         </DefaultAppSidebarLayout>
-    );
-};
-
-// Updated Loan Summary Dashboard Component
-const LoanSummaryDashboard = ({
-                                  summary,
-                                  viewMode,
-                                  selectedLoan,
-                                  recoveredLoansCount,
-                                  onCreateLoan,
-                              }) => {
-    const getViewModeTitle = () => {
-        switch (viewMode) {
-            case "ISSUED":
-                return "Issued Loans";
-            case "RECOVERED":
-                if (selectedLoan) {
-                    return `Recovered Loans for ${selectedLoan.handLoanNumber}`;
-                }
-                return "Recovered Loans";
-            case "ALL":
-                return "All Loans";
-            default:
-                return "Loans";
-        }
-    };
-
-    return (
-        <div className="dashboard-header1">
-            <div className="header-content">
-                <div></div>
-                <button className="btn-primary1" onClick={onCreateLoan}>
-                    <span className="btn-icon">+</span> New Loan
-                </button>
-            </div>
-            {/* <div className="dashboard-header">
-        <h3>{getViewModeTitle()} Summary</h3>
-        {viewMode === 'RECOVERED' && selectedLoan && (
-          <div className="main-loan-reference">
-            Main Loan: {selectedLoan.handLoanNumber} | Party: {selectedLoan.partyName}
-          </div>
-        )}
-      </div> */}
-            <div className="dashboard-stats">
-                <div className="stat-card">
-                    {/* <div className="stat-icon">📊</div> */}
-                    <div className="stat-info">
-                        <div className="stat-value">{summary.totalLoans}</div>
-                        <div className="stat-label">Total Loans</div>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    {/* <div className="stat-icon">💰</div> */}
-                    <div className="stat-info">
-                        <div className="stat-value">
-                            {formatCurrency(summary.totalIssued)}
-                        </div>
-                        <div className="stat-label">Total Issued</div>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    {/* <div className="stat-icon">⚖️</div> */}
-                    <div className="stat-info">
-                        <div className="stat-value pending">
-                            {formatCurrency(summary.totalBalance)}
-                        </div>
-                        <div className="stat-label">Pending Balance</div>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    {/* <div className="stat-icon">✅</div> */}
-                    <div className="stat-info">
-                        <div className="stat-value">{summary.recoveryRate.toFixed(1)}%</div>
-                        <div className="stat-label">Recovery Rate</div>
-                    </div>
-                </div>
-            </div>
-        </div>
     );
 };
 
