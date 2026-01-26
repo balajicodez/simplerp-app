@@ -50,16 +50,16 @@ export default function PermissionsFormPage() {
             payload.id = null;
             try {
                 await PermissionsDataSource.createPermission(payload);
-                formUtils.showSuccessNotification("Organization permission successfully!");
+                formUtils.showSuccessNotification("Permission created successfully!");
                 navigate(-1);
             } catch (err) {
                 console.error(err);
-                formUtils.showErrorNotification("Failed to permission organization.");
+                formUtils.showErrorNotification("Failed to create permission.");
             }
         } else {
             try {
                 await PermissionsDataSource.updatePermission(params.idOrCreate, payload);
-                formUtils.showSuccessNotification("Organization permission successfully!");
+                formUtils.showSuccessNotification("Permission updated  successfully!");
                 navigate(-1);
             } catch (err) {
                 console.error(err);

@@ -4,7 +4,7 @@ import {APP_SERVER_URL_PREFIX, DATE_DISPLAY_FORMAT} from "../../../constants.js"
 import './EditExpense.css';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {Button, Image, Spin, Typography} from "antd";
+import {Button, Image, Spin, Tag, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -61,6 +61,7 @@ function ExpenseViewFormPage() {
 
           <Button variant="filled"
                   color={'default'}
+                  size={'large'}
                   icon={<LeftOutlined/>}
                   iconPlacement={'left'}
                   onClick={() => {
@@ -134,9 +135,8 @@ function ExpenseViewFormPage() {
             <div className="details-card">
               <div className="card-header">
                 <Typography.Title level={4} >Transaction Information</Typography.Title>
-                <div className="status-badge" style={{ backgroundColor: getExpenseTypeColor() }}>
-                  {expense.expenseType || 'Unknown'}
-                </div>
+
+                <Tag color={getExpenseTypeColor()} variant={'solid'}>{expense.expenseType || 'Unknown'}</Tag>
               </div>
               
               <div className="details-grid">

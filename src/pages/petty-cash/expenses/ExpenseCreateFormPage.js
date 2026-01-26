@@ -234,11 +234,11 @@ function ExpenseCreateFormPage() {
 
 
                                 <Typography.Title className='page-title' level={2}>
-                                    {() => {
+                                    {(() => {
                                         if (expenseType === PRETTY_CASE_TYPES.CASH_IN.value) return "Create Inward ";
                                         else if (expenseType === PRETTY_CASE_TYPES.CASH_OUT.value) return "Create Outward ";
                                         return "Create Expense";
-                                    }}
+                                    })()}
                                 </Typography.Title>
                             </div>
 

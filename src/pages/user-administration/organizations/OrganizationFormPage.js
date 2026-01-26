@@ -100,7 +100,7 @@ export default function OrganizationFormPage() {
             try {
                 await OrganizationDataSource.createOrganization(payload);
                 formUtils.showSuccessNotification("Branch created successfully!");
-                navigate("/user-administration/branches");
+                navigate(-1);
             } catch (err) {
                 console.error(err);
                 formUtils.showErrorNotification("Failed to create branch.");
@@ -109,7 +109,7 @@ export default function OrganizationFormPage() {
             try {
                 await OrganizationDataSource.updateOrganization(params.idOrCreate, payload);
                 formUtils.showSuccessNotification("Branch updated successfully!");
-                navigate("/user-administration/branches");
+                navigate(-1);
             } catch (err) {
                 console.error(err);
                 formUtils.showErrorNotification("Failed to update branch.");
