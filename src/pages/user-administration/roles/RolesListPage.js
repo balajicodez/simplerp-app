@@ -107,13 +107,12 @@ export default function RolesListPage() {
 
 
                 <Form className="filter-form"
-                      layout={'inline'}>
+                      layout={'vertical'}>
                     <Form.Item name='searchTerm'>
                         <Input
                             className='search-field'
                             placeholder="Search roles by name or description..."
                             value={searchTerm}
-                            size={'large'}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </Form.Item>

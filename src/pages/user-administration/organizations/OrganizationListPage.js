@@ -74,12 +74,11 @@ function OrganizationListPage() {
 
 
                 <Form className="filter-form"
-                      layout={'inline'}>
+                      layout={'vertical'}>
                     <Form.Item name='searchTerm'>
                         <Input
                             placeholder="Search branches..."
                             value={searchTerm}
-                            size={'large'}
                             className='search-field'
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />

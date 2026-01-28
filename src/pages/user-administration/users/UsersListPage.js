@@ -110,12 +110,11 @@ export default function UsersListPage() {
                 </div>
 
                 <Form className="filter-form"
-                      layout={'inline'}>
+                      layout={'vertical'}>
                     <Form.Item name='searchTerm'>
                         <Input
                             placeholder="Search users..."
                             value={searchTerm}
-                            size={'large'}
                             className='search-field'
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />

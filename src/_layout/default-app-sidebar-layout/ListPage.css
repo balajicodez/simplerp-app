@@ -33,7 +33,6 @@
 .list-page .filter-form {
     display: flex;
     gap: 1rem;
-    padding: 1rem 0;
 }
 
 .list-page .filter-form > * {
@@ -44,6 +43,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
+    padding-bottom: 1rem;
 }
 
 .list-preview-image {
