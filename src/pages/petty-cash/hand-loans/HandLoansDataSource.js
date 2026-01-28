@@ -17,6 +17,10 @@ export async function postHomeLoanFormData(formData) {
     return postWithAuthAndFormData(`/handloans`, formData, true);
 }
 
+export async function fetchMainLoadByID(id) {
+    return fetchWithAuth(`/handloans/getmainloanbyid/${id}`);
+}
+
 export async function fetchHandLoan(id) {
     return fetchWithAuth(`/handloans/${id}`);
 }

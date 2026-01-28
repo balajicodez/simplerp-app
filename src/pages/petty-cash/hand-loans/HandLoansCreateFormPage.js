@@ -287,10 +287,11 @@ export default function HandLoansCreateFormPage() {
                                         label="Loan Amount"
                                         rules={[{required: true, message: 'Please enter amount.'},
                                             {
-                                                validator: (_, value) =>
-                                                    (value && fetchedBalance < value)
-                                                        ? Promise.reject(new Error("Amount cannot exceed current balance"))
-                                                        : Promise.resolve(),
+                                                validator: (_, value) => {
+                                                    if (value && fetchedBalance < value) return Promise.reject(new Error("Amount cannot exceed current balance"))
+                                                    if (value <= 0) return Promise.reject(new Error("Amount cannot be zero or negative"));
+                                                    return Promise.resolve();
+                                                }
                                             }]}
                                     >
                                         <InputNumber

@@ -23,11 +23,12 @@ export default function HandLoanDetailsView({loan, recoveredLoans}) {
 
     return (
         <>
-            <Descriptions bordered>
+            <Descriptions bordered size={'small'}>
                 <Descriptions.Item
                     label="Loan ID">{loan.handLoanNumber || `HL${String(loan.id).padStart(4, '0')}`}</Descriptions.Item>
                 <Descriptions.Item
                     label="Loan Date">{loan.createdDate.format(DATE_DISPLAY_FORMAT)}</Descriptions.Item>
+
                 <Descriptions.Item label="Branch">{loan.organization?.name || 'N/A'}</Descriptions.Item>
                 <Descriptions.Item label="Party Name">{loan.partyName}</Descriptions.Item>
                 <Descriptions.Item label="Phone" span={2}>{loan.phoneNo || 'N/A'}</Descriptions.Item>
