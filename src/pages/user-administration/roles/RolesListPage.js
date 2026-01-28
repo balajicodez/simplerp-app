@@ -141,7 +141,6 @@ export default function RolesListPage() {
                         {
                             title: 'Actions',
                             key: 'operation',
-                            fixed: 'end',
                             width: 300,
                             render: (role) => {
                                 return <div style={{display: 'flex', gap: '1rem'}}>

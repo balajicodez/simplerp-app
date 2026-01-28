@@ -130,7 +130,6 @@ function OrganizationListPage() {
                         {
                             title: 'Actions',
                             key: 'operation',
-                            fixed: 'end',
                             width: 200,
                             render: (item) => {
                                 return <Tooltip title={'Edit Organization'}>

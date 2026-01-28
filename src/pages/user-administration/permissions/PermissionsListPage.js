@@ -123,7 +123,6 @@ export default function PermissionsListPage() {
                         {
                             title: 'Actions',
                             key: 'operation',
-                            fixed: 'end',
                             width: 300,
                             render: (permission) => {
                                 return <div style={{display: 'flex', gap: '1rem'}}>

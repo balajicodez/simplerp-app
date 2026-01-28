@@ -111,11 +111,15 @@ function ExpensesOutwardListPage() {
         return typeColors[type] || '#6b7280';
     };
 
+    const resetPagination = () => {
+        fetchData(1, pagination.pageSize);
+    }
+
     const handleValueChange = (changedValues, allValues) => {
         if (changedValues.hasOwnProperty('organizationId')
             || changedValues.hasOwnProperty('fromDate')
             || changedValues.hasOwnProperty('toDate')) {
-            fetchData(1, pagination.pageSize);
+            resetPagination();
         }
     }
 
@@ -317,7 +321,6 @@ function ExpensesOutwardListPage() {
                         {
                             title: 'Actions',
                             key: 'operation',
-                            fixed: 'end',
                             width: 200,
                             render: (item) => {
                                 return <Tooltip title={'Edit Outward Transaction'}>

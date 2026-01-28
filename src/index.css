@@ -1,11 +1,44 @@
 :root {
 
+
+    --primary-0: #000000;
+    --primary-10: #05006d;
+    --primary-20: #1f2084;
+    --primary-30: #373a9b;
+    --primary-40: #5053b4;
+    --primary-50: #696dcf;
+    --primary-60: #8387eb;
+    --primary-70: #9fa3ff;
+    --primary-80: #c0c1ff;
+    --primary-90: #e1e0ff;
+    --primary-95: #f1efff;
+    --primary-98: #fcf8ff;
+    --primary-100: #ffffff;
+    --primary: #2e3192;
+
+
+    --secondary-0: #000000;
+    --secondary-10: #410002;
+    --secondary-20: #690006;
+    --secondary-30: #93000d;
+    --secondary-40: #c00015;
+    --secondary-50: #eb1923;
+    --secondary-60: #ff544b;
+    --secondary-70: #ff897e;
+    --secondary-80: #ffb4ac;
+    --secondary-90: #ffdad6;
+    --secondary-95: #ffedea;
+    --secondary-98: #fff8f7;
+    --secondary-100: #ffffff;
+    --secondary: #ed1c24;
+
+
     --surface: #F4F5F7;
-    --elevate-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-    --elevate-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-    --elevate-3: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-    --elevate-4: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-    --elevate-5: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
+    --elevate-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    --elevate-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    --elevate-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+    --elevate-4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    --elevate-5: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22);
 }
 
 html, body, #root {

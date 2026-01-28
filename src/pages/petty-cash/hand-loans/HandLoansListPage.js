@@ -1,81 +1,87 @@
 import React, {useState, useEffect, useCallback, useMemo} from 'react';
 import {useNavigate, useSearchParams} from 'react-router-dom';
-import {APP_SERVER_URL_PREFIX} from "../../../constants.js";
+import {APP_SERVER_URL_PREFIX, DATE_DISPLAY_FORMAT} from "../../../constants.js";
 import './HandLoans.css';
 import Utils from '../../../Utils';
-import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {Button, Card, Statistic, Typography} from "antd";
-import {PlusOutlined} from "@ant-design/icons";
+import {
+    App as AntApp,
+    Button,
+    Card, DatePicker, Form, Input,
+    Modal,
+    Progress,
+    Segmented, Select,
+    Statistic,
+    Table,
+    Tag,
+    Typography
+} from "antd";
+import {AppstoreOutlined, BarsOutlined, EyeOutlined, PlusOutlined} from "@ant-design/icons";
+import FormUtils from "../../../_utils/FormUtils";
+import {fetchHandLoan, fetchHandLoans} from "./HandLoansDataSource";
+import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
+import {formatCurrency} from "../../../_utils/datasource-utils";
+import dayjs from "dayjs";
 
-const HandLoansListPage = () => {
+export default function HandLoansListPage() {
     const [loans, setLoans] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [selectedLoan, setSelectedLoan] = useState(null);
     const [viewMode, setViewMode] = useState('ISSUED'); // ISSUED, RECOVERED, ALL
-    const [showCreateForm, setShowCreateForm] = useState(false);
-    const [totalPages, setTotalPages] = useState(0);
-    const [searchParams, setSearchParams] = useSearchParams();
     const [showRecoverForm, setShowRecoverForm] = useState(false);
     const [showLoanDetails, setShowLoanDetails] = useState(false);
     const [organizations, setOrganizations] = useState([]);
     const [loanRecoveries, setLoanRecoveries] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [currentPage, setCurrentPage] = useState(0);
-    const [balanceLoading, setBalanceLoading] = useState(false);
-    const [fetchedBalance, setFetchedBalance] = useState(0);
     const [recoveredLoansForMainLoan, setRecoveredLoansForMainLoan] = useState([]);
     const [loadingRecoveredLoans, setLoadingRecoveredLoans] = useState(false);
     const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
+    const isAdmin = Utils.isRoleApplicable("ADMIN");
     const [selectedOrgId, setSelectedOrgId] = useState("");
     const navigate = useNavigate();
-    const pageSize = 10;
+    const formUtils = new FormUtils(AntApp.useApp());
 
-    const pageParam = Number(searchParams.get("page") || 0);
-    const sizeParam = Number(searchParams.get("size") || 20);
+    const [filterForm] = Form.useForm();
+
+    const [modalFile, setModalFile] = useState(null);
+
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: FormUtils.LIST_DEFAULT_PAGE_SIZE
+    })
+
+
+    useEffect(() => {
+        fetchLoans(pagination.current, pagination.pageSize);
+    }, [viewMode, selectedOrgId]);
+
+
+    const fetchOrganizationsData = async () => {
+        try {
+            const data = await fetchOrganizations(0, 1000);
+            setOrganizations(data._embedded ? data._embedded.organizations || [] : data);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            formUtils.showErrorNotification("Failed to fetch organizations");
+        }
+    };
 
     // Fetch organizations
     useEffect(() => {
-        fetchOrganizations();
+        filterForm.setFieldsValue({
+            organizationId: !isAdmin ? parseInt(localStorage.getItem("organizationId")) : null,
+            fromDate: dayjs(new Date()).subtract(7, 'days'), // last 7 days
+            toDate: dayjs(new Date()) // today
+        });
+
+        fetchOrganizationsData();
     }, []);
-
-    // Fetch loans based on view mode and page
-    useEffect(() => {
-        fetchLoans();
-    }, [viewMode, currentPage]);
-
-    useEffect(() => {
-        fetchLoans();
-    }, [pageParam, sizeParam, selectedOrgId, enableOrgDropDown]);
-
-
-    const fetchOrganizations = async () => {
-        try {
-            const bearerToken = localStorage.getItem('token');
-            const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-                headers: {'Authorization': `Bearer ${bearerToken}`}
-            });
-            if (response.ok) {
-                const data = await response.json();
-                const processedOrgs = (data._embedded?.organizations || []).map(org => {
-                    const id = org._links?.self?.href ? org._links.self.href.split('/').pop() : org.id;
-                    return {
-                        ...org,
-                        id: id
-                    };
-                });
-                setOrganizations(processedOrgs);
-            }
-        } catch (err) {
-            console.error('Error fetching organizations:', err);
-        }
-    };
 
     const handleOrganizationChange = (e) => {
         const value = e.target.value;
         setSelectedOrgId(value);
-        setSearchParams({page: 0, size: sizeParam});
     };
 
     // Fetch recovered loans for a specific main loan
@@ -150,143 +156,54 @@ const HandLoansListPage = () => {
         }
     };
 
-    // Balance fetching method with date parameter
-    const fetchCurrentBalance = async (organizationId, date) => {
-        if (!organizationId || !date) {
-            setFetchedBalance(0);
-            return;
-        }
-
-        setBalanceLoading(true);
-        try {
-            const bearerToken = localStorage.getItem('token');
-            const response = await fetch(
-                `${APP_SERVER_URL_PREFIX}/expenses/current_balance?organizationId=${organizationId}&createdDate=${date}`,
-                {headers: {'Authorization': `Bearer ${bearerToken}`}}
-            );
-
-            if (response.ok) {
-                const balanceData = await response.json();
-                console.log('Balance API Response:', balanceData);
-
-                let balance = 0;
-
-                if (balanceData.totalBalance !== undefined && balanceData.totalBalance !== null) {
-                    balance = balanceData.totalBalance;
-                } else if (balanceData.cashInAmt !== undefined && balanceData.cashOutAmt !== undefined) {
-                    balance = (balanceData.cashInAmt || 0) - (balanceData.cashOutAmt || 0);
-                }
-
-                balance = Number(balance) || 0;
-
-                console.log('Calculated Balance:', balance);
-
-                setFetchedBalance(balance);
-            } else {
-                console.error('Balance API response not OK:', response.status);
-                const errorText = await response.text();
-                console.error('Error response:', errorText);
-                setFetchedBalance(0);
-            }
-        } catch (error) {
-            console.error('Error fetching balance:', error);
-            setFetchedBalance(0);
-        } finally {
-            setBalanceLoading(false);
-        }
-    };
-
-    const fetchLoans = async () => {
+    const fetchLoans = async (currentPage, pageSize) => {
         setLoading(true);
         setError('');
         try {
-            let url;
-            let orgId = null;
+            const organizationId = filterForm.getFieldValue('organizationId');
 
-            // Use different endpoints based on view mode
+
+            let data;
             if (viewMode === 'ALL') {
-                url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgIdAndStatus?page=${currentPage}&size=${pageSize}`;
+                data = await fetchHandLoans(currentPage - 1, pageSize, null, organizationId);
             } else if (viewMode === 'RECOVERED') {
-                // For recovered loans view, we show all CLOSED loans
-                url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgIdAndStatus?page=${currentPage}&size=${pageSize}&status=CLOSED`;
+                data = await fetchHandLoans(currentPage - 1, pageSize, ['CLOSED'], organizationId);
             } else {
-                url = `${APP_SERVER_URL_PREFIX}/handloans/getHandLoansByOrgIdAndStatus?page=${currentPage}&size=${pageSize}&status=ISSUED,PARTIALLY_RECOVERED`;
+                data = await fetchHandLoans(currentPage - 1, pageSize, ['ISSUED,PARTIALLY_RECOVERED'], organizationId);
             }
 
-            // 👇 If NOT admin → always use logged-in org
-            if (!enableOrgDropDown) {
-                orgId = localStorage.getItem("organizationId");
-            }
-            // 👇 If admin
-            else {
-                if (selectedOrgId) {
-                    orgId = selectedOrgId;
-                } else {
-                    orgId = null; // fetch ALL orgs
-                }
-            }
-            if (orgId) {
-                url += `&organizationId=${orgId}`;
-            }
+            const loansData = data.content || data._embedded?.handLoans || [];
 
-            const bearerToken = localStorage.getItem('token');
-            const response = await fetch(url, {
-                headers: {'Authorization': `Bearer ${bearerToken}`}
+            console.log('Processed loans data:', loansData);
+
+            const processedLoans = loansData.map((loan, index) => {
+                let id = loan.id || `temp-${index}-${Date.now()}`;
+
+                let processedOrg = organizations.find(org => org.id == loan.organizationId);
+
+                return {
+                    ...loan,
+                    id: id,
+                    organization: processedOrg,
+                    handLoanNumber: loan.handLoanNumber || `HL${String(loan.id || id).padStart(4, '0')}`,
+                    partyName: loan.partyName || 'Unknown',
+                    loanAmount: loan.loanAmount || 0,
+                    balanceAmount: loan.balanceAmount || loan.loanAmount || 0,
+                    createdDate: loan.createdDate,
+                    status: loan.status || 'ISSUED'
+                };
             });
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Loans API Response:', data);
 
-                let loansData = [];
-
-                if (data.content) {
-                    loansData = data.content;
-                } else if (data._embedded?.handLoans) {
-                    loansData = data._embedded.handLoans;
-                } else if (Array.isArray(data)) {
-                    loansData = data;
-                }
-
-                console.log('Processed loans data:', loansData);
-
-                const processedLoans = loansData.map((loan, index) => {
-                    let id = loan.id || `temp-${index}-${Date.now()}`;
-
-                    let processedOrg = loan.organization;
-                    if (processedOrg) {
-                        if (processedOrg._links?.self?.href) {
-                            const orgId = processedOrg._links.self.href.split('/').pop();
-                            processedOrg = {...processedOrg, id: orgId};
-                        } else if (!processedOrg.id && processedOrg.name) {
-                            const foundOrg = organizations.find(org => org.name === processedOrg.name);
-                            if (foundOrg) {
-                                processedOrg = {...processedOrg, id: foundOrg.id};
-                            }
-                        }
-                    }
-
-                    return {
-                        ...loan,
-                        id: id,
-                        organization: processedOrg,
-                        handLoanNumber: loan.handLoanNumber || `HL${String(loan.id || id).padStart(4, '0')}`,
-                        partyName: loan.partyName || 'Unknown',
-                        loanAmount: loan.loanAmount || 0,
-                        balanceAmount: loan.balanceAmount || loan.loanAmount || 0,
-                        createdDate: loan.createdDate || new Date().toISOString().split('T')[0],
-                        status: loan.status || 'ISSUED'
-                    };
-                });
-
-                setLoans(processedLoans);
-                setTotalPages(data.totalPages || 0);
-            } else {
-                const errorText = await response.text();
-                throw new Error(`Failed to fetch loans: ${response.status} ${response.statusText} - ${errorText}`);
-            }
+            setLoans(processedLoans);
+            setPagination(prev => ({
+                ...prev,
+                current: currentPage,
+                pageSize,
+                total: data.totalElements, // Total records from the API
+            }));
         } catch (err) {
-            console.error('Error loading loans:', err);
-            setError('Error loading loans: ' + err.message);
+            console.error('Failed to load loans:', err);
+            formUtils.showErrorNotification("Failed to load loans. Please try again later.");
         } finally {
             setLoading(false);
         }
@@ -323,11 +240,6 @@ const HandLoansListPage = () => {
         }
     };
 
-    const handleLoanSelect = (loan) => {
-        setSelectedLoan(loan);
-        // Reset recovered loans when selecting a new main loan
-        setRecoveredLoansForMainLoan([]);
-    };
 
     const handleViewLoanDetails = async (loan) => {
         setSelectedLoan(loan);
@@ -335,39 +247,32 @@ const HandLoansListPage = () => {
         setShowLoanDetails(true);
     };
 
-    const handleCreateLoan = () => {
-        setShowCreateForm(true);
-        setShowRecoverForm(false);
+
+    const handleRecoverLoan = (selectedLoan) => {
+        setSelectedLoan(selectedLoan);
+        setShowRecoverForm(true);
         setShowLoanDetails(false);
-        setSelectedLoan(null);
     };
 
-    const handleRecoverLoan = () => {
-        if (!selectedLoan) {
-            alert('Please select a loan to recover');
-            return;
-        }
-        setShowRecoverForm(true);
-        setShowCreateForm(false);
-        setShowLoanDetails(false);
-    };
 
     // Updated function to handle viewing recovered loans for selected main loan
-    const handleViewRecoveredLoans = async () => {
-        if (!selectedLoan) {
-            alert('Please select a main loan to view its recovered loans');
-            return;
-        }
+    const handleViewRecoveredLoans = async (selectedLoan) => {
 
         // Fetch recovered loans for the selected main loan
         await fetchRecoveredLoansByMainLoanId(selectedLoan.id);
         setViewMode('RECOVERED');
-        setCurrentPage(0);
+        setPagination(prev => ({
+            ...prev,
+            current: 1 // Total records from the API
+        }));
     };
 
     const handleViewModeChange = (mode) => {
         setViewMode(mode);
-        setCurrentPage(0);
+        setPagination(prev => ({
+            ...prev,
+            current: 1 // Total records from the API
+        }));
         setSelectedLoan(null);
         // Clear recovered loans when changing view mode
         if (mode !== 'RECOVERED') {
@@ -375,29 +280,12 @@ const HandLoansListPage = () => {
         }
     };
 
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
-    };
-
-    // Filter loans based on view mode and search term
-    const filteredLoans = useMemo(() => {
-        let filtered = loans;
-
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            filtered = filtered.filter(loan =>
-                loan.partyName?.toLowerCase().includes(term) ||
-                loan.handLoanNumber?.toLowerCase().includes(term) ||
-                loan.phoneNo?.includes(searchTerm) ||
-                loan.narration?.toLowerCase().includes(term)
-            );
-        }
-
-        return filtered;
-    }, [loans, searchTerm]);
-
     // Calculate summary statistics for current view
     const summaryStats = useMemo(() => {
+
+        // Filter users based on search term
+        const filteredLoans = FormUtils.searchListByFields(loans, ['partyName', 'handLoanNumber', 'phoneNo', 'narration'], searchTerm);
+
         const loansToCalculate = viewMode === 'RECOVERED' && recoveredLoansForMainLoan.length > 0
             ? recoveredLoansForMainLoan
             : filteredLoans;
@@ -414,37 +302,8 @@ const HandLoansListPage = () => {
             totalRecovered,
             recoveryRate: totalIssued > 0 ? (totalRecovered / totalIssued) * 100 : 0
         };
-    }, [filteredLoans, recoveredLoansForMainLoan, viewMode]);
+    }, [recoveredLoansForMainLoan, viewMode]);
 
-    const getStatusBadge = (loan) => {
-        const statusConfig = {
-            'ISSUED': {label: 'Issued', color: '#3b82f6', bgColor: '#dbeafe'},
-            'PARTIALLY_RECOVERED': {label: 'Partial Recovery', color: '#f59e0b', bgColor: '#fef3c7'},
-            'CLOSED': {label: 'Recovered', color: '#10b981', bgColor: '#d1fae5'}
-        };
-
-        const config = statusConfig[loan.status] || {label: loan.status, color: '#6b7280', bgColor: '#f3f4f6'};
-
-        return (
-            <span
-                className="status-badge"
-                style={{
-                    backgroundColor: config.bgColor,
-                    color: config.color,
-                    border: `1px solid ${config.color}`
-                }}
-            >
-        {config.label}
-      </span>
-        );
-    };
-
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR'
-        }).format(amount || 0);
-    };
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
@@ -459,42 +318,31 @@ const HandLoansListPage = () => {
         return `${day}-${month}-${year}`;
     };
 
-    useEffect(() => {
-        const fetchOrganizations = async () => {
-            try {
-                const bearerToken = localStorage.getItem("token");
-                const response = await fetch(`${APP_SERVER_URL_PREFIX}/organizations`, {
-                    headers: {Authorization: `Bearer ${bearerToken}`},
-                });
-                const data = await response.json();
-                const orgs = data._embedded ? data._embedded.organizations || [] : data;
-                setOrganizations(orgs);
-            } catch (error) {
-                console.error("Failed to fetch organizations:", error);
-            }
-        };
-        fetchOrganizations();
-    }, []);
+    const resetPagination = () => {
+        fetchLoans(1, pagination.pageSize);
+    }
 
 
-    const RecoveryProgressBar = ({loan}) => {
-        const recoveredAmount = (loan.loanAmount || 0) - (loan.balanceAmount || 0);
-        const percentage = loan.loanAmount > 0 ? (recoveredAmount / loan.loanAmount) * 100 : 0;
+    const handleValueChange = (changedValues, allValues) => {
+        if (changedValues.hasOwnProperty('organizationId')
+            || changedValues.hasOwnProperty('searchTerm')) {
+            resetPagination();
+        }
+    }
 
-        return (
-            <div className="recovery-progress">
-                <div className="progress-bar">
-                    <div
-                        className="progress-fill"
-                        style={{width: `${percentage}%`}}
-                    ></div>
-                </div>
-                <div className="progress-text">
-                    {percentage.toFixed(0)}%
-                </div>
-            </div>
-        );
-    };
+    let organizationOptions = [{
+        label: "All Branches",
+        value: null
+    }];
+
+    organizationOptions = organizationOptions.concat(organizations.map(item => ({
+        label: item.name,
+        value: item.id
+    })));
+
+    // Filter users based on search term
+    const filteredLoans = FormUtils.searchListByFields(loans, ['partyName', 'handLoanNumber', 'phoneNo', 'narration'], filterForm.getFieldValue('searchTerm'));
+
 
     return (
         <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
@@ -508,7 +356,7 @@ const HandLoansListPage = () => {
                     <div className={'page-actions'}>
                         <Button type={'primary'}
                                 size={'large'}
-                                onClick={handleCreateLoan}
+                                onClick={() => navigate('/pettycash/handloan/create')}
                                 icon={<PlusOutlined/>}>
                             New Loan
                         </Button>
@@ -553,120 +401,53 @@ const HandLoansListPage = () => {
                     </Card>
                 </div>
 
-                {/* Header Section */}
-                <div className="handloan-header">
-                    <div className="header-actions">
-                        <div className="action-buttons">
-                            {/* <button
-                className="btn-primary"
-                onClick={handleCreateLoan}
-                title="Create new hand loan"
-              >
-                <span className="btn-icon">+</span>
-                New Loan
-              </button> */}
-                            {selectedLoan?.status !== "RECOVERED" && (
-                                <button
-                                    className="btn-secondary"
-                                    onClick={handleRecoverLoan}
-                                    disabled={!selectedLoan || selectedLoan.status === "CLOSED"}
-                                    title={
-                                        !selectedLoan
-                                            ? "Select a loan to recover"
-                                            : selectedLoan.status === "CLOSED"
-                                                ? "Loan already recovered"
-                                                : "Recover selected loan"
-                                    }
-                                >
-                                    {/* <span className="btn-icon">💰</span> */}
-                                    Recover
-                                </button>
-                            )}
-                            <button
-                                className={`btn-secondary ${
-                                    viewMode === "RECOVERED" ? "active" : ""
-                                }`}
-                                style={{padding: "4px"}}
-                                onClick={handleViewRecoveredLoans}
-                                disabled={!selectedLoan}
-                                title={
-                                    !selectedLoan
-                                        ? "Select a main loan to view its recovered loans"
-                                        : `View recovered loans for ${selectedLoan.handLoanNumber}`
-                                }
-                            >
-                                {/* <span className="btn-icon">✅</span> */}
-                                {selectedLoan
-                                    ? `Recovered Loans for ${selectedLoan.handLoanNumber}`
-                                    : "Recovered Loans"}
-                            </button>
-                        </div>
-                        {<select
-                            value={
-                                enableOrgDropDown
-                                    ? selectedOrgId
-                                    : localStorage.getItem("organizationId")
-                            }
-                            onChange={handleOrganizationChange}
-                            className="filter-select"
-                            disabled={!enableOrgDropDown}
-                        >
-                            <option value="">All Branches</option>
-                            {organizations.map((org) => (
-                                <option
-                                    key={org.id || org._links?.self?.href}
-                                    value={org.id || org._links?.self?.href.split("/").pop()}
-                                >
-                                    {org.name}
-                                </option>
-                            ))}
+                <Form className="filter-form"
+                      form={filterForm}
+                      onValuesChange={handleValueChange}
+                      layout={'vertical'}>
 
-                        </select>}
-                        <div className="search-section">
-                            <div className="search-box">
-                                <input
-                                    type="text"
-                                    placeholder="Search loans..."
-                                    value={searchTerm}
-                                    onChange={handleSearch}
-                                    className="search-input"
-                                />
-                                {/* <span className="search-icon">🔍</span> */}
-                            </div>
-                        </div>
-                    </div>
+                    <Form.Item
+                        name="organizationId"
+                        label="Branch"
+                    >
+                        <Select
+                            style={{width: "100%"}}
+                            disabled={!isAdmin}
+                            placeholder={'Select branch'}
+                            options={organizationOptions}
+                        />
+                    </Form.Item>
 
-                    {/* View Mode Tabs */}
-                    <div className="view-mode-tabs">
-                        <button
-                            className={`tab-btn ${viewMode === "ISSUED" ? "active" : ""}`}
-                            onClick={() => handleViewModeChange("ISSUED")}
-                        >
-                            <span className="tab-icon">📋</span>
-                            Issued Loans
-                        </button>
-                        <button
-                            className={`tab-btn ${viewMode === "ALL" ? "active" : ""}`}
-                            onClick={() => handleViewModeChange("ALL")}
-                        >
-                            <span className="tab-icon">📊</span>
-                            All Loans
-                        </button>
-                    </div>
-                </div>
+                    <Form.Item
+                        name="searchTerm"
+                        label="Search"
+                    >
+                        <Input
+                            style={{width: "100%"}}
+                            placeholder={'Search by loan number or party name or phone number or narration'}
+                        />
+                    </Form.Item>
 
-                {/* Selection Info */}
-                {selectedLoan && (
-                    <SelectedLoanInfo
-                        loan={selectedLoan}
-                        onClear={() => {
-                            setSelectedLoan(null);
-                            setRecoveredLoansForMainLoan([]);
-                        }}
-                        onViewDetails={handleViewLoanDetails}
-                        formatCurrency={formatCurrency}
-                    />
-                )}
+                </Form>
+
+                <Segmented
+                    block
+                    options={[
+                        {label: 'Issued Loans', value: 'ISSUED', icon: <BarsOutlined/>},
+                        {label: 'All Loans', value: 'ALL', icon: <AppstoreOutlined/>},
+                    ]}
+                    value={viewMode}
+                    onChange={(value) => {
+                        handleViewModeChange(value)
+                    }}
+                    styles={{
+                        root: {
+                            border: '1px solid var(--ant-color-border)',
+                            marginBottom: '1rem'
+                        }
+                    }}
+                />
+
 
                 {/* Selected Loan Info for Recovered Loans View */}
                 {viewMode === "RECOVERED" && selectedLoan && (
@@ -707,19 +488,7 @@ const HandLoansListPage = () => {
                 )}
 
                 {/* Main Content */}
-                {showCreateForm ? (
-                    <CreateHandLoanForm
-                        organizations={organizations}
-                        fetchedBalance={fetchedBalance}
-                        onSuccess={() => {
-                            setShowCreateForm(false);
-                            fetchLoans();
-                        }}
-                        onCancel={() => setShowCreateForm(false)}
-                        onDateChange={fetchCurrentBalance}
-                        balanceLoading={balanceLoading}
-                    />
-                ) : showRecoverForm ? (
+                {showRecoverForm ? (
                     <RecoverHandLoanForm
                         loan={selectedLoan}
                         organizations={organizations}
@@ -739,119 +508,56 @@ const HandLoansListPage = () => {
                             setShowLoanDetails(false);
                             handleRecoverLoan();
                         }}
-                        formatCurrency={formatCurrency}
                         formatDate={formatDate}
                     />
                 ) : (
-                    <>
-                        <LoanDataTable
-                            loans={
-                                viewMode === "RECOVERED" && recoveredLoansForMainLoan.length > 0
-                                    ? recoveredLoansForMainLoan
-                                    : filteredLoans
-                            }
-                            loading={
-                                loading || (viewMode === "RECOVERED" && loadingRecoveredLoans)
-                            }
-                            selectedLoan={selectedLoan}
-                            onLoanSelect={handleLoanSelect}
-                            onViewDetails={handleViewLoanDetails}
-                            getStatusBadge={getStatusBadge}
-                            formatCurrency={formatCurrency}
-                            formatDate={formatDate}
-                            RecoveryProgressBar={RecoveryProgressBar}
-                            viewMode={viewMode}
-                            isRecoveredLoansView={
-                                viewMode === "RECOVERED" && recoveredLoansForMainLoan.length > 0
-                            }
-                            mainLoan={selectedLoan}
-                        />
-                        {viewMode !== "RECOVERED" && loans.length > 0 && (
-                            <div className="pagination-section">
-                                <div className="pagination-info">
-                                    Showing {loans.length} results • Page {currentPage + 1}
-                                </div>
-
-                                <div className="pagination-controls">
-                                    <button
-                                        className="btn-outline"
-                                        disabled={currentPage === 0}
-                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
-                                    >
-                                        ← Previous
-                                    </button>
-
-                                    <button
-                                        className="btn-outline"
-                                        disabled={currentPage + 1 >= totalPages}
-                                        onClick={() => setCurrentPage(prev => prev + 1)}
-                                    >
-                                        Next →
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </>
+                    <LoanDataTable
+                        pagination={pagination}
+                        handleViewRecoveredLoans={handleViewRecoveredLoans}
+                        handleRecoverLoan={handleRecoverLoan}
+                        modalFile={modalFile}
+                        setModalFile={setModalFile}
+                        fetchLoans={fetchLoans}
+                        navigate={navigate}
+                        loans={
+                            viewMode === "RECOVERED" && recoveredLoansForMainLoan.length > 0
+                                ? recoveredLoansForMainLoan
+                                : filteredLoans
+                        }
+                        loading={
+                            loading || (viewMode === "RECOVERED" && loadingRecoveredLoans)
+                        }
+                        onViewDetails={handleViewLoanDetails}
+                        formatDate={formatDate}
+                        viewMode={viewMode}
+                        isRecoveredLoansView={
+                            viewMode === "RECOVERED" && recoveredLoansForMainLoan.length > 0
+                        }
+                        mainLoan={selectedLoan}
+                    />
                 )}
             </div>
         </DefaultAppSidebarLayout>
     );
 };
 
-// Selected Loan Info Component
-const SelectedLoanInfo = ({loan, onClear, onViewDetails, formatCurrency}) => {
-    return (
-        <div className="selection-info">
-            {/* <div className="selected-loan-info">
-        <div className="loan-basic-info">
-          <strong>{loan.handLoanNumber}</strong>
-          <span>{loan.partyName}</span>
-          <span className="balance-amount">{formatCurrency(loan.balanceAmount)} pending</span>
-          {loan.status === 'CLOSED' && (
-            <span className="recovered-badge">Fully Recovered</span>
-          )}
-        </div>
-        <div className="selection-actions">
-          <button className="btn-outline" onClick={() => onViewDetails(loan)}>
-            View Details
-          </button>
-          <button className="btn-clear" onClick={onClear}>
-            ×
-          </button>
-        </div>
-      </div> */}
-        </div>
-    );
-};
 
 // Updated Loan Data Table Component
 const LoanDataTable = ({
                            loans,
                            loading,
-                           selectedLoan,
-                           onLoanSelect,
                            onViewDetails,
-                           getStatusBadge,
-                           formatCurrency,
                            formatDate,
-                           RecoveryProgressBar,
                            viewMode,
                            isRecoveredLoansView,
-                           mainLoan
+                           mainLoan,
+                           pagination,
+                           handleViewRecoveredLoans,
+                           handleRecoverLoan,
+                           modalFile,
+                           setModalFile,
+                           fetchLoans
                        }) => {
-    if (loading) {
-        return (
-            <div className="loading-state">
-                <div className="loading-spinner"></div>
-                <p>
-                    {isRecoveredLoansView
-                        ? `Loading recovered loans for ${mainLoan?.handLoanNumber}...`
-                        : 'Loading loans...'
-                    }
-                </p>
-            </div>
-        );
-    }
 
     // Show recovered loans in card view
     if (viewMode === 'RECOVERED' || isRecoveredLoansView) {
@@ -859,203 +565,171 @@ const LoanDataTable = ({
             <RecoveredLoansCardView
                 loans={loans}
                 onViewDetails={onViewDetails}
-                formatCurrency={formatCurrency}
                 formatDate={formatDate}
                 mainLoan={mainLoan}
             />
         );
     }
 
-    return (
-        <div className="modern-table1">
-            <div className="table-responsive">
-                <table className="modern-table">
-                    <thead>
-                    <tr>
-                        {viewMode !== "ALL" && <th className="select-col">Select</th>}
-                        <th className="loan-details-col">Loan Details</th>
-                        <th className="loan-details-col">Party Name</th>
-                        <th className="org-col">Organization</th>
-                        <th className="date-col">Date</th>
-                        <th className="amount-col">Amount</th>
-                        <th className="balance-col">Balance</th>
-                        {viewMode !== "ALL" && <th className="progress-col">Progress</th>}
-                        <th className="status-col">Status</th>
-                        <th className="actions-col">Receipt</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {loans.length === 0 ? (
-                        <tr>
-                            <td colSpan="9" className="no-data">
-                                <div className="no-data-content">
-                                    <div className="no-data-icon">💰</div>
-                                    <p>No {viewMode.toLowerCase()} loans found</p>
-                                    <p className="no-data-subtitle">
-                                        Try changing your filters or create a new loan
-                                    </p>
-                                </div>
-                            </td>
-                        </tr>
-                    ) : (
-                        loans.map((loan) => (
-                            <LoanTableRow
-                                key={loan.id}
-                                loan={loan}
-                                isSelected={selectedLoan?.id === loan.id}
-                                onSelect={onLoanSelect}
-                                onViewDetails={onViewDetails}
-                                getStatusBadge={getStatusBadge}
-                                formatCurrency={formatCurrency}
-                                formatDate={formatDate}
-                                RecoveryProgressBar={RecoveryProgressBar}
-                                viewMode={viewMode}
-                            />
-                        ))
-                    )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
-};
+    const handleTableChange = (pagination) => {
+        // This function is triggered when the user changes the page
+        fetchLoans(pagination.current, pagination.pageSize);
+    }
 
-const LoanTableRow = ({
-                          loan,
-                          isSelected,
-                          onSelect,
-                          onViewDetails,
-                          getStatusBadge,
-                          formatCurrency,
-                          formatDate,
-                          RecoveryProgressBar,
-                          viewMode
-                      }) => {
+    const columnConfig = [
+        {
+            title: 'Loan Details',
+            key: 'handLoanNumber',
+            render: (item) => {
+                return <>
+                    <Typography.Title
+                        style={{margin: 0}}
+                        level={5}>{item.handLoanNumber || `HL${String(item.id).padStart(4, '0')}`}</Typography.Title>
+                    {item.phoneNo && <Typography.Text style={{margin: 0}}
+                                                      type="secondary">{item.phoneNo}</Typography.Text>}
+                </>;
+            }
+        },
+        {
+            title: 'Branch',
+            dataIndex: 'organization',
+            key: 'organization',
+            render: (org) => org?.name || 'N/A'
+        },
+        {
+            title: 'Party Name',
+            dataIndex: 'partyName',
+            key: 'partyName',
+        },
+        {
+            title: 'Date',
+            dataIndex: 'createdDate',
+            key: 'createdDate',
+            render: (createdDate) => formatDate(createdDate)
+        },
+        {
+            title: 'Loan Amount',
+            dataIndex: 'loanAmount',
+            key: 'loanAmount',
+            render: (amount) => formatCurrency(amount)
+        },
+        {
+            title: 'Balance Amount',
+            dataIndex: 'balanceAmount',
+            key: 'balanceAmount',
+            render: (amount) => formatCurrency(amount)
+        },
+        {
+            title: 'Status',
+            key: 'status',
+            render: (item) => {
+                const statusConfig = {
+                    'ISSUED': {label: 'ISSUED', color: '#3b82f6'},
+                    'PARTIALLY_RECOVERED': {label: 'PARTIALLY RECOVERED', color: '#f59e0b'}
+                };
+                const config = statusConfig[item.status] || {
+                    label: item.status?.toUpperCase(),
+                    color: '#6b7280',
+                    bgColor: '#f3f4f6'
+                };
+                const {label, color} = config;
 
-    const [modalFile, setModalFile] = useState(null);
-    const isRecoveredLoan = loan.status === 'CLOSED';
-    const canSelect = !isRecoveredLoan && viewMode !== 'RECOVERED';
+                const recoveredAmount = (item.loanAmount || 0) - (item.balanceAmount || 0);
+                const percentage = item.loanAmount > 0 ? (recoveredAmount / item.loanAmount) * 100 : 0;
 
-    return (
-        <tr className={`loan-row ${isSelected ? 'selected' : ''} ${isRecoveredLoan ? 'recovered-loan' : ''}`}>
-            {viewMode !== "ALL" && (
-                <td className="select-col">
-                    <input
-                        type="radio"
-                        name="selectedLoan"
-                        checked={isSelected}
-                        onChange={() => onSelect(loan)}
-                        className="loan-radio"
-                        disabled={!canSelect}
-                    />
-                </td>
-            )}
-
-            <td className="loan-details-col">
-                <div className="loan-main-info">
-                    <div className="loan-number">{loan.handLoanNumber || `HL${String(loan.id).padStart(4, '0')}`}</div>
-                    {loan.phoneNo && <div className="party-phone">{loan.phoneNo}</div>}
-                    {/* {loan.narration && (
-            <div className="loan-narration" title={loan.narration}>
-              {loan.narration.length > 50 ? `${loan.narration.substring(0, 50)}...` : loan.narration}
-            </div>
-          )} */}
-                </div>
-            </td>
-            <td>
-                <div className="party-name">{loan.partyName}</div>
-            </td>
-            <td className="org-col">
-                <div className="org-name" title={loan.organization?.name}>
-                    {loan.organization?.name || 'N/A'}
-                </div>
-            </td>
-            <td className="date-col">
-                <div className="loan-date">
-                    {formatDate(loan.createdDate)}
-                </div>
-            </td>
-            <td className="amount-col">
-                <div className="loan-amount">
-                    {formatCurrency(loan.loanAmount)}
-                </div>
-            </td>
-            <td className="balance-col">
-                <div className={`balance-amount ${loan.balanceAmount > 0 ? 'pending' : 'paid'}`}>
-                    {formatCurrency(loan.balanceAmount)}
-                    {isRecoveredLoan && <div className="fully-paid-badge">Paid</div>}
-                </div>
-            </td>
-            {viewMode !== "ALL" && (
-                <td className="progress-col">
-                    <RecoveryProgressBar loan={loan}/>
-                </td>
-            )}
-            <td className="status-col">
-                {getStatusBadge(loan)}
-            </td>
-
-            <td className="actions-col">
-                {loan.hasImage ? (
-                    <button
-                        className="btn-view"
+                return (
+                    <><Tag color={color} key={item.status} variant={'solid'}>
+                        {label}
+                    </Tag>
+                        {viewMode === 'ISSUED' && <Progress
+                            percent={percentage?.toFixed(0)}
+                            size="small"/>}
+                    </>
+                );
+            },
+        },
+        {
+            title: 'Receipt',
+            dataIndex: 'hasImage',
+            key: 'hasImage',
+            render: (hasImage, item) => {
+                if (!hasImage) return "(No receipt)";
+                return (
+                    <Button
+                        size={'small'}
+                        icon={<EyeOutlined/>}
                         onClick={async () => {
-                            const res = await fetch(`${APP_SERVER_URL_PREFIX}/handloans/${loan.id}`, {
-                                headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
-                            });
-                            const json = await res.json();
+                            const json = await fetchHandLoan(item.id);
                             setModalFile(
                                 json.imageData || json.fileUrl || json.file
                             )
-                        }
-                        }
+                        }}
                     >
-                        👁️ View
-                    </button>) : (
-                    <span className="no-receipt">(No receipt)</span>
-                )}
-            </td>
-            {modalFile && (
-                <div className="modal-overlay" onClick={() => setModalFile(null)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Receipt Preview</h3>
-                            <button
-                                className="modal-close"
-                                onClick={() => setModalFile(null)}
-                            >
-                                ×
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            {modalFile.startsWith("data:image") ? (
-                                <img
-                                    src={modalFile}
-                                    alt="Expense Receipt"
-                                    className="receipt-image"
-                                />
-                            ) : (
-                                <img
-                                    src={`data:image/png;base64,${modalFile}`}
-                                    alt="Expense Receipt"
-                                    className="receipt-image"
-                                />
-                            )}
-                        </div>
-                        <div className="modal-footer">
-                            <button
-                                className="btn-primary"
-                                onClick={() => setModalFile(null)}
-                            >
-                                Close Preview
-                            </button>
-                        </div>
-                    </div>
+                        View
+                    </Button>
+                );
+            },
+        },
+        {
+            title: 'Actions',
+            key: 'operation',
+            width: 200,
+            hidden: viewMode === 'ALL',
+            render: (item) => {
+                return <div className={'action-buttons'}><Button aria-label='Recover'
+                                                                 variant={'solid'}
+                                                                 onClick={() => handleRecoverLoan(item)}
+                                                                 color={'primary'}>Recover</Button>
+                    <Button aria-label='Recover'
+                            icon={<EyeOutlined/>}
+                            onClick={() => handleViewRecoveredLoans(item)}
+                            color={'default'}>Recovered loans</Button>
                 </div>
-            )}
-        </tr>
+            },
+        }
+    ];
+
+
+    return (
+        <>
+            <Table
+                className={'list-page-table'}
+                size={'large'}
+                scroll={{ x: 'max-content' }}
+                dataSource={loans}
+                columns={columnConfig.filter(column => !column.hidden)}
+                onChange={handleTableChange}
+                pagination={{
+                    ...pagination,
+                    showTotal: FormUtils.listPaginationShowTotal,
+                    itemRender: FormUtils.listPaginationItemRender,
+                    showSizeChanger: true
+                }}
+                loading={loading}/>
+
+            <Modal
+                title="Receipt Preview"
+                centered
+                open={!!modalFile}
+                width={1000}
+                onCancel={() => setModalFile(null)}
+                footer={[
+                    <Button onClick={() => setModalFile(null)}>Close</Button>,
+                ]}
+            >
+                <img
+                    src={modalFile && modalFile.startsWith("data:image")
+                        ? modalFile
+                        : `data:image/png;base64,${modalFile}`
+                    }
+                    alt="Expense Receipt"
+                    className="list-preview-image"
+                />
+            </Modal>
+        </>
     );
 };
+
 const getLocalDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -1065,349 +739,6 @@ const getLocalDate = () => {
 };
 
 
-const CreateHandLoanForm = ({
-                                organizations,
-                                fetchedBalance,
-                                onSuccess,
-                                onCancel,
-                                onDateChange,
-                                balanceLoading
-                            }) => {
-
-    const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
-    const [selectedOrgId, setSelectedOrgId] = useState("");
-
-    const [form, setForm] = useState({
-        organizationId: enableOrgDropDown ? "" : localStorage.getItem("organizationId"),
-        partyName: "",
-        loanAmount: "",
-        phoneNo: "",
-        narration: "",
-        handLoanType: "ISSUE",
-        createdDate: getLocalDate(),
-        file: null
-    });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-
-
-    useEffect(() => {
-        onDateChange(form.organizationId, form.createdDate);
-    }, [form.organizationId, form.createdDate]);
-
-
-    const handleChange = (e) => {
-        const {name, value, files} = e.target;
-        setForm(prev => ({...prev, [name]: value}));
-
-        if (name === 'organizationId' && value && form.createdDate) {
-            // Fetch balance for selected organization and date
-            onDateChange(value, form.createdDate);
-        }
-
-        if (name === 'createdDate' && value && form.organizationId) {
-            // Fetch balance for selected date and organization
-            onDateChange(form.organizationId, value);
-        }
-
-        if (name === "file") {
-            const file = files[0];
-            setForm((f) => ({...f, file}));
-            return;
-        }
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-
-
-        if (!form.organizationId || !form.partyName || !form.loanAmount) {
-            setError('Please fill all required fields');
-            return;
-        }
-
-        const loanAmount = parseInt(form.loanAmount);
-        if (loanAmount <= 0) {
-            setError('Loan amount must be greater than 0');
-            return;
-        }
-
-        // Use fetched balance for validation
-        if (loanAmount > fetchedBalance) {
-            setError(`Loan amount exceeds available balance of ${formatCurrency(fetchedBalance)}`);
-            return;
-        }
-
-        setLoading(true);
-        try {
-            // FIXED: Remove status field from request data
-            const requestData = {
-                organizationId: parseInt(form.organizationId),
-                partyName: form.partyName,
-                loanAmount: loanAmount,
-                balanceAmount: loanAmount,
-                phoneNo: form.phoneNo || '',
-                narration: form.narration || '',
-                handLoanType: 'ISSUE',
-                createdDate: form.createdDate || new Date().toISOString()
-            };
-
-            const formData = new FormData();
-            formData.append(
-                "handloan",
-                new Blob([JSON.stringify(requestData)], {type: "application/json"})
-            );
-            if (form.file) formData.append("file", form.file);
-
-            const bearerToken = localStorage.getItem('token');
-            const response = await fetch(`${APP_SERVER_URL_PREFIX}/handloans`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${bearerToken}`
-                },
-                body: formData
-            });
-
-            if (response.ok) {
-                const createdLoan = await response.json();
-                console.log('Loan created successfully:', createdLoan);
-                onSuccess();
-            } else {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Failed to create loan');
-            }
-        } catch (err) {
-            setError(err.message || 'Failed to create loan');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const isAmountExceedingBalance = form.loanAmount > fetchedBalance;
-
-    const handleOrganizationChange = (e) => {
-        const {name, value} = e.target;
-        setForm(prev => ({...prev, [name]: value}));
-        setSelectedOrgId(value);
-    };
-
-    return (
-        <div className="form-container1">
-            <div className="form-header1">
-                <h2>Create New Loan</h2>
-                <button className="btn-close" onClick={onCancel}>
-                    ×
-                </button>
-            </div>
-
-            {/* Balance Information */}
-            <div className="balance-info-section">
-                <div className="balance-display">
-                    <div className="balance-label">
-                        Available Balance for Selected Organization & Date:
-                    </div>
-                    <div className="balance-amount-display">
-                        {balanceLoading ? (
-                            <div className="balance-loading">
-                                <div className="loading-spinner-small"></div>
-                                Calculating balance...
-                            </div>
-                        ) : (
-                            <div
-                                className={`balance-value ${
-                                    fetchedBalance <= 0 ? "zero-balance" : ""
-                                }`}
-                            >
-                                {formatCurrency(fetchedBalance)}
-                            </div>
-                        )}
-                    </div>
-                </div>
-                {fetchedBalance <= 0 && !balanceLoading && (
-                    <div className="">
-                        {/* ⚠️ No available balance. Please select a different organization or date. */}
-                    </div>
-                )}
-            </div>
-
-            {error && <div className="alert alert-error">{error}</div>}
-
-            <form onSubmit={handleSubmit}>
-                <div className="enhanced-grid1" style={{padding: "4px"}}>
-                    {/* Organization */}
-                    <div className="form-group">
-                        <label>Branch *</label>
-                        <select
-                            name="organizationId"
-                            value={
-                                enableOrgDropDown
-                                    ? form.organizationId
-                                    : localStorage.getItem("organizationId")
-                            }
-                            onChange={handleChange}
-                            className="filter-select"
-                            disabled={!enableOrgDropDown}
-                        >
-                            <option value="">All Branches</option>
-                            {organizations.map((org) => (
-                                <option
-                                    key={org.id || org._links?.self?.href}
-                                    value={org.id || org._links?.self?.href.split("/").pop()}
-                                >
-                                    {org.name}
-                                </option>
-                            ))}
-
-                        </select>
-                    </div>
-
-                    {/* Loan Date */}
-                    <div className="form-group">
-                        <label>Loan Date *</label>
-                        <input
-                            type="date"
-                            name="createdDate"
-                            value={form.createdDate}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-
-                    {/* Party Name */}
-                    <div className="form-group">
-                        <label>Party Name *</label>
-                        <input
-                            type="text"
-                            name="partyName"
-                            value={form.partyName}
-                            onChange={handleChange}
-                            placeholder="Enter party name"
-                            required
-                        />
-                    </div>
-
-                    {/* Loan Amount */}
-                    <div className="form-group">
-                        <label>Loan Amount (₹) *</label>
-                        <input
-                            type="number"
-                            name="loanAmount"
-                            value={form.loanAmount}
-                            onChange={handleChange}
-                            min="1"
-                            max={fetchedBalance}
-                            required
-                            className={isAmountExceedingBalance ? "error" : ""}
-                            disabled={fetchedBalance <= 0}
-                        />
-
-                        {isAmountExceedingBalance && (
-                            <div className="error-text">
-                                Exceeds available balance by{" "}
-                                {formatCurrency(form.loanAmount - fetchedBalance)}
-                            </div>
-                        )}
-
-                        {fetchedBalance > 0 && (
-                            <div className="input-hint">
-                                Maximum allowed: {formatCurrency(fetchedBalance)}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Phone */}
-                    <div className="form-group">
-                        <label>Phone Number</label>
-                        <input
-                            type="tel"
-                            name="phoneNo"
-                            value={form.phoneNo}
-                            onChange={handleChange}
-                            placeholder="Enter phone number"
-                        />
-                    </div>
-
-                    {/* Narration */}
-                    <div className="form-group full-width">
-                        <label>Narration</label>
-                        <textarea
-                            name="narration"
-                            value={form.narration}
-                            onChange={handleChange}
-                            rows="3"
-                            placeholder="Loan purpose or notes"
-                        />
-                    </div>
-
-                    {/* 🔗 FILE UPLOAD (NEW) */}
-                    <div className="form-group full-width">
-                        <label>Receipt Attachment</label>
-                        <input
-                            type="file"
-                            name="file"
-                            accept="image/*,.pdf,.doc,.docx,.xlsx"
-                            onChange={handleChange}
-                        />
-
-                        {form.file && (
-                            <div
-                                style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    fontSize: "12px",
-                                    marginTop: "4px",
-                                }}
-                            >
-                                <span>{form.file.name}</span>
-                                <button
-                                    type="button"
-                                    onClick={() => setForm((prev) => ({...prev, file: null}))}
-                                    style={{
-                                        border: "none",
-                                        background: "none",
-                                        cursor: "pointer",
-                                        fontSize: "14px",
-                                    }}
-                                    title="Remove file"
-                                >
-                                    ×
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Actions */}
-                <div
-                    className="form-actions1"
-                    style={{padding: "15px", margin: "0px 10px"}}
-                >
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        disabled={loading}
-                        className="btn-secondary"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        className="btn-primary"
-                        disabled={
-                            loading || isAmountExceedingBalance || fetchedBalance <= 0
-                        }
-                        title={fetchedBalance <= 0 ? "No available balance" : ""}
-                    >
-                        {loading ? "Creating..." : "💾 Save"}
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
-
-};
 
 // FIXED: Recover Hand Loan Form Component - Remove status field
 const RecoverHandLoanForm = ({loan, organizations, onSuccess, onCancel}) => {
@@ -1620,7 +951,7 @@ const RecoverHandLoanForm = ({loan, organizations, onSuccess, onCancel}) => {
 };
 
 // Updated Recovered Loans Card View Component
-const RecoveredLoansCardView = ({loans, onViewDetails, formatCurrency, formatDate, mainLoan}) => {
+const RecoveredLoansCardView = ({loans, onViewDetails, formatDate, mainLoan}) => {
     if (loans.length === 0) {
         return (
             <div className="no-data">
@@ -1658,7 +989,6 @@ const RecoveredLoansCardView = ({loans, onViewDetails, formatCurrency, formatDat
                         key={loan.id}
                         loan={loan}
                         onViewDetails={onViewDetails}
-                        formatCurrency={formatCurrency}
                         formatDate={formatDate}
                         mainLoan={mainLoan}
                     />
@@ -1669,7 +999,7 @@ const RecoveredLoansCardView = ({loans, onViewDetails, formatCurrency, formatDat
 };
 
 // Updated Individual Recovered Loan Card Component
-const RecoveredLoanCard = ({loan, onViewDetails, formatCurrency, formatDate, mainLoan}) => {
+const RecoveredLoanCard = ({loan, onViewDetails, formatDate, mainLoan}) => {
     const totalRecovered = (loan.loanAmount || 0) - (loan.balanceAmount || 0);
     const recoveryPercentage = loan.loanAmount > 0 ? (totalRecovered / loan.loanAmount) * 100 : 100;
 
@@ -1712,7 +1042,7 @@ const RecoveredLoanCard = ({loan, onViewDetails, formatCurrency, formatDate, mai
         <div className="progress-label">Progress</div>
         <div className="progress-container">
           <div className="progress-bar">
-            <div 
+            <div
               className="progress-fill recovered"
               style={{ width: `${recoveryPercentage}%` }}
             ></div>
@@ -1732,7 +1062,7 @@ const RecoveredLoanCard = ({loan, onViewDetails, formatCurrency, formatDate, mai
 };
 
 // Loan Details Modal Component
-const LoanDetailsModal = ({loan, recoveries, onClose, onRecover, formatCurrency, formatDate}) => {
+const LoanDetailsModal = ({loan, recoveries, onClose, onRecover, formatDate}) => {
     const [activeTab, setActiveTab] = useState('details');
 
     if (!loan) return null;
@@ -1872,12 +1202,3 @@ const LoanDetailsModal = ({loan, recoveries, onClose, onRecover, formatCurrency,
         </div>
     );
 };
-
-const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR'
-    }).format(amount || 0);
-};
-
-export default HandLoansListPage;

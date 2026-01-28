@@ -24,7 +24,7 @@
 
 .list-page .list-page-table {
     border-radius: 8px;
-    box-shadow: var(--elevate-1);
+    border: 1px solid var(--ant-color-border)
 }
 
 .list-page .list-page-table .ant-pagination-options {

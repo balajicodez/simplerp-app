@@ -1,10 +1,8 @@
-import React, {useState, useEffect} from "react";
-import "./pettyCashCreateExpense.css";
-import {useNavigate, useLocation} from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
 import {DATE_DISPLAY_FORMAT, DATE_SYSTEM_FORMAT} from "../../../constants.js";
 import Utils from '../../../Utils';
-import CameraCapture from '../../../_components/camera-capture/CameraCapture';
-import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
+import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {
     Alert,
@@ -14,11 +12,11 @@ import {
     DatePicker,
     Form,
     Input,
-    InputNumber, Modal,
+    InputNumber,
+    Modal,
     Row,
     Select,
     Spin,
-    Tag,
     Typography
 } from "antd";
 import {InboxOutlined, LeftOutlined} from "@ant-design/icons";
@@ -26,41 +24,29 @@ import FormUtils from "../../../_utils/FormUtils";
 import dayjs from "dayjs";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import Dragger from "antd/lib/upload/Dragger";
-import {fetchExpenseMasters} from "../expense-masters/ExpenseMastersDataSource";
-import {fetchCurrentBalance, postExpenseFormData} from "./ExpensesDataSource";
+import {postHomeLoanFormData} from "./HandLoansDataSource";
 import {getBase64} from "../../../_utils/datasource-utils";
+import {fetchCurrentBalance} from "../expenses/ExpensesDataSource";
 
 
 function ExpenseCreateFormPage() {
 
     const [antForm] = Form.useForm();
-    const [transactionDate, setTransactionDate] = useState(null);
     const [modalFile, setModalFile] = useState(null);
     const [organizations, setOrganizations] = useState([]);
-    const [subTypes, setSubTypes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [fetchedBalance, setFetchedBalance] = useState(0);
     const [balanceLoading, setBalanceLoading] = useState(false);
     const navigate = useNavigate();
-    const location = useLocation();
     const isAdmin = Utils.isRoleApplicable("ADMIN");
 
 
-    const params = new URLSearchParams(location.search);
-    const expenseType = params.get("type");
     const formUtils = new FormUtils(AntApp.useApp());
 
-    // Check if current balance section should be shown
-    const showCurrentBalanceSection = expenseType === "CASH-OUT";
 
+    const fetchCurrentBalanceData = async (organizationId, createdDate) => {
 
-    const fetchCurrentBalanceData = async (organizationId, expenseDate) => {
-
-        if (expenseType !== "CASH-OUT") {
-            return;
-        }
-
-        if (!organizationId || !expenseDate) {
+        if (!organizationId || !createdDate) {
             setFetchedBalance(0);
             return;
         }
@@ -68,7 +54,7 @@ function ExpenseCreateFormPage() {
         setBalanceLoading(true);
         try {
 
-            const balanceData = await fetchCurrentBalance(organizationId, expenseDate.format(DATE_SYSTEM_FORMAT));
+            const balanceData = await fetchCurrentBalance(organizationId, createdDate.format(DATE_SYSTEM_FORMAT));
             let balance = 0;
             if (balanceData.totalBalance != null) {
                 balance = balanceData.totalBalance;
@@ -101,28 +87,15 @@ function ExpenseCreateFormPage() {
         }
     };
 
-    const fetchExpenseMastersData = async () => {
-        try {
-            const data = await fetchExpenseMasters(0, 1000);
-            const subTypes = data._embedded ? data._embedded.expenseTypeMasters || [] : data;
-            setSubTypes(subTypes.filter((s) => s.type === expenseType));
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            formUtils.showErrorNotification("Failed to fetch organizations");
-        }
-    };
 
     useEffect(() => {
 
-        setTransactionDate(dayjs(new Date()));
-
         antForm.setFieldsValue({
             organizationId: !isAdmin ? parseInt(localStorage.getItem("organizationId")) : null,
-            gstapplicable: false
+            createdDate: dayjs(new Date())
         });
 
         fetchOrganizationsData();
-        fetchExpenseMastersData();
     }, []);
 
 
@@ -151,37 +124,33 @@ function ExpenseCreateFormPage() {
                     : localStorage.getItem("rememberedEmail") || "";
 
 
-
             const expensePayload = {
-                transactionDate: transactionDate.format(DATE_SYSTEM_FORMAT),
-                amount: Number(formValues.amount),
-                employeeId: formValues.employeeId ? Number(formValues.employeeId) : undefined,
-                expenseSubType: formValues.subtype,
-                expenseType: expenseType,
                 organizationId: formValues.organizationId,
-                gstapplicable: formValues.gstapplicable,
-                createdByUser,
-                createdByUserId,
-                createdDate: formValues.expenseDate.format(DATE_SYSTEM_FORMAT),
-                description: formValues.description,
+                partyName: formValues.partyName,
+                loanAmount: Number(formValues.loanAmount),
+                balanceAmount: Number(formValues.loanAmount),
+                phoneNo: formValues.phoneNo || '',
+                handLoanType: 'ISSUE',
+                createdDate: formValues.createdDate.format(DATE_SYSTEM_FORMAT),
+                narration: formValues.narration || '',
             }
 
             const formData = new FormData();
             formData.append(
-                "expense",
+                "handloan",
                 new Blob([JSON.stringify(expensePayload)], {type: "application/json"})
             );
             if (formValues.file && formValues.file.file) formData.append("file", formValues.file.file);
 
 
-            await postExpenseFormData(formData);
+            await postHomeLoanFormData(formData);
 
-            formUtils.showSuccessNotification('Created expense successfully');
+            formUtils.showSuccessNotification('Loan issued successfully');
             navigate(-1); // Redirect to previous page
 
         } catch (error) {
-            formUtils.showErrorNotification('Failed to create expense', error.message);
-            console.error('Error creating expense:', error);
+            formUtils.showErrorNotification('Failed to issue loan', error.message);
+            console.error('Error creating loan:', error);
         } finally {
             setLoading(false);
         }
@@ -189,11 +158,10 @@ function ExpenseCreateFormPage() {
 
     const handleValueChange = (changedValues, allValues) => {
         if (changedValues.hasOwnProperty('organizationId')
-            || changedValues.hasOwnProperty('expenseDate')) {
-            fetchCurrentBalanceData(allValues.organizationId, allValues.expenseDate);
+            || changedValues.hasOwnProperty('createdDate')) {
+            fetchCurrentBalanceData(allValues.organizationId, allValues.createdDate);
         }
     }
-
 
 
     const onFinishFailed = (errorInfo) => {
@@ -236,11 +204,7 @@ function ExpenseCreateFormPage() {
 
 
                                 <Typography.Title className='page-title' level={2}>
-                                    {(() => {
-                                        if (expenseType === PRETTY_CASE_TYPES.CASH_IN.value) return "Create Inward ";
-                                        else if (expenseType === PRETTY_CASE_TYPES.CASH_OUT.value) return "Create Outward ";
-                                        return "Create Expense";
-                                    })()}
+                                    Create Home Loan
                                 </Typography.Title>
                             </div>
 
@@ -253,8 +217,6 @@ function ExpenseCreateFormPage() {
 
                             <Typography.Title level={4} className="form-section-title">
                                 Details
-                                <Tag className={'title-tag'}>Transaction
-                                    date: {transactionDate?.format(DATE_DISPLAY_FORMAT)}</Tag>
                             </Typography.Title>
 
                             <Row gutter={24}>
@@ -275,8 +237,8 @@ function ExpenseCreateFormPage() {
 
                                 <Col span={12}>
                                     <Form.Item
-                                        name="expenseDate"
-                                        label="Expense Date"
+                                        name="createdDate"
+                                        label="Loan Date"
                                         rules={[{required: true, message: 'Please select expense date'}]}
                                     >
                                         <DatePicker
@@ -285,24 +247,48 @@ function ExpenseCreateFormPage() {
                                         />
                                     </Form.Item>
                                 </Col>
-                                {showCurrentBalanceSection && (
-                                    <Col span={24}>
-
-
-                                        <Spin spinning={balanceLoading} tip="Loading..." size={'small'}>
-                                            <Alert title={`Available Balance (Selected branch & date): ${fetchedBalance}`} className={'balance-alert'} type="info" showIcon />
-                                        </Spin>
-                                    </Col>
-                                )}
 
                                 <Col span={12}>
                                     <Form.Item
-                                        name="amount"
-                                        label="Amount"
+                                        name="partyName"
+                                        label="Party Name"
+                                        rules={[{required: true, message: 'Please provide party name'}]}
+                                    >
+                                        <Input
+                                            style={{width: "100%"}}
+                                        />
+                                    </Form.Item>
+                                </Col>
+
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="phoneNo"
+                                        label="Phone Number"
+                                    >
+                                        <Input
+                                            style={{width: "100%"}}
+                                        />
+                                    </Form.Item>
+                                </Col>
+
+                                <Col span={24}>
+
+
+                                    <Spin spinning={balanceLoading} tip="Loading..." size={'small'}>
+                                        <Alert title={`Available Balance (Selected branch & date): ${fetchedBalance}`}
+                                               className={'balance-alert'} type="info" showIcon/>
+                                    </Spin>
+                                </Col>
+
+
+                                <Col span={12}>
+                                    <Form.Item
+                                        name="loanAmount"
+                                        label="Loan Amount"
                                         rules={[{required: true, message: 'Please enter amount.'},
                                             {
                                                 validator: (_, value) =>
-                                                    (showCurrentBalanceSection && value && fetchedBalance < value)
+                                                    (value && fetchedBalance < value)
                                                         ? Promise.reject(new Error("Amount cannot exceed current balance"))
                                                         : Promise.resolve(),
                                             }]}
@@ -321,40 +307,6 @@ function ExpenseCreateFormPage() {
                                 <Col span={12}></Col>
 
 
-
-                                {subTypes.length > 0 && <Col span={12}>
-                                    <Form.Item
-                                        name={"subtype"}
-                                        label="Expense category"
-                                        rules={[{
-                                            required: true, message: 'Please select expense category.'
-                                        }]}
-                                    >
-                                        <Select
-                                            style={{width: "100%"}}
-                                            placeholder={'Select expense category'}
-                                            options={subTypes.map((sub) => ({value: sub.subtype, label: sub.subtype}))}
-                                        />
-                                    </Form.Item>
-                                </Col>}
-
-                                <Col span={12}>
-                                    <Form.Item
-                                        name={"gstapplicable"}
-                                        label="Book"
-                                        rules={[{required: true, message: 'Please select book.'}]}
-                                    >
-                                        <Select
-                                            style={{width: "100%"}}
-                                            placeholder={'Select book'}
-                                            options={[
-                                                {value: true, label: 'Yes'},
-                                                {value: false, label: 'No'}
-                                            ]}
-                                        />
-                                    </Form.Item>
-                                </Col>
-
                                 <Col span={24}>
                                     <Form.Item
                                         name={"file"}
@@ -366,7 +318,7 @@ function ExpenseCreateFormPage() {
                                             }}
                                             accept="image/*,.pdf,.doc,.docx,.xlsx"
                                             beforeUpload={(file) => {
-                                              //  antForm.setFieldsValue({file: file});
+                                                //  antForm.setFieldsValue({file: file});
                                                 return false;
                                             }}
                                         >
@@ -387,7 +339,7 @@ function ExpenseCreateFormPage() {
                                 <Col span={24}>
                                     <Form.Item
                                         rows="10"
-                                        name={"description"}
+                                        name={"narration"}
                                         label="Narration"
                                     >
                                         <Input.TextArea

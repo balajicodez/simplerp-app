@@ -100,12 +100,16 @@ function ExpensesInwardsListPage() {
         fetchData(pagination.current, pagination.pageSize);
     }
 
+    const resetPagination = () => {
+        fetchData(1, pagination.pageSize);
+    }
+
 
     const handleValueChange = (changedValues, allValues) => {
         if (changedValues.hasOwnProperty('organizationId')
             || changedValues.hasOwnProperty('fromDate')
             || changedValues.hasOwnProperty('toDate')) {
-            fetchData(1, pagination.pageSize);
+            resetPagination();
         }
     }
 
