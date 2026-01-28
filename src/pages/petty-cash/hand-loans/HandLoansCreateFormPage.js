@@ -29,9 +29,9 @@ import {getBase64} from "../../../_utils/datasource-utils";
 import {fetchCurrentBalance} from "../expenses/ExpensesDataSource";
 
 
-function ExpenseCreateFormPage() {
+export default function HandLoansCreateFormPage() {
 
-    const [antForm] = Form.useForm();
+    const [form] = Form.useForm();
     const [modalFile, setModalFile] = useState(null);
     const [organizations, setOrganizations] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -90,7 +90,7 @@ function ExpenseCreateFormPage() {
 
     useEffect(() => {
 
-        antForm.setFieldsValue({
+        form.setFieldsValue({
             organizationId: !isAdmin ? parseInt(localStorage.getItem("organizationId")) : null,
             createdDate: dayjs(new Date())
         });
@@ -102,7 +102,7 @@ function ExpenseCreateFormPage() {
     const handleAntSubmit = async (values) => {
         setLoading(true);
 
-        const formValues = antForm.getFieldsValue();
+        const formValues = form.getFieldsValue();
 
         try {
 
@@ -188,7 +188,7 @@ function ExpenseCreateFormPage() {
                 <Spin spinning={loading} tip="Loading..." size={'large'}>
 
                     <Form
-                        form={antForm}
+                        form={form}
                         noValidate={true}
                         onValuesChange={handleValueChange}
                         onFinish={handleAntSubmit}
@@ -403,5 +403,3 @@ function ExpenseCreateFormPage() {
         </DefaultAppSidebarLayout>
     );
 }
-
-export default ExpenseCreateFormPage;

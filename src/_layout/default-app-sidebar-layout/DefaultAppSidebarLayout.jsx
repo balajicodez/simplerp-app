@@ -123,7 +123,7 @@ function getSideBarMenu(userRoles = []) {
 export default function DefaultAppSidebarLayout({children, pageTitle}) {
 
     const [userName] = useState(localStorage.getItem('userName') || 'User');
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(localStorage.getItem('collapsed') === 'true');
 
     const navigate = useNavigate();
     const {session, logout} = useAuth();
@@ -137,13 +137,18 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
     const location = useLocation();
     const sidebarMenu = getSideBarMenu(session?.roles || []);
     const selectedItem = findItemByPath(sidebarMenu,location.pathname);
-    const allTopMenuKeys = sidebarMenu.map(item => item.key);
+    const allTopMenuKeys = collapsed ? [] : sidebarMenu.map(item => item.key);
+
+
+    function setLocalStorageCollapsed(collapsed) {
+        localStorage.setItem('collapsed', collapsed);
+        setCollapsed(collapsed);
+    }
 
 
     // collapsing sidebar on resize
     useEffect(() => {
-        const onResize = () => setCollapsed(window.innerWidth < 900);
-        onResize();
+        const onResize = () => setLocalStorageCollapsed(window.innerWidth < 1024);
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);
@@ -172,7 +177,7 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
                    collapsible
                    collapsed={collapsed}
 
-                   onCollapse={(value) => setCollapsed(value)}>
+                   onCollapse={(value) => setLocalStorageCollapsed(value)}>
                 <div className="sidebar-header">
 
 
@@ -231,11 +236,7 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
                         </Dropdown>
                     </div>
                 </Header>
-                <Content style={{
-                    padding: '2rem 3rem',
-                    overflow: 'auto',
-                    maxHeight: 'calc(100vh - 64px)',
-                }}>
+                <Content>
                     {children}
                 </Content>
             </Layout>

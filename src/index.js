@@ -36,7 +36,7 @@ import PermissionsFormPage from "./pages/user-administration/permissions/Permiss
 import ExpenseMastersListPage from "./pages/petty-cash/expense-masters/ExpenseMastersListPage";
 import ExpenseMasterFormPage from "./pages/petty-cash/expense-masters/ExpenseMasterFormPage";
 import NotFoundPage from "./pages/not-found/NotFoundPage";
-import HandLoansFormPage from "./pages/petty-cash/hand-loans/HandLoansFormPage";
+import HandLoansCreateFormPage from "./pages/petty-cash/hand-loans/HandLoansCreateFormPage";
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -72,7 +72,8 @@ root.render(
                             <Route path="/pettycash/expenses-inward" element={<ExpensesInwardsListPage/>}/>
 
                             <Route path="/pettycash/handloans" element={<HandLoansListPage/>}/>
-                            <Route path="/pettycash/handloan/create" element={<HandLoansFormPage/>}/>
+                            <Route path="/pettycash/handloan/create" element={<HandLoansCreateFormPage/>}/>
+
                             <Route
                                 path="/pettycash/expenses-outward"
                                 element={<ExpensesOutwardListPage/>}
