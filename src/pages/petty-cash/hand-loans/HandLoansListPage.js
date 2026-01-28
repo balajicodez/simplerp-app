@@ -34,10 +34,8 @@ export default function HandLoansListPage() {
     const [showLoanDetails, setShowLoanDetails] = useState(false);
     const [organizations, setOrganizations] = useState([]);
     const [loanRecoveries, setLoanRecoveries] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
     const [recoveredLoansForMainLoan, setRecoveredLoansForMainLoan] = useState([]);
     const [loadingRecoveredLoans, setLoadingRecoveredLoans] = useState(false);
-    const enableOrgDropDown = Utils.isRoleApplicable("ADMIN");
     const isAdmin = Utils.isRoleApplicable("ADMIN");
     const [selectedOrgId, setSelectedOrgId] = useState("");
     const navigate = useNavigate();
@@ -280,29 +278,7 @@ export default function HandLoansListPage() {
         }
     };
 
-    // Calculate summary statistics for current view
-    const summaryStats = useMemo(() => {
 
-        // Filter users based on search term
-        const filteredLoans = FormUtils.searchListByFields(loans, ['partyName', 'handLoanNumber', 'phoneNo', 'narration'], searchTerm);
-
-        const loansToCalculate = viewMode === 'RECOVERED' && recoveredLoansForMainLoan.length > 0
-            ? recoveredLoansForMainLoan
-            : filteredLoans;
-
-        const totalLoans = loansToCalculate.length;
-        const totalIssued = loansToCalculate.reduce((sum, loan) => sum + (loan.loanAmount || 0), 0);
-        const totalBalance = loansToCalculate.reduce((sum, loan) => sum + (loan.balanceAmount || 0), 0);
-        const totalRecovered = totalIssued - totalBalance;
-
-        return {
-            totalLoans,
-            totalIssued,
-            totalBalance,
-            totalRecovered,
-            recoveryRate: totalIssued > 0 ? (totalRecovered / totalIssued) * 100 : 0
-        };
-    }, [recoveredLoansForMainLoan, viewMode]);
 
 
     const formatDate = (dateString) => {
@@ -343,6 +319,27 @@ export default function HandLoansListPage() {
     // Filter users based on search term
     const filteredLoans = FormUtils.searchListByFields(loans, ['partyName', 'handLoanNumber', 'phoneNo', 'narration'], filterForm.getFieldValue('searchTerm'));
 
+
+    // Calculate summary statistics for current view
+    const summaryStats =(() => {
+
+         const loansToCalculate = viewMode === 'RECOVERED' && recoveredLoansForMainLoan.length > 0
+            ? recoveredLoansForMainLoan
+            : filteredLoans;
+
+        const totalLoans = loansToCalculate.length;
+        const totalIssued = loansToCalculate.reduce((sum, loan) => sum + (loan.loanAmount || 0), 0);
+        const totalBalance = loansToCalculate.reduce((sum, loan) => sum + (loan.balanceAmount || 0), 0);
+        const totalRecovered = totalIssued - totalBalance;
+
+        return {
+            totalLoans,
+            totalIssued,
+            totalBalance,
+            totalRecovered,
+            recoveryRate: totalIssued > 0 ? (totalRecovered / totalIssued) * 100 : 0
+        };
+    })();
 
     return (
         <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
