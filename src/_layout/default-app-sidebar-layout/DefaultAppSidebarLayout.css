@@ -54,6 +54,7 @@
 }
 
 .default-app-sidebar-layout {
+    background: var(--primary-90);
 }
 
 .default-app-sidebar-layout  .ant-layout-content {
@@ -70,7 +71,7 @@
 
 .default-app-sidebar-layout-header {
     display: flex;
-    background: #002140;
+    background: var(--primary);
     color: #fff;
 }
 
@@ -101,6 +102,10 @@
 
 .default-app-sidebar-layout-header .user-menu:hover {
     background: rgb(255 255 255 / 10%);
+}
+
+.default-app-sidebar-layout-header  .ant-avatar {
+    background: var(--secondary);
 }
 
 

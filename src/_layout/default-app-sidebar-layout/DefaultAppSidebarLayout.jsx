@@ -225,7 +225,7 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
                         <span>
                             <Space>
                                 <div className="user-menu">
-                                    <Avatar style={{backgroundColor: colorPrimary, verticalAlign: 'middle'}}
+                                    <Avatar style={{verticalAlign: 'middle'}}
                                             size="large">
                                         {getAvatarInitials(userName)}
                                     </Avatar>

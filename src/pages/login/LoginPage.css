@@ -14,7 +14,7 @@
 }
 
 .login-page .login-form-section {
-  background: var(--surface);
+  background: var(--primary-90);
   width: 50%;
   display: flex;
   align-items: center;

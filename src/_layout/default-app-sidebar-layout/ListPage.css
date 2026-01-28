@@ -23,7 +23,12 @@
 
 .list-page .list-page-table {
     border-radius: 8px;
-    border: 1px solid var(--ant-color-border)
+}
+
+.list-page .list-page-table .ant-table-pagination {
+    background: var(--ant-table-header-bg);
+    margin: 0;
+    padding: 1rem 0;
 }
 
 .list-page .list-page-table .ant-pagination-options {
