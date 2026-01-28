@@ -204,7 +204,7 @@ export default function HandLoansCreateFormPage() {
 
 
                                 <Typography.Title className='page-title' level={2}>
-                                    Create Home Loan
+                                    Create Hand Loan
                                 </Typography.Title>
                             </div>
 

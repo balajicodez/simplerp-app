@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import PageCard from "../../../components/PageCard";
 import "./CreateDayClosing.css";
 import { APP_SERVER_URL_PREFIX } from "../../../constants.js";
 import { DAY_CLOSING_WHATSAPP_NUMBERS_CSV } from "../../../constants.js";
@@ -9,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import Utils from "../../../Utils";
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
+import {Button, Spin, Typography} from "antd";
+import {LeftOutlined} from "@ant-design/icons";
 
 function CreateDayClosing() {
   const [description, setDescription] = useState("Day Closing");
@@ -1008,7 +1009,48 @@ function CreateDayClosing() {
   return (
       <DefaultAppSidebarLayout pageTitle={PRETTY_CASE_PAGE_TITLE}>
 
-      <PageCard title="Create Day Closing Report">
+        <div className="form-page">
+
+          <Button variant="filled"
+                  color={'default'}
+                  icon={<LeftOutlined/>}
+                  size={'large'}
+                  iconPlacement={'left'}
+                  onClick={() => {
+                    navigate(-1);
+                  }}>
+            Back
+          </Button>
+
+          <Spin spinning={loading} tip="Loading..." size={'large'}>
+
+            <div
+               // form={form}
+                noValidate={true}
+             //   onValuesChange={handleValueChange}
+             //   onFinish={handleAntSubmit}
+             //   onFinishFailed={onFinishFailed}
+                className="form-page"
+                encType="multipart/form-data"
+                layout="vertical">
+
+              <div className='form-page-header'>
+
+
+                <div className={'page-title-section'}>
+
+
+                  <Typography.Title className='page-title' level={2}>
+                    Create Day Closing Report
+                  </Typography.Title>
+                </div>
+
+
+                <div className={'page-actions'}></div>
+              </div>
+
+
+
         <form onSubmit={handleSubmit} className="day-closing-form">
           {/* Basic Information Section */}
           <div className="form-section1">
@@ -1354,7 +1396,9 @@ function CreateDayClosing() {
             </div>
           )}
         </form>
-      </PageCard>
+            </div>
+          </Spin>
+        </div>
       </DefaultAppSidebarLayout>
   );
 }

@@ -1,55 +1,5 @@
 /* EditExpense.css - Extraordinary Styles */
 
-/* Header Styles */
-.edit-expense-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  color: white;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.edit-expense-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.1) 100%);
-  pointer-events: none;
-}
-
-.edit-expense-header.inward-header {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.edit-expense-header.outward-header {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-}
-
-.edit-expense-header .header-content {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  position: relative;
-  z-index: 2;
-}
-
-.edit-expense-header .header-icon {
-  font-size: 1.5rem;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 20px;
-  border-radius: 20px;
-  backdrop-filter: blur(15px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  animation: float 3s ease-in-out infinite;
-}
-
-
 
 .header-text h1 {
   margin: 0 0 8px 0;
@@ -65,21 +15,6 @@
   font-weight: 500;
 }
 
-.expense-category {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.category-badge {
-  background: rgba(255, 255, 255, 0.3);
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
 
 .type-badge {
   padding: 6px 12px;
