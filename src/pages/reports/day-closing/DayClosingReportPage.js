@@ -5,7 +5,7 @@ import {DATE_DISPLAY_FORMAT} from "../../../constants.js";
 import Utils from '../../../Utils';
 import './DayClosingReportPage.css';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {App as AntApp, Button, Card, DatePicker, Form, Modal, Select, Typography} from "antd";
+import {Alert, App as AntApp, Button, DatePicker, Form, Modal, Select, Spin, Typography} from "antd";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
 import {safeToLocaleString} from './utils';
@@ -26,7 +26,6 @@ export default function DayClosingReportPage() {
   const [selectedOrganization, setSelectedOrganization] = useState(null);
   const [modalFile, setModalFile] = useState(null);
   const [error, setError] = useState("");
-  const [reportMsg, setReportMsg] = useState("");
 
   const [filterForm] = Form.useForm();
 
@@ -352,7 +351,7 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
         filteredExpenses.length === 0 &&
         filteredHandloans.length === 0
       ) {
-        setReportMsg("No records found");
+        setError("No records found");
         return;
       }
 
@@ -368,7 +367,7 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
 
 
       const orgAddressText = getOrganizationAddressText();
-  doc.setFontSize(13);  
+      doc.setFontSize(13);
       if (orgAddressText) {
         doc.text(orgAddressText, 105, 26, { align: "center" });
       }
@@ -506,7 +505,7 @@ const filteredHandloans = getIssuedAndPartialLoansByOrg();
           // ✅ TOTAL ROW
           [
             "TOTAL",
-            "",            
+            "",
             safeToLocaleString(totalLoanAmount),
             "",
             safeToLocaleString(totalRecoveredAmount),
@@ -673,7 +672,7 @@ if (coinsTotal > 0) {
       setPdfUrl(doc.output("bloburl"));
     } catch (e) {
       console.error("PDF generation error:", e);
-      setReportMsg("Failed to generate PDF");
+      formUtils.showErrorNotification("Failed to generate PDF");
     }
   };
 
@@ -918,15 +917,6 @@ if (coinsTotal > 0) {
       boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
     },
 
-    loadingContainer: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: "10px",
-      color: "#64748b",
-      fontSize: "16px",
-    },
-
     expensesSection: {
       marginTop: "12px",
       background: "white",
@@ -1104,25 +1094,13 @@ if (coinsTotal > 0) {
 
 
 
-        {reportMsg && (
-          <div
-            style={
-              reportMsg.includes("Failed")
-                ? styles.errorMessage
-                : styles.successMessage
-            }
-          >
-            {reportMsg.includes("Failed") ? "❌" : "✅"} {reportMsg}
-          </div>
-        )}
-        {error && <div style={styles.errorMessage}>❌ {error}</div>}
 
-        {loading ? (
-          <div style={styles.loadingContainer}>
-            <div>Loading day closing records, expenses, and handloans...</div>
-          </div>
-        ) : (
-          <>
+
+        {error &&
+            <Alert title={error} className={'roles-alert'} type="error" showIcon/>}
+
+
+        <Spin spinning={loading} tip="Loading day closing records, expenses, and handloans..." size={'large'}>
             <DayClosingSummaryCards reportData={records} />
 
             {/* Attachments Section */}
@@ -1645,15 +1623,15 @@ if (coinsTotal > 0) {
                             {loan.status}
                           </td>
                         </tr>
-                                                
+
                       ))}
                     </tbody>
                   </table>
                 </div>
               </div>
             )}
-          </>
-        )}
+        </Spin>
+
 
           <Modal
               title="Day Closing PDF Report"
