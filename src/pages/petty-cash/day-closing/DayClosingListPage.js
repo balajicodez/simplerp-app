@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
 import "./CreateDayClosing.css";
-import {APP_SERVER_URL_PREFIX, DATE_DISPLAY_FORMAT, DATE_SYSTEM_FORMAT} from "../../../constants.js";
-import {useNavigate, useSearchParams} from "react-router-dom";
+import {DATE_DISPLAY_FORMAT, DATE_SYSTEM_FORMAT} from "../../../constants.js";
+import {useNavigate} from "react-router-dom";
 import Utils from '../../../Utils';
-import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import {getExpenseColor, PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {App as AntApp, Button, DatePicker, Form, Select, Table, Tag, Tooltip, Typography} from "antd";
 import {EyeOutlined, PlusOutlined} from "@ant-design/icons";
@@ -78,14 +78,6 @@ function DayClosingListPage() {
     }, []);
 
 
-
-    const getExpenseTypeColor = (type) => {
-        return type === "CASH-IN" ? "#10b981" : "#ef4444";
-    };
-
-    const getExpenseTypeIcon = (type) => {
-        return type === "CASH-IN" ? "💰" : "💸";
-    };
 
     const handleTableChange = (pagination) => {
         // This function is triggered when the user changes the page
@@ -171,11 +163,9 @@ function DayClosingListPage() {
                             dataIndex: 'expenseType',
                             key: 'expenseType',
                             render: (expenseType) => {
-                                const color = getExpenseTypeColor(expenseType);
-                                const icon = getExpenseTypeIcon(expenseType);
                                 return (
-                                    <Tag color={color} key={expenseType} variant={'filled'}>
-                                        {icon} {expenseType}
+                                    <Tag color={getExpenseColor(expenseType)} key={expenseType} variant={'solid'}>
+                                        {expenseType}
                                     </Tag>
                                 );
                             },
@@ -193,27 +183,19 @@ function DayClosingListPage() {
                             title: 'Branch',
                             key: 'branchName',
                             render: (item) => {
-                                return (
-                                    <Tag color={'blue'} key={item.organization?.id} variant={'filled'}>
-                                        {organizations.find(
+                                return (organizations.find(
                                             (org) =>
                                                 String(org.id) ===
-                                                String(item.organizationId) ||
-                                                String(
-                                                    org._links?.self?.href.split("/").pop()
-                                                ) === String(item.organizationId)
-                                        )?.name || "N/A"}
-                                    </Tag>
-                                );
+                                                String(item.organizationId)
+                                        )?.name || "N/A");
                             },
                         },
                         {
                             title: 'Amount',
                             key: 'amount',
                             render: (item) => {
-                                const color = getExpenseTypeColor(item.expenseType);
                                 return (
-                                    <Tag variant={'filled'} color={color}>
+                                    <Tag variant={'filled'} color={getExpenseColor(item.expenseType)}>
                                         ₹{item.amount?.toFixed(2)}
                                     </Tag>
                                 )

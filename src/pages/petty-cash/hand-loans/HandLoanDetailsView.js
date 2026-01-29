@@ -1,22 +1,15 @@
 // Loan Details Modal Component
 import {Card, Descriptions, Empty, Tag, Typography} from "antd";
 import {DATE_DISPLAY_FORMAT} from "../../../constants";
-import {formatCurrency} from "../../../_utils/datasource-utils";
+import {formatCurrency} from "../../../_utils/CommonUtils";
 import React from "react";
+import {getHomeLoadStatus} from "./homeLoanUtils";
 
-const statusConfig = {
-    'ISSUED': {label: 'ISSUED', color: '#3b82f6'},
-    'PARTIALLY_RECOVERED': {label: 'PARTIALLY RECOVERED', color: '#f59e0b'}
-};
 
 
 export default function HandLoanDetailsView({loan, recoveredLoans}) {
 
-    const statusRecord = statusConfig[loan.status] || {
-        label: loan.status?.toUpperCase(),
-        color: '#6b7280',
-        bgColor: '#f3f4f6'
-    };
+    const statusRecord = getHomeLoadStatus(loan.status);
 
     // Calculate total recovered from all recovery transactions
     const totalRecovered = recoveredLoans.reduce((sum, recovery) => sum + (recovery.loanAmount || 0), 0);

@@ -30,14 +30,11 @@ import {AppstoreOutlined, BarsOutlined, EyeOutlined, PlusOutlined} from "@ant-de
 import FormUtils from "../../../_utils/FormUtils";
 import {fetchHandLoan, fetchHandLoans, fetchMainLoadByID, postHomeLoanFormData} from "./HandLoansDataSource";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
-import {formatCurrency} from "../../../_utils/datasource-utils";
+import {formatCurrency} from "../../../_utils/CommonUtils";
 import dayjs from "dayjs";
 import HandLoanDetailsView from "./HandLoanDetailsView";
+import {getHomeLoadStatus} from "./homeLoanUtils";
 
-const statusConfig = {
-    'ISSUED': {label: 'ISSUED', color: '#3b82f6'},
-    'PARTIALLY_RECOVERED': {label: 'PARTIALLY RECOVERED', color: '#f59e0b'}
-};
 
 export default function HandLoansListPage() {
     const [loans, setLoans] = useState([]);
@@ -295,18 +292,13 @@ export default function HandLoansListPage() {
             key: 'status',
             render: (item) => {
 
-                const config = statusConfig[item.status] || {
-                    label: item.status?.toUpperCase(),
-                    color: '#6b7280',
-                    bgColor: '#f3f4f6'
-                };
-                const {label, color} = config;
+                const statusRecord = getHomeLoadStatus(item.status);
                 const recoveredAmount = (item.loanAmount || 0) - (item.balanceAmount || 0);
                 const percentage = item.loanAmount > 0 ? (recoveredAmount / item.loanAmount) * 100 : 0;
 
                 return (
-                    <><Tag color={color} key={item.status} variant={'solid'}>
-                        {label}
+                    <><Tag color={statusRecord.color} key={item.status} variant={'solid'}>
+                        {statusRecord.label}
                     </Tag>
                         {filterForm.getFieldValue('viewMode') === 'ISSUED' && <Progress
                             percent={percentage?.toFixed(0)}

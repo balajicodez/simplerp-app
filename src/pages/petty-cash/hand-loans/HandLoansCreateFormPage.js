@@ -25,7 +25,7 @@ import dayjs from "dayjs";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import Dragger from "antd/lib/upload/Dragger";
 import {postHomeLoanFormData} from "./HandLoansDataSource";
-import {getBase64} from "../../../_utils/datasource-utils";
+import {getBase64} from "../../../_utils/CommonUtils";
 import {fetchCurrentBalance} from "../expenses/ExpensesDataSource";
 
 

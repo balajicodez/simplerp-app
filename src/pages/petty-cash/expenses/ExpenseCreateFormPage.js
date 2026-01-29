@@ -28,7 +28,7 @@ import {fetchOrganizations} from "../../user-administration/organizations/Organi
 import Dragger from "antd/lib/upload/Dragger";
 import {fetchExpenseMasters} from "../expense-masters/ExpenseMastersDataSource";
 import {fetchCurrentBalance, postExpenseFormData} from "./ExpensesDataSource";
-import {getBase64} from "../../../_utils/datasource-utils";
+import {getBase64} from "../../../_utils/CommonUtils";
 
 
 function ExpenseCreateFormPage() {
@@ -233,12 +233,10 @@ function ExpenseCreateFormPage() {
 
 
                             <div className={'page-title-section'}>
-
-
                                 <Typography.Title className='page-title' level={2}>
                                     {(() => {
-                                        if (expenseType === PRETTY_CASE_TYPES.CASH_IN.value) return "Create Inward ";
-                                        else if (expenseType === PRETTY_CASE_TYPES.CASH_OUT.value) return "Create Outward ";
+                                        if (expenseType === 'CASH-IN') return "Create Inward";
+                                        else if (expenseType === 'CASH-OUT') return "Create Outward";
                                         return "Create Expense";
                                     })()}
                                 </Typography.Title>

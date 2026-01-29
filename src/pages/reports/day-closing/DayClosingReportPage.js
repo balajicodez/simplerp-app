@@ -13,7 +13,9 @@ import {fetchAllHandLoans, fetchDayClosingData, fetchExpenseReportData} from "./
 import dayjs from "dayjs";
 import {EyeOutlined, FilePdfOutlined} from "@ant-design/icons";
 import DayClosingSummaryCardsSection from "./sections/DayClosingSummaryCardsSection";
-import {fetchWithAuth, formatCurrency} from "../../../_utils/datasource-utils";
+import {fetchWithAuth} from "../../../_utils/datasource-utils";
+import {formatCurrency} from '../../../_utils/CommonUtils';
+import {getHomeLoadStatus} from "../../petty-cash/hand-loans/homeLoanUtils";
 
 const tableCustomStyles = {
     header: {
@@ -26,11 +28,6 @@ const tableCustomStyles = {
             borderBottom: '1px solid rgba(255,255,255,0.08)',
         },
     }
-};
-
-const statusConfig = {
-    'ISSUED': {label: 'ISSUED', color: '#3b82f6'},
-    'PARTIALLY_RECOVERED': {label: 'PARTIALLY RECOVERED', color: '#f59e0b'}
 };
 
 
@@ -765,16 +762,10 @@ export default function DayClosingReportPage() {
                                         key: 'status',
                                         render: (item) => {
 
-                                            const config = statusConfig[item.status] || {
-                                                label: item.status?.toUpperCase(),
-                                                color: '#6b7280',
-                                                bgColor: '#f3f4f6'
-                                            };
-                                            const {label, color} = config;
-
+                                            const statusRecord = getHomeLoadStatus(item.status);
                                             return (
-                                                <Tag color={color} key={item.status} variant={'solid'}>
-                                                    {label}
+                                                <Tag color={statusRecord.color} key={item.status} variant={'solid'}>
+                                                    {statusRecord.label}
                                                 </Tag>
                                             );
                                         },

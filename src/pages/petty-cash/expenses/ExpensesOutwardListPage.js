@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate, useSearchParams} from 'react-router-dom';
 import Utils from '../../../Utils';
-import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import {getExpenseColor, PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {
     App as AntApp,
@@ -98,18 +98,7 @@ function ExpensesOutwardListPage() {
 
 
 
-    // Get expense type color
-    const getExpenseTypeColor = (type) => {
-        const typeColors = {
-            'SALARY': '#ef4444',
-            'OFFICE_SUPPLIES': '#f59e0b',
-            'TRAVEL': '#8b5cf6',
-            'UTILITIES': '#06b6d4',
-            'MAINTENANCE': '#84cc16',
-            'OTHER': '#6b7280'
-        };
-        return typeColors[type] || '#6b7280';
-    };
+
 
     const resetPagination = () => {
         fetchData(1, pagination.pageSize);
@@ -245,8 +234,9 @@ function ExpensesOutwardListPage() {
                             dataIndex: 'amount',
                             key: 'amount',
                             render: (item) => {
+                                const color = getExpenseColor('CASH-OUT');
                                 return (
-                                    <Tag variant={'filled'} color={'green'}>
+                                    <Tag variant={'filled'} color={color}>
                                         ₹{item.toFixed(2)}
                                     </Tag>
                                 )
@@ -254,13 +244,11 @@ function ExpensesOutwardListPage() {
                         },
                         {
                             title: 'Type',
-                            dataIndex: 'expenseSubType',
                             key: 'expenseSubType',
-                            render: (expenseSubType) => {
-                                const color = getExpenseTypeColor(expenseSubType);
+                            render: (item) => {
                                 return (
-                                    <Tag color={color} key={expenseSubType} variant={'filled'}>
-                                        {expenseSubType}
+                                    <Tag color={'grey'} key={item.expenseSubType} variant={'solid'}>
+                                        {item.expenseSubType}
                                     </Tag>
                                 );
                             },
