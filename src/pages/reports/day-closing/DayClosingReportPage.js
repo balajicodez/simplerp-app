@@ -5,18 +5,51 @@ import {DATE_DISPLAY_FORMAT} from "../../../constants.js";
 import Utils from '../../../Utils';
 import './DayClosingReportPage.css';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {Alert, App as AntApp, Button, DatePicker, Form, Modal, Select, Spin, Typography} from "antd";
+import {
+  Alert,
+  App as AntApp,
+  Button,
+  DatePicker,
+  Form,
+  Modal,
+  Progress,
+  Select,
+  Spin,
+  Table,
+  Tag,
+  Typography
+} from "antd";
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
-import {safeToLocaleString} from './utils';
+import {calculateDenominationAmount, convertDenominationsToRecords, safeToLocaleString} from './utils';
 import {
   fetchAllHandLoans,
   fetchDayClosingData,
   fetchExpenseReportData
 } from "./dayClosingReportApiService";
 import dayjs from "dayjs";
-import {FilePdfOutlined} from "@ant-design/icons";
-import DayClosingSummaryCards from "./DayClosingSummaryCards";
+import {EyeOutlined, FilePdfOutlined} from "@ant-design/icons";
+import DayClosingSummaryCardsSection from "./sections/DayClosingSummaryCardsSection";
+import {fetchWithAuth, formatCurrency} from "../../../_utils/datasource-utils";
+
+const tableCustomStyles = {
+  header: {
+    cell: {
+      fontWeight: 600,
+      fontSize: '0.95rem',
+      color: 'white',
+      padding: '12px 16px',
+      backgroundColor: 'var(--primary-10)',
+      borderBottom: '1px solid rgba(255,255,255,0.08)',
+    },
+  }
+};
+
+const statusConfig = {
+  'ISSUED': {label: 'ISSUED', color: '#3b82f6'},
+  'PARTIALLY RECOVERED': {label: 'PARTIALLY RECOVERED', color: '#f59e0b'}
+};
+
 
 export default function DayClosingReportPage() {
   const [records, setRecords] = useState([]);
@@ -234,20 +267,8 @@ export default function DayClosingReportPage() {
       const data = await fetchDayClosingData(orgId, closingDate);
       setRecords(data);
 
-      const bearerToken = localStorage.getItem("token");
-      const response2 = await fetch(
-        data._links.pettyCashDayClosingAttachment.href,
-        {
-          headers: { Authorization: `Bearer ${bearerToken}` },
-        }
-      );
-      if (!response2.ok) {
-        throw new Error("Failed to fetch data");
-      }
-      const attachmentData = await response2.json();
-      console.log("Attachments Data:", attachmentData);
-
-      attachmentData._embedded ? setAttachments(attachmentData._embedded.pettyCashDayClosingAttachments || []) : setAttachments(attachmentData || []);
+      const attachmentData = await fetchWithAuth(data._links.pettyCashDayClosingAttachment.href);
+      setAttachments(attachmentData._embedded ? attachmentData._embedded.pettyCashDayClosingAttachments || [] : attachmentData);
 
     } catch (err) {
       console.log(err);
@@ -261,7 +282,6 @@ export default function DayClosingReportPage() {
           openingBalance: 0,
         })
       );
-      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -276,13 +296,6 @@ const getOrganizationAddressText = () => {
 
   return [address, city, pincode].filter(Boolean).join(", ");
 };
-
-
-  const UI_HEIGHTS = {
-    EXPENSES_TABLE: "260px",
-    LOANS_TABLE: "300px",
-    DENOMINATION_TABLE: "250px",
-  };
 
   const ensurePageSpace = (doc, y, requiredSpace = 40) => {
     const pageHeight = doc.internal.pageSize.height;
@@ -728,16 +741,6 @@ if (coinsTotal > 0) {
   //   return total;
   // };
 
-  const calculateDenominationAmount = (
-    denominationValue,
-    goodCount,
-    soiledCount
-  ) => {
-    const good = Number(goodCount) || 0;
-    const soiled = Number(soiledCount) || 0;
-    const netNotes = good + soiled;
-    return netNotes * denominationValue;
-  };
 
   const calculateCoinsTotal = () => {
     return (
@@ -801,196 +804,6 @@ if (coinsTotal > 0) {
     return total;
   };
 
-  const styles = {
-
-
-
-
-    tableContainer: {
-      background: "white",
-      borderRadius: "12px",
-      overflow: "auto",
-      height: "200px",
-      marginBottom: "24px",
-      overflowY: "auto",
-    },
-    table: {
-      width: "100%",
-      borderCollapse: "collapse",
-    },
-    tableHeader: {
-      background: "#3c93c1",
-      color: "white",
-    },
-    tableHeaderCell: {
-      padding: "6px 8px",
-      textAlign: "left",
-      fontWeight: "600",
-      fontSize: "14px",
-      borderBottom: "2px solid #e2e8f0",
-    },
-    tableCell: {
-      padding: "14px 12px",
-      borderBottom: "1px solid #f1f5f9",
-      fontSize: "14px",
-    },
-    tableRow: {
-      transition: "background-color 0.2s ease",
-    },
-
-    notesSection: {
-      marginTop: "32px",
-    },
-    notesHeader: {
-      textAlign: "center",
-      color: "#1e3a8a",
-      marginBottom: "16px",
-      fontSize: "20px",
-      fontWeight: "600",
-    },
-    scrollableContainer: {
-      maxHeight: "500px",
-      overflow: "auto",
-      border: "1px solid #e2e8f0",
-      borderRadius: "12px",
-      background: "white",
-    },
-
-    successMessage: {
-      color: "#059669",
-      backgroundColor: "#f0fdf4",
-      padding: "12px 16px",
-      borderRadius: "8px",
-      border: "1px solid #bbf7d0",
-      marginBottom: "16px",
-      fontWeight: "500",
-    },
-    errorMessage: {
-      color: "#dc2626",
-      backgroundColor: "#fef2f2",
-      padding: "12px 16px",
-      borderRadius: "8px",
-      border: "1px solid #fecaca",
-      marginBottom: "16px",
-      fontWeight: "500",
-    },
-
-    pdfModal: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100vw",
-      height: "100vh",
-      background: "rgba(0,0,0,0.6)",
-      zIndex: 9999,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      backdropFilter: "blur(4px)",
-    },
-    pdfContainer: {
-      background: "#fff",
-      borderRadius: "12px",
-      boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
-      padding: "10px",
-      maxWidth: "90vw",
-      maxHeight: "90vh",
-      position: "relative",
-      border: "1px solid #e2e8f0",
-    },
-    closeButton: {
-      position: "absolute",
-      top: "-10px",
-      right: "-10px",
-      fontSize: "20px",
-      background: "#fff",
-      border: "none",
-      cursor: "pointer",
-      color: "#645c5c",
-      width: "30px",
-      height: "30px",
-      borderRadius: "50%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "#eef1f4",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-    },
-
-    expensesSection: {
-      marginTop: "12px",
-      background: "white",
-      borderRadius: "12px",
-      padding: "10px",
-      height: "350px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    },
-    expensesHeader: {
-      color: "#1e3a8a",
-      marginBottom: "10px",
-      fontSize: "18px",
-      fontWeight: "600",
-      textAlign: "center",
-    },
-
-    // New styles for denomination section
-    denominationSection: {
-      marginTop: "9px",
-      background: "white",
-      borderRadius: "12px",
-      padding: "15px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    },
-    denominationHeader: {
-      color: "#1e3a8a",
-      marginBottom: "15px",
-      fontSize: "18px",
-      fontWeight: "600",
-      textAlign: "center",
-    },
-
-    // New styles for loans section
-    loansSection: {
-      marginTop: "9px",
-      background: "white",
-      borderRadius: "12px",
-      padding: "15px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    },
-    loansHeader: {
-      color: "#1e3a8a",
-      marginBottom: "15px",
-      fontSize: "18px",
-      fontWeight: "600",
-      textAlign: "center",
-    },
-    loansSummary: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-      gap: "15px",
-      marginBottom: "15px",
-      padding: "10px",
-      backgroundColor: "#f8fafc",
-      borderRadius: "8px",
-      border: "1px solid #e2e8f0",
-    },
-    loansSummaryItem: {
-      textAlign: "center",
-      padding: "10px",
-    },
-    loansSummaryLabel: {
-      fontSize: "14px",
-      color: "#64748b",
-      fontWeight: "500",
-      marginBottom: "5px",
-    },
-    loansSummaryValue: {
-      fontSize: "18px",
-      fontWeight: "700",
-      color: "#1e3a8a",
-    },
-  };
-
   const selectedDate = filterForm.getFieldValue('closingDate')?.format("YYYY-MM-DD");
   const expensesForSelectedDate = getExpensesForDate(selectedDate);
   const handloansForSelectedDate = getHandloansForDate(selectedDate);
@@ -1036,6 +849,9 @@ if (coinsTotal > 0) {
 
     fetchReportData(closingDate, organizationId);
   }
+
+  const cashDenominationRecords = convertDenominationsToRecords(records);
+
 
   return (
       <DefaultAppSidebarLayout pageTitle={'Reports'}>
@@ -1092,542 +908,243 @@ if (coinsTotal > 0) {
             </Button>
           </Form>
 
-
-
-
-
         {error &&
             <Alert title={error} className={'roles-alert'} type="error" showIcon/>}
 
 
         <Spin spinning={loading} tip="Loading day closing records, expenses, and handloans..." size={'large'}>
-            <DayClosingSummaryCards reportData={records} />
+            <DayClosingSummaryCardsSection
+              openingBalance={records.openingBalance}
+              cashIn={records.cashIn}
+              cashOut={records.cashOut}
+              closingBalance={records.closingBalance}
+            />
 
             {/* Attachments Section */}
             {attachments.length > 0 && (
-              <div style={styles.attachmentsSection}>
-                <h4 style={{ color: "#059669", marginBottom: "10px" }}>
+              <div className={'report-section-container'}>
+                <Typography.Title level={4} className={'report-section-title'}>
                   Attachments
-                </h4>
-                <div
-                  style={{
-                    ...styles.tableContainer,
-                    width: "100%",
-                    height: "100%",
-                    overflowY: "auto",
-                  }}
-                >
-                  <table style={styles.table}>
-                    <thead style={styles.tableHeader}>
-                      <tr>
-                        <th style={styles.tableHeaderCell}>Description</th>
-                        <th style={styles.tableHeaderCell}>File</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {attachments.map((item, idx) => (
-                        <tr key={idx} style={styles.tableRow}>
-                          <td style={styles.tableCell}>
-                            {item.description || "General"}
-                          </td>
-                          <td style={styles.tableCell}>
-                            {item.imageData || item.fileUrl || item.file ? (
-                              <button
-                                className="btn-outline view-btn"
-                                onClick={() =>
-                                  setModalFile(
-                                    item.imageData || item.fileUrl || item.file
-                                  )
-                                }
-                              >
-                                👁️ View
-                              </button>
-                            ) : (
-                              <span className="no-receipt">(No receipt)</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                </Typography.Title>
+                <Table
+                    size={'large'}
+                    dataSource={attachments}
+                    styles={tableCustomStyles}
+                    columns={[
+                          {
+                            title: 'Description',
+                            dataIndex: 'description',
+                            key: 'description',
+                            render: (text) => <span>{text || 'General'}</span>,
+                          }, {
+                            title: 'File',
+                            key: 'fileUrl',
+                            render: (item) => {
+                              if (item.imageData || item.fileUrl || item.file)
+                                return <Button
+                                    icon={<EyeOutlined/>}
+                                    onClick={ () => {
+                                      setModalFile(
+                                          item.imageData || item.fileUrl || item.file
+                                      )
+                                    }}
+                                >
+                                  View
+                                </Button>;
+                              else  return "(No receipt)";
+                            }
+                      }]}
+                    pagination={false}>
+                </Table>
               </div>
             )}
 
             {/* Existing Expenses Section */}
             {(cashInExpenses.length > 0 || cashOutExpenses.length > 0) && (
-              <div style={styles.expensesSection}>
-                <div
-                  className="hide-scrollbar"
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    gap: "20px",
-                    width: "100%",
-                    height: "90%",
-                    overflowY: "auto",
-                  }}
-                >
-                  <div
-                    className="hide-scrollbar"
-                    style={{
-                      flex: 1,
-                      minWidth: "48%",
-                      height: "80%",
-                    }}
-                  >
-                    <h4 style={{ color: "#059669", marginBottom: "10px" }}>
+              <div className={'expenses-section'}>
+
+                  <div className={'report-section-container'}>
+                    <Typography.Title level={4} className={'report-section-title'}  style={{ color: "green"}}>
                       Cash In Expenses
-                    </h4>
-                    <div
-                      style={{
-                        ...styles.tableContainer,
-                        width: "100%",
-                        height: "100%",
-                        overflowY: "auto",
-                      }}
-                    >
-                      <table style={styles.table}>
-                        <thead style={styles.tableHeader}>
-                          <tr>
-                            <th style={styles.tableHeaderCell}>ID</th>
-                            <th style={styles.tableHeaderCell}>Amount</th>
-                            <th style={styles.tableHeaderCell}>Description</th>
-                            <th style={styles.tableHeaderCell}>Type</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {cashInExpenses.map((expense, idx) => (
-                            <tr key={idx} style={styles.tableRow}>
-                              <td style={styles.tableCell}>
-                                {expense.id || "N/A"}
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  color: "#059669",
-                                  fontWeight: "600",
-                                }}
-                              >
-                                {safeToLocaleString(expense.amount)}
-                              </td>
-                              <td style={styles.tableCell}>
-                                {expense.description || "General"}
-                              </td>
-                              <td style={styles.tableCell}>
-                                {expense.expenseSubType || "CASH-IN"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    </Typography.Title>
+
+                    <Table
+                        size={'large'}
+                        dataSource={cashInExpenses}
+                        styles={tableCustomStyles}
+                        columns={[
+                          {
+                            title: 'Amount',
+                            dataIndex: 'amount',
+                            key: 'amount',
+                            render: (amount) => <span style={{color: "green"}}>{formatCurrency(amount)}</span>,
+                          },
+                          {
+                            title: 'Description',
+                            dataIndex: 'description',
+                            key: 'description',
+                            render: (text) => <span>{text || 'General'}</span>,
+                          }, {
+                            title: 'Type',
+                            dataIndex: 'expenseSubType',
+                            key: 'expenseSubType',
+                            render: (text) => <span>{text || 'CASH-IN'}</span>,
+                          }]}
+                        pagination={false}>
+                    </Table>
                   </div>
-                  <div
-                    style={{
-                      flex: 1,
-                      minWidth: "48%",
-                    }}
-                  >
-                    <h4 style={{ color: "#dc2626", marginBottom: "10px" }}>
+                  <div className={'report-section-container'}>
+                    <Typography.Title level={4} className={'report-section-title'}  style={{ color: "red"}}>
                       Cash Out Expenses
-                    </h4>
-                    <div
-                      style={{
-                        ...styles.tableContainer,
-                        width: "100%",
-                        height: "80%",
-                      }}
-                    >
-                      <table style={styles.table}>
-                        <thead style={styles.tableHeader}>
-                          <tr>
-                            <th style={styles.tableHeaderCell}>ID</th>
-                            <th style={styles.tableHeaderCell}>Amount</th>
-                            <th style={styles.tableHeaderCell}>Description</th>
-                            <th style={styles.tableHeaderCell}>Type</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {cashOutExpenses.map((expense, idx) => (
-                            <tr key={idx} style={styles.tableRow}>
-                              <td style={styles.tableCell}>
-                                {expense.id || "N/A"}
-                              </td>
-                              <td
-                                style={{
-                                  ...styles.tableCell,
-                                  color: "#dc2626",
-                                  fontWeight: "600",
-                                }}
-                              >
-                                {safeToLocaleString(expense.amount)}
-                              </td>
-                              <td style={styles.tableCell}>
-                                {expense.description || "General"}
-                              </td>
-                              <td style={styles.tableCell}>
-                                {expense.expenseSubType || "CASH-OUT"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    </Typography.Title>
+                    <Table
+                        size={'large'}
+                        dataSource={cashOutExpenses}
+                        styles={tableCustomStyles}
+                        scroll={{x: 'max-content', y: 55 * 5}}
+                        columns={[
+                          {
+                            title: 'Amount',
+                            dataIndex: 'amount',
+                            key: 'amount',
+                            render: (amount) => <span style={{color: "red"}}>{formatCurrency(amount)}</span>,
+                          },
+                          {
+                            title: 'Description',
+                            dataIndex: 'description',
+                            key: 'description',
+                            render: (text) => <span>{text || 'General'}</span>,
+                          }, {
+                            title: 'Type',
+                            dataIndex: 'expenseSubType',
+                            key: 'expenseSubType',
+                            render: (text) => <span>{text || 'CASH-OUT'}</span>,
+                          }]}
+                        pagination={false}>
+                    </Table>
                   </div>
-                </div>
               </div>
             )}
-            {(records._500NoteCount > 0 ||
-              records._200NoteCount > 0 ||
-              records._100NoteCount > 0 ||
-              records._50NoteCount > 0 ||
-              records._20NoteCount > 0 ||
-              records._10NoteCount > 0 ||
-              records._1CoinCount > 0 ||
-              records._5CoinCount > 0 ||
-              records._10CoinCount > 0 ||
-              records._20CoinCount > 0) && (
-              <div style={styles.denominationSection}>
-                <h4 style={styles.denominationHeader}>
-                  Cash Denomination Summary
-                </h4>
+            {(cashDenominationRecords.length > 0) && (
+                <div className={'report-section-container'}>
+                  <Typography.Title level={4} className={'report-section-title'} >
+                    Cash Denomination Summary
+                  </Typography.Title>
 
-                <div
-                  style={{
-                    ...styles.tableContainer,
-                    height: UI_HEIGHTS.DENOMINATION_TABLE,
-                    overflowY: "auto",
-                  }}
-                >
-                  <table style={styles.table}>
-                    <thead style={styles.tableHeader}>
-                      <tr>
-                        <th style={styles.tableHeaderCell}>Denomination</th>
-                        <th style={styles.tableHeaderCell}>Good Notes</th>
-                        <th style={styles.tableHeaderCell}>Soiled Notes</th>
-                        <th style={styles.tableHeaderCell}>Amount</th>
-                      </tr>
-                    </thead>
+                  <Table
+                      size={'large'}
+                      dataSource={cashDenominationRecords}
+                      styles={tableCustomStyles}
+                      scroll={{x: 'max-content', y: 55 * 5}}
+                      columns={[
+                        {
+                          title: 'Denomination',
+                          key: 'denomination',
+                          dataIndex: 'denomination',
+                        },
+                        {
+                          title: 'Good Notes',
+                          dataIndex: 'goodNotes',
+                          key: 'goodNotes'
+                        }, {
+                          title: 'Soiled Notes',
+                          dataIndex: 'soiledNotes',
+                          key: 'soiledNotes',
+                        }, {
+                          title: 'Amount',
+                          dataIndex: 'amount',
+                          key: 'amount',
+                          render: (amount) => formatCurrency(amount),
+                        }]}
+                      pagination={false}
+                      summary={(pageData) => {
+                        let totalAmout = 0;
+                        pageData.forEach(({ amount }) => {
+                          totalAmout += amount;
+                        });
+                        return (
+                            <>
+                              <Table.Summary.Row>
+                                <Table.Summary.Cell index={0} colSpan={3}>
+                                  <Typography.Title level={5}>Total</Typography.Title>
+                                </Table.Summary.Cell>
+                                <Table.Summary.Cell index={1}>
+                                  <Typography.Text bold type="success">{formatCurrency(totalAmout)}</Typography.Text>
+                                </Table.Summary.Cell>
+                              </Table.Summary.Row>
+                            </>
+                        );
+                      }}
 
-                    <tbody>
-                      {/* 500 Notes */}
-                      {(records._500NoteCount > 0 ||
-                        records._500SoiledNoteCount > 0) && (
-                        <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>₹ 500</td>
-                          <td style={styles.tableCell}>
-                            {records._500NoteCount || 0}
-                          </td>
-                          <td style={styles.tableCell}>
-                            {records._500SoiledNoteCount || 0}
-                          </td>
-                          <td
-                            style={{ ...styles.tableCell, fontWeight: "600" }}
-                          >
-                            ₹{" "}
-                            {safeToLocaleString(
-                              calculateDenominationAmount(
-                                500,
-                                records._500NoteCount,
-                                records._500SoiledNoteCount
-                              )
-                            )}
-                          </td>
-                        </tr>
-                      )}
+                  >
+                  </Table>
 
-                      {/* 200 Notes */}
-                      {(records._200NoteCount > 0 ||
-                        records._200SoiledNoteCount > 0) && (
-                        <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>₹ 200</td>
-                          <td style={styles.tableCell}>
-                            {records._200NoteCount || 0}
-                          </td>
-                          <td style={styles.tableCell}>
-                            {records._200SoiledNoteCount || 0}
-                          </td>
-                          <td
-                            style={{ ...styles.tableCell, fontWeight: "600" }}
-                          >
-                            ₹{" "}
-                            {safeToLocaleString(
-                              calculateDenominationAmount(
-                                200,
-                                records._200NoteCount,
-                                records._200SoiledNoteCount
-                              )
-                            )}
-                          </td>
-                        </tr>
-                      )}
 
-                      {/* 100 Notes */}
-                      {(records._100NoteCount > 0 ||
-                        records._100SoiledNoteCount > 0) && (
-                        <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>₹ 100</td>
-                          <td style={styles.tableCell}>
-                            {records._100NoteCount || 0}
-                          </td>
-                          <td style={styles.tableCell}>
-                            {records._100SoiledNoteCount || 0}
-                          </td>
-                          <td
-                            style={{ ...styles.tableCell, fontWeight: "600" }}
-                          >
-                            ₹{" "}
-                            {safeToLocaleString(
-                              calculateDenominationAmount(
-                                100,
-                                records._100NoteCount,
-                                records._100SoiledNoteCount
-                              )
-                            )}
-                          </td>
-                        </tr>
-                      )}
 
-                      {/* 50 Notes */}
-                      {(records._50NoteCount > 0 ||
-                        records._50SoiledNoteCount > 0) && (
-                        <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>₹ 50</td>
-                          <td style={styles.tableCell}>
-                            {records._50NoteCount || 0}
-                          </td>
-                          <td style={styles.tableCell}>
-                            {records._50SoiledNoteCount || 0}
-                          </td>
-                          <td
-                            style={{ ...styles.tableCell, fontWeight: "600" }}
-                          >
-                            ₹{" "}
-                            {safeToLocaleString(
-                              calculateDenominationAmount(
-                                50,
-                                records._50NoteCount,
-                                records._50SoiledNoteCount
-                              )
-                            )}
-                          </td>
-                        </tr>
-                      )}
-
-                      {/* 20 Notes */}
-                      {(records._20NoteCount > 0 ||
-                        records._20SoiledNoteCount > 0) && (
-                        <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>₹ 20</td>
-                          <td style={styles.tableCell}>
-                            {records._20NoteCount || 0}
-                          </td>
-                          <td style={styles.tableCell}>
-                            {records._20SoiledNoteCount || 0}
-                          </td>
-                          <td
-                            style={{ ...styles.tableCell, fontWeight: "600" }}
-                          >
-                            ₹{" "}
-                            {safeToLocaleString(
-                              calculateDenominationAmount(
-                                20,
-                                records._20NoteCount,
-                                records._20SoiledNoteCount
-                              )
-                            )}
-                          </td>
-                        </tr>
-                      )}
-
-                      {/* 10 Notes */}
-                      {(records._10NoteCount > 0 ||
-                        records._10SoiledNoteCount > 0) && (
-                        <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>₹ 10</td>
-                          <td style={styles.tableCell}>
-                            {records._10NoteCount || 0}
-                          </td>
-                          <td style={styles.tableCell}>
-                            {records._10SoiledNoteCount || 0}
-                          </td>
-                          <td
-                            style={{ ...styles.tableCell, fontWeight: "600" }}
-                          >
-                            ₹{" "}
-                            {safeToLocaleString(
-                              calculateDenominationAmount(
-                                10,
-                                records._10NoteCount,
-                                records._10SoiledNoteCount
-                              )
-                            )}
-                          </td>
-                        </tr>
-                      )}
-
-                      {/* Coins - INDIVIDUAL ROWS for clarity */}
-                      {records._1CoinCount > 0 && (
-                        <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>₹ 1 (Coin)</td>
-                          <td style={styles.tableCell}>
-                            {records._1CoinCount}
-                          </td>
-                          <td style={styles.tableCell}>-</td>
-                          <td
-                            style={{ ...styles.tableCell, fontWeight: "600" }}
-                          >
-                            ₹{" "}
-                            {safeToLocaleString((records._1CoinCount || 0) * 1)}
-                          </td>
-                        </tr>
-                      )}
-
-                      {records._5CoinCount > 0 && (
-                        <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>₹ 5 (Coin)</td>
-                          <td style={styles.tableCell}>
-                            {records._5CoinCount}
-                          </td>
-                          <td style={styles.tableCell}>-</td>
-                          <td
-                            style={{ ...styles.tableCell, fontWeight: "600" }}
-                          >
-                            ₹{" "}
-                            {safeToLocaleString((records._5CoinCount || 0) * 5)}
-                          </td>
-                        </tr>
-                      )}
-
-                      {records._10CoinCount > 0 && (
-                        <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>₹ 10 (Coin)</td>
-                          <td style={styles.tableCell}>
-                            {records._10CoinCount}
-                          </td>
-                          <td style={styles.tableCell}>-</td>
-                          <td
-                            style={{ ...styles.tableCell, fontWeight: "600" }}
-                          >
-                            ₹{" "}
-                            {safeToLocaleString(
-                              (records._10CoinCount || 0) * 10
-                            )}
-                          </td>
-                        </tr>
-                      )}
-
-                      {records._20CoinCount > 0 && (
-                        <tr style={styles.tableRow}>
-                          <td style={styles.tableCell}>₹ 20 (Coin)</td>
-                          <td style={styles.tableCell}>
-                            {records._20CoinCount}
-                          </td>
-                          <td style={styles.tableCell}>-</td>
-                          <td
-                            style={{ ...styles.tableCell, fontWeight: "600" }}
-                          >
-                            ₹{" "}
-                            {safeToLocaleString(
-                              (records._20CoinCount || 0) * 20
-                            )}
-                          </td>
-                        </tr>
-                      )}
-
-                      {/* TOTAL */}
-                      <tr
-                        style={{
-                          ...styles.tableRow,
-                          backgroundColor: "#f8fafc",
-                        }}
-                      >
-                        <td
-                          colSpan="3"
-                          style={{ ...styles.tableCell, fontWeight: "700" }}
-                        >
-                          TOTAL
-                        </td>
-                        <td
-                          style={{
-                            ...styles.tableCell,
-                            fontWeight: "700",
-                            color: "#059669",
-                          }}
-                        >
-                          ₹ {safeToLocaleString(calculateDenominationTotal())}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
               </div>
             )}
             {/* Hand Loans Section */}
             {allHandloansWithBalances.length > 0 && (
-              <div style={styles.loansSection}>
-                <h4 style={styles.loansHeader}>Hand Loans Details</h4>
+              <div className={'report-section-container'}>
+                <Typography.Title level={4} className={'report-section-title'}>
+                  Hand Loans Details
+                </Typography.Title>
 
-                <div
-                  style={{
-                    ...styles.tableContainer,
-                    height: UI_HEIGHTS.LOANS_TABLE,
-                    overflowY: "auto",
-                  }}
-                >
-                  <table style={styles.table}>
-                    <thead style={styles.tableHeader}>
-                      <tr>
-                        <th style={styles.tableHeaderCell}>Loan No</th>
-                        <th style={styles.tableHeaderCell}>Party</th>
-                        <th style={styles.tableHeaderCell}>Loan Amount</th>
-                        <th style={styles.tableHeaderCell}>Narration</th>
-                        <th style={styles.tableHeaderCell}>Recovered</th>
-                        <th style={styles.tableHeaderCell}>Balance</th>
-                        <th style={styles.tableHeaderCell}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allHandloansWithBalances.map((loan, idx) => (
-                        <tr key={idx} style={styles.tableRow}>
-                          <td style={styles.tableCell}>
-                            {loan.handLoanNumber}
-                          </td>
-                          <td style={styles.tableCell}>{loan.partyName}</td>
-                          <td style={styles.tableCell}>
-                            {safeToLocaleString(loan.loanAmount)}
-                          </td>
-                          <td style={styles.tableCell}>
-                            {loan.narration}
-                          </td>
-                          <td style={styles.tableCell}>
-                            {safeToLocaleString(loan.recoveredAmount)}
-                          </td>
-                          <td style={styles.tableCell}>
-                            {safeToLocaleString(loan.balanceAmount)}
-                          </td>
-                          <td
-                            style={{
-                              ...styles.tableCell,
-                              fontWeight: "600",
-                              color:
-                                loan.status === "RECOVERED"
-                                  ? "#059669"
-                                  : loan.status === "PARTIALLY RECOVERED"
-                                  ? "#d97706"
-                                  : "#dc2626",
-                            }}
-                          >
-                            {loan.status}
-                          </td>
-                        </tr>
+                <Table
+                    size={'large'}
+                    dataSource={allHandloansWithBalances}
+                    styles={tableCustomStyles}
+                    scroll={{x: 'max-content', y: 55 * 5}}
+                    columns={[
+                      {
+                        title: 'Loan No',
+                        dataIndex: 'handLoanNumber',
+                        key: 'handLoanNumber'
+                      },
+                      {
+                        title: 'Party',
+                        dataIndex: 'partyName',
+                        key: 'partyName'
+                      }, {
+                        title: 'Amount',
+                        dataIndex: 'loanAmount',
+                        key: 'loanAmount',
+                        render: (text) => formatCurrency(text),
+                      }, {
+                        title: 'Narration',
+                        dataIndex: 'narration',
+                        key: 'narration',
+                      }, {
+                      title: 'Recovered Amount',
+                      dataIndex: 'recoveredAmount',
+                      key: 'recoveredAmount',
+                      render: (text) => formatCurrency(text),
+                      }, {
+                      title: 'Balance Amount',
+                      dataIndex: 'balanceAmount',
+                      key: 'balanceAmount',
+                        render: (text) => formatCurrency(text),
+                      }, {
+                        title: 'Status',
+                        key: 'status',
+                        render: (item) => {
 
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                          const config = statusConfig[item.status] || {
+                            label: item.status?.toUpperCase(),
+                            color: '#6b7280',
+                            bgColor: '#f3f4f6'
+                          };
+                          const {label, color} = config;
+
+                          return (
+                              <Tag color={color} key={item.status} variant={'solid'}>
+                                {label}
+                              </Tag>
+                          );
+                        },
+                      },]}
+                    pagination={false}>
+                </Table>
               </div>
             )}
         </Spin>

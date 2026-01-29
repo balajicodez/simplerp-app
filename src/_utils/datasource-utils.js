@@ -8,7 +8,10 @@ const inFlightRequests = new Map();
 
 
 export async function fetchWithAuth(url) {
-    const fullUrl = `${APP_SERVER_URL_PREFIX}${url}`;
+    let fullUrl;
+    if (url.startsWith('http:') || url.startsWith('https:')) fullUrl = url;
+    else fullUrl = `${APP_SERVER_URL_PREFIX}${url}`;
+
     const key = `GET:${fullUrl}`;
 
     // If there's already an in-flight request for the same URL, return it

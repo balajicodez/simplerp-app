@@ -1,13 +1,13 @@
 import {Card, Statistic} from "antd";
 import React from "react";
 
-export default function DayClosingSummaryCards({ reportData }) {
+export default function DayClosingSummaryCardsSection({ openingBalance, cashIn, cashOut, closingBalance }) {
     return <div className={'summary-container'}>
         <Card>
             <Statistic
                 size={'small'}
                 title="Opening Balance"
-                value={reportData.openingBalance}
+                value={openingBalance}
                 precision={2}
                 prefix={'₹'}
             />
@@ -16,7 +16,7 @@ export default function DayClosingSummaryCards({ reportData }) {
         <Card>
             <Statistic
                 title="Total Cash-In"
-                value={reportData.cashIn}
+                value={cashIn}
                 precision={2}
                 prefix={'₹'}
             />
@@ -28,7 +28,7 @@ export default function DayClosingSummaryCards({ reportData }) {
                     content: {color: 'red'},
                 }}
                 title={"Total Cash-Out"}
-                value={reportData.cashOut}
+                value={cashOut}
                 precision={2}
                 prefix={'₹'}
             />
@@ -40,7 +40,7 @@ export default function DayClosingSummaryCards({ reportData }) {
                     content: {color: 'green'},
                 }}
                 title={"Closing Balance"}
-                value={reportData.closingBalance}
+                value={closingBalance}
                 precision={2}
                 prefix={'₹'}
             />

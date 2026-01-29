@@ -323,7 +323,6 @@ export default function HandLoansListPage() {
                 if (!hasImage) return "(No receipt)";
                 return (
                     <Button
-                        size={'small'}
                         icon={<EyeOutlined/>}
                         onClick={async () => {
                             const json = await fetchHandLoan(item.id);

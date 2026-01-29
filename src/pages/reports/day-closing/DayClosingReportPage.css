@@ -21,3 +21,22 @@
     border-radius: 8px;
     box-shadow: var(--elevate-1);
 }
+
+.day-closing-report-page .expenses-section {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.day-closing-report-page .report-section-container {
+
+}
+
+.day-closing-report-page .report-section-container .report-section-title {
+    text-align: center;
+}
+
+.day-closing-report-page .expenses-section > * {
+    flex: 1;
+    min-width: 48%;
+}
