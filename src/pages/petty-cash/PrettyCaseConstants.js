@@ -16,6 +16,6 @@ export const PRETTY_CASE_TYPES = {
 export const PRETTY_CASE_PAGE_TITLE = <span>Petty Cash</span>;
 
 
-export const getExpenseColor = (expenseType) => {
+export const getExpenseTagColor = (expenseType) => {
    return PRETTY_CASE_TYPES[expenseType]?.color || 'green';
 };

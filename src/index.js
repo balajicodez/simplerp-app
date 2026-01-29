@@ -47,6 +47,7 @@ root.render(
                 token: {
                     fontFamily: '"Google Sans", serif',
                     colorPrimary: '#2e3192',
+                    colorTextDisabled: 'rgba(0, 0, 0, 0.65)'
                 },
             }}
         >

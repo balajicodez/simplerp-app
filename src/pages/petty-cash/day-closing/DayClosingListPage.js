@@ -3,7 +3,7 @@ import "./CreateDayClosing.css";
 import {DATE_DISPLAY_FORMAT, DATE_SYSTEM_FORMAT} from "../../../constants.js";
 import {useNavigate} from "react-router-dom";
 import Utils from '../../../Utils';
-import {getExpenseColor, PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import {getExpenseTagColor, PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {App as AntApp, Button, DatePicker, Form, Select, Table, Tag, Tooltip, Typography} from "antd";
 import {EyeOutlined, PlusOutlined} from "@ant-design/icons";
@@ -164,7 +164,7 @@ function DayClosingListPage() {
                             key: 'expenseType',
                             render: (expenseType) => {
                                 return (
-                                    <Tag color={getExpenseColor(expenseType)} key={expenseType} variant={'solid'}>
+                                    <Tag color={getExpenseTagColor(expenseType)} key={expenseType} variant={'solid'}>
                                         {expenseType}
                                     </Tag>
                                 );
@@ -195,7 +195,7 @@ function DayClosingListPage() {
                             key: 'amount',
                             render: (item) => {
                                 return (
-                                    <Tag variant={'filled'} color={getExpenseColor(item.expenseType)}>
+                                    <Tag variant={'filled'} color={getExpenseTagColor(item.expenseType)}>
                                         ₹{item.amount?.toFixed(2)}
                                     </Tag>
                                 )

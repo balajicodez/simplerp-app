@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigate, useSearchParams} from 'react-router-dom';
 import Utils from '../../../Utils';
-import {getExpenseColor, PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import {getExpenseTagColor, PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {
     App as AntApp,
@@ -227,6 +227,7 @@ function ExpensesOutwardListPage() {
 
                 <Table
                     className={'list-page-table'}
+                    size={'large'}
                     dataSource={items}
                     columns={[
                         {
@@ -234,7 +235,7 @@ function ExpensesOutwardListPage() {
                             dataIndex: 'amount',
                             key: 'amount',
                             render: (item) => {
-                                const color = getExpenseColor('CASH-OUT');
+                                const color = getExpenseTagColor('CASH-OUT');
                                 return (
                                     <Tag variant={'filled'} color={color}>
                                         ₹{item.toFixed(2)}

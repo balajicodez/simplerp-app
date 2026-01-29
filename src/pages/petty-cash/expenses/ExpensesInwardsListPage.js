@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import Utils from '../../../Utils';
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {getExpenseColor, PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
+import {getExpenseTagColor, PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import {
     App as AntApp,
     Button,
@@ -224,7 +224,7 @@ function ExpensesInwardsListPage() {
                             dataIndex: 'amount',
                             key: 'amount',
                             render: (item) => {
-                                const color = getExpenseColor('CASH-IN');
+                                const color = getExpenseTagColor('CASH-IN');
                                 return (
                                     <Tag variant={'filled'} color={color} >
                                         ₹{item.toFixed(2)}

@@ -5,7 +5,7 @@ import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout
 import {App as AntApp, Button, Table, Tag, Tooltip, Typography} from "antd";
 import {EditOutlined, PlusOutlined} from "@ant-design/icons";
 import {fetchExpenseMasters} from "./ExpenseMastersDataSource";
-import {getExpenseColor, PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
+import {getExpenseTagColor, PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
 import FormUtils from "../../../_utils/FormUtils";
 
 
@@ -97,7 +97,7 @@ export default function ExpenseMastersListPage() {
                             key: 'type',
                             render: (type) => {
                                 return (
-                                    <Tag color={getExpenseColor(type)} key={type} variant={'solid'}>
+                                    <Tag color={getExpenseTagColor(type)} key={type} variant={'solid'}>
                                         {type}
                                     </Tag>
                                 );
