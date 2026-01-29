@@ -14,7 +14,7 @@ export default function RolePermissionsTags({roleId}) {
             setPermissions(permissions);
         })();
 
-    }, [])
+    }, [roleId])
 
     return <div style={{display: 'flex', flexWrap: 'wrap', gap: 8}}>
 

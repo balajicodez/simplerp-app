@@ -3,7 +3,7 @@ import {APP_TITLE, CUSTOMER_TITLE} from "../../constants.js";
 import './LoginPage.css';
 import {jwtDecode} from "jwt-decode";
 import {LockOutlined, UserOutlined} from '@ant-design/icons';
-import {Alert, Button, Card, Checkbox, Divider, Form, Image, Input, Typography} from 'antd';
+import {Alert, Button, Card, Checkbox, Form, Input, Typography} from 'antd';
 import {useAuth} from "../../hooks/useAuth";
 import {loginApiCall} from "./loginApiService";
 

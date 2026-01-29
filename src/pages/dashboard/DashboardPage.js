@@ -1,8 +1,7 @@
 import React from 'react';
 import './DashboardPage.css';
 import DefaultAppSidebarLayout from "../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {Card, Statistic, Typography} from "antd";
-import {DollarOutlined, UsergroupAddOutlined} from "@ant-design/icons";
+import {Typography} from "antd";
 
 
 export default function DashboardPage() {

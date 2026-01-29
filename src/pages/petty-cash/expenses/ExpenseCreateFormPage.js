@@ -4,7 +4,7 @@ import {useNavigate, useLocation} from "react-router-dom";
 import {DATE_DISPLAY_FORMAT, DATE_SYSTEM_FORMAT} from "../../../constants.js";
 import Utils from '../../../Utils';
 import CameraCapture from '../../../_components/camera-capture/CameraCapture';
-import {PRETTY_CASE_PAGE_TITLE, PRETTY_CASE_TYPES} from "../PrettyCaseConstants";
+import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {
     Alert,
@@ -34,7 +34,6 @@ import {getBase64} from "../../../_utils/CommonUtils";
 function ExpenseCreateFormPage() {
 
     const [form] = Form.useForm();
-    const [transactionDate, setTransactionDate] = useState(null);
     const [modalFile, setModalFile] = useState(null);
     const [organizations, setOrganizations] = useState([]);
     const [subTypes, setSubTypes] = useState([]);
@@ -114,10 +113,9 @@ function ExpenseCreateFormPage() {
 
     useEffect(() => {
 
-        setTransactionDate(dayjs(new Date()));
-
         form.setFieldsValue({
             organizationId: !isAdmin ? parseInt(localStorage.getItem("organizationId")) : null,
+            transactionDate: dayjs(new Date()),
             gstapplicable: false
         });
 
@@ -130,6 +128,8 @@ function ExpenseCreateFormPage() {
         setLoading(true);
 
         const formValues = form.getFieldsValue();
+
+        const transactionDate = form.getFieldValue('transactionDate')?.format(DATE_SYSTEM_FORMAT)
 
         try {
 
@@ -153,7 +153,7 @@ function ExpenseCreateFormPage() {
 
 
             const expensePayload = {
-                transactionDate: transactionDate.format(DATE_SYSTEM_FORMAT),
+                transactionDate: transactionDate,
                 amount: Number(formValues.amount),
                 employeeId: formValues.employeeId ? Number(formValues.employeeId) : undefined,
                 expenseSubType: formValues.subtype,
@@ -252,7 +252,7 @@ function ExpenseCreateFormPage() {
                             <Typography.Title level={4} className="form-section-title">
                                 Details
                                 <Tag className={'title-tag'}>Transaction
-                                    date: {transactionDate?.format(DATE_DISPLAY_FORMAT)}</Tag>
+                                    date: {form.getFieldValue('transactionDate')?.format(DATE_DISPLAY_FORMAT)}</Tag>
                             </Typography.Title>
 
                             <Row gutter={24}>
@@ -303,6 +303,11 @@ function ExpenseCreateFormPage() {
                                                     (showCurrentBalanceSection && value && fetchedBalance < value)
                                                         ? Promise.reject(new Error("Amount cannot exceed current balance"))
                                                         : Promise.resolve(),
+                                            }, {
+                                                validator: (_, value) => {
+                                                    if (value <= 0) return Promise.reject(new Error("Amount cannot be zero or negative"));
+                                                    return Promise.resolve();
+                                                }
                                             }]}
                                     >
                                         <InputNumber

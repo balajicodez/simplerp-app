@@ -2,13 +2,13 @@ import React, {useEffect, useState} from 'react';
 import './DefaultAppSidebarLayout.css';
 
 import {DollarOutlined, HomeOutlined, LineChartOutlined, LogoutOutlined, SettingOutlined} from '@ant-design/icons';
-import {Avatar, Button, Divider, Dropdown, Layout, Menu, Space, theme, Typography} from 'antd';
+import {Avatar, Button, Dropdown, Layout, Menu, Space, Typography} from 'antd';
 import {APP_TITLE} from "../../constants";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useAuth} from "../../hooks/useAuth";
 import {findItemByPath} from "./utils";
 
-const {Header, Content, Sider, Footer} = Layout;
+const {Header, Content, Sider} = Layout;
 
 
 function getSideBarMenu(userRoles = []) {
@@ -127,12 +127,6 @@ export default function DefaultAppSidebarLayout({children, pageTitle}) {
 
     const navigate = useNavigate();
     const {session, logout} = useAuth();
-
-
-    const {
-        token: {colorPrimary},
-    } = theme.useToken();
-
 
     const location = useLocation();
     const sidebarMenu = getSideBarMenu(session?.roles || []);

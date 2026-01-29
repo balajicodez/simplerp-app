@@ -1,5 +1,5 @@
 import {
-    fetchWithAuth,
+    fetchWithAuth, patchWithAuthAndBody,
     postWithAuthAndFormData,
 } from "../../../_utils/datasource-utils";
 
@@ -21,4 +21,8 @@ export async function fetchExpense(id) {
 
 export async function fetchCurrentBalance(organizationId, expenseDate) {
     return fetchWithAuth(`/expenses/current_balance?organizationId=${organizationId}&createdDate=${expenseDate}`);
+}
+
+export async function updateExpense(id, expense) {
+    return patchWithAuthAndBody(`/expenses/update/${id}`, expense);
 }
