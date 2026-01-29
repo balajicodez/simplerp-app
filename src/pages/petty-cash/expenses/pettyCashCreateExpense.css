@@ -432,63 +432,7 @@
   padding-right: 3rem;
 }
 
-.fetch-balance-btn {
-  position: absolute;
-  right: 0.5rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.4rem 0.6rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-}
 
-.fetch-balance-btn:hover:not(:disabled) {
-  background: #2563eb;
-}
-
-.fetch-balance-btn:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.balance-help {
-  margin-top: 0.25rem;
-  color: #6b7280;
-}
-
-.balance-validation {
-  margin-top: 0.5rem;
-}
-
-.balance-error {
-  color: #dc2626;
-  font-weight: 500;
-  font-size: 0.8rem;
-  background: #fef2f2;
-  padding: 0.4rem 0.6rem;
-  border-radius: 4px;
-  border: 1px solid #fecaca;
-}
-
-.balance-success {
-  color: #16a34a;
-  font-weight: 500;
-  font-size: 0.8rem;
-  background: #f0fdf4;
-  padding: 0.4rem 0.6rem;
-  border-radius: 4px;
-  border: 1px solid #bbf7d0;
-}
-
-/* Balance Badge in Header */
-.balance-badge {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: white;
-}
 
 /* Disabled state for submit button */
 .btn-primary:disabled {
@@ -516,22 +460,3 @@
     font-size: 0.8rem !important;
   }
 }
-
-/* Compact Table Styles (if needed elsewhere) */
-.compact-table {
-  font-size: 0.8rem;
-}
-
-.compact-table th,
-.compact-table td {
-  padding: 6px 8px !important;
-}
-
-/* Utility classes for extra small spacing */
-.p-1 { padding: 0.25rem; }
-.p-2 { padding: 0.5rem; }
-.m-1 { margin: 0.25rem; }
-.m-2 { margin: 0.5rem; }
-
-.text-xs { font-size: 0.7rem; }
-.text-sm { font-size: 0.8rem; }

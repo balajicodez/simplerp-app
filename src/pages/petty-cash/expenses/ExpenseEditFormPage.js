@@ -232,10 +232,6 @@ export default function ExpenseEditFormPage() {
                             </Row>
                         </div>
 
-
-
-
-
                         <div className='form-page-footer'>
                             <div className={'page-actions'}>
                                 <Button htmlType="submit"

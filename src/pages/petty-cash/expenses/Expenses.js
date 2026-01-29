@@ -7,8 +7,6 @@ import Utils from '../../../Utils';
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 
-const API_PREFIX = '/simplerp/api';
-
 function Expenses() {
   const [items, setItems] = useState([]);
   const [links, setLinks] = useState({});

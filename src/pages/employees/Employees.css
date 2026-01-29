@@ -1,11 +1,5 @@
 /* Employees.css - Consolidated Styles for All Employee Components */
 
-/* ===== BASE STYLES ===== */
-.page-container {
-  min-height: 100vh;
-  background: #f8fafc;
-}
-
 /* ===== HEADER STYLES ===== */
 .employees-header1,
 .create-employee-header {

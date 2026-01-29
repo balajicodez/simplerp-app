@@ -13,7 +13,7 @@ import Expenses from './pages/petty-cash/expenses/Expenses';
 import ExpensesInwardsListPage from './pages/petty-cash/expenses/ExpensesInwardsListPage';
 import ExpensesOutwardListPage from './pages/petty-cash/expenses/ExpensesOutwardListPage';
 import DayClosingListPage from './pages/petty-cash/day-closing/DayClosingListPage';
-import CreateDayClosing from './pages/petty-cash/day-closing/CreateDayClosing';
+import CreateDayClosingFormPage from './pages/petty-cash/day-closing/CreateDayClosingFormPage';
 import DayClosingReportPage from './pages/reports/day-closing/DayClosingReportPage';
 import ExpenseCreateFormPage from './pages/petty-cash/expenses/ExpenseCreateFormPage';
 import ExpenseViewFormPage from './pages/petty-cash/expenses/ExpenseViewFormPage';
@@ -120,7 +120,7 @@ root.render(
 
                             <Route
                                 path="/pettycash/day-closing/create"
-                                element={<CreateDayClosing/>}
+                                element={<CreateDayClosingFormPage/>}
                             />
                             <Route path="/reports/day-closing" element={<DayClosingReportPage/>}/>
                             <Route path="/pettycash/expenses/create" element={<ExpenseCreateFormPage/>}/>

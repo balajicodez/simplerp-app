@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import "./CreateDayClosing.css";
 import { APP_SERVER_URL_PREFIX } from "../../../constants.js";
 import { DAY_CLOSING_WHATSAPP_NUMBERS_CSV } from "../../../constants.js";
@@ -10,20 +8,16 @@ import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
 import {Button, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
+import createDayClosingReportPDF from "../../reports/day-closing/createDayClosingReportPDF";
+import {getOrganizationAddressText} from "../../reports/day-closing/utils";
 
-function CreateDayClosing() {
+export default function CreateDayClosingFormPage() {
   const [description, setDescription] = useState("Day Closing");
-  const [records, setRecords] = useState([]);
-  const [expenses, setExpenses] = useState([]);
-  const [handloans, setHandloans] = useState([]);
   const [comment, setComment] = useState("");
   const [organizations, setOrganizations] = useState([]);
   const [organizationId, setOrganizationId] = useState("");
   const [selectedOrganization, setSelectedOrganization] = useState(null);
-  const [reportMsg, setReportMsg] = useState("");
-  const [pdfUrl, setPdfUrl] = useState("");
   const [organizationName, setOrganizationName] = useState("");
-  // const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [inward, setInward] = useState("");
   const [outward, setOutward] = useState("");
   const [closingBalance, setClosingBalance] = useState("");
@@ -78,50 +72,6 @@ function CreateDayClosing() {
   const currentPage = 0;
   const pageSize = 1000;
 
-  const getOrganizationAddressText = () => {
-    if (!selectedOrganization?.address) return "";
-
-    const { address, city, pincode } = selectedOrganization.address;
-
-    return [address, city, pincode].filter(Boolean).join(", ");
-  };
-
-  const calculateCoinsTotal = () => {
-    return (
-      (Number(records._1CoinCount) || 0) * 1 +
-      (Number(records._5CoinCount) || 0) * 5 +
-      (Number(records._10CoinCount) || 0) * 10 +
-      (Number(records._20CoinCount) || 0) * 20
-    );
-  };
-
-  const ensurePageSpace = (doc, y, requiredSpace = 40) => {
-    const pageHeight = doc.internal.pageSize.height;
-    if (y + requiredSpace > pageHeight - 20) {
-      doc.addPage();
-      return 20;
-    }
-    return y;
-  };
-
-  const formatDateDDMMYYYY = (dateValue) => {
-    if (!dateValue) return "-";
-
-    const date = new Date(dateValue);
-    if (isNaN(date.getTime())) return "-";
-
-    return `${String(date.getDate()).padStart(2, "0")}-${String(
-      date.getMonth() + 1
-    ).padStart(2, "0")}-${date.getFullYear()}`;
-  };
-
-  // Safe number formatting function
-  const safeToLocaleString = (value) => {
-    if (value === null || value === undefined || isNaN(value)) {
-      return "0.00";
-    }
-    return Number(value).toFixed(2).toLocaleString();
-  };
 
   const getExpensesForDate = (expensesList, date) => {
     return expensesList.filter((expense) => {
@@ -186,27 +136,6 @@ function CreateDayClosing() {
     }));
   };
 
-  const getAllHandloansWithBalances = () => {
-    return handloans.map((h) => {
-      const loanAmount = Number(h.loanAmount) || 0;
-      const balanceAmount = Number(h.balanceAmount) || 0;
-      const recoveredAmount = loanAmount - balanceAmount;
-
-      let status = "ISSUED";
-      if (balanceAmount === 0 && loanAmount > 0) status = "RECOVERED";
-      else if (recoveredAmount > 0 && balanceAmount > 0)
-        status = "PARTIALLY RECOVERED";
-
-      return {
-        handLoanNumber: h.handLoanNumber || "N/A",
-        partyName: h.partyName || "N/A",
-        loanAmount,
-        recoveredAmount,
-        balanceAmount,
-        status,
-      };
-    });
-  };
   const categorizeExpenses = (expensesList) => {
     const cashInExpenses = expensesList.filter(
       (expense) => expense.expenseType === "CASH-IN"
@@ -230,8 +159,7 @@ function CreateDayClosing() {
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
-      const data = await response.json();
-      setRecords(data);
+      const dayClosingData = await response.json();
 
       const expensesResponse = await fetch(
         `${APP_SERVER_URL_PREFIX}/expenses/report?organizationId=${organizationId}&createdDate=${date}`,
@@ -239,10 +167,7 @@ function CreateDayClosing() {
       );
       var expensesData = {};
       if (expensesResponse.ok) {
-        expensesData = await expensesResponse.json();
-        setExpenses(expensesData.content || expensesData || []);
-      } else {
-        setExpenses([]);
+        expensesData = await expensesResponse.json() || [];
       }
 
       // Handloans
@@ -253,13 +178,9 @@ function CreateDayClosing() {
 
       var handloansData = [];
       if (handloansResponse.ok) {
-        handloansData = await handloansResponse.json();
-        setHandloans(handloansData.content || handloansData || []);
-      } else {
-        setHandloans([]);
+        handloansData = await handloansResponse.json() || [];
       }
 
-      const filteredRecords = new Array(data);
       const filteredExpenses = getExpensesForDate(expensesData, date);
 
       // ✅ ALL HANDLOANS (NO DATE FILTER)
@@ -270,339 +191,27 @@ function CreateDayClosing() {
       const { cashInExpenses, cashOutExpenses } =
         categorizeExpenses(filteredExpenses);
 
-      if (
-        filteredRecords.length === 0 &&
+      if (!dayClosingData &&
         filteredExpenses.length === 0 &&
         filteredHandloans.length === 0
       ) {
-        setReportMsg("No records found");
         return;
       }
 
-      const doc = new jsPDF();
-      const selectedRecord = filteredRecords[0];
-      const startingBalance = Number(selectedRecord?.openingBalance) || 0;
-
-      /* ================= HEADER ================= */
-      doc.setFontSize(26);
-      const orgName = selectedOrganization?.name || "Organization";
-
-      doc.text(orgName, 105, 18, { align: "center" });
-
-      const orgAddressText = getOrganizationAddressText();
-      doc.setFontSize(13);
-      if (orgAddressText) {
-        doc.text(orgAddressText, 105, 26, { align: "center" });
-      }
-
-      doc.line(20, 32, 190, 32);
-
-      doc.setFontSize(14);
-      const formattedDate = new Date(date).toLocaleDateString("en-GB"); // dd/mm/yyyy
-
-      doc.text(
-        `Day Closing Report - ${formattedDate.replaceAll("/", "-")}`,
-        14,
-        40
-      );
-
-      doc.setFontSize(13);
-      doc.text(
-        `Opening Balance: ${safeToLocaleString(startingBalance)}`,
-        190,
-        40,
-        { align: "right" }
-      );
-
-      let currentY = 48;
-
-      /* ================= DAY CLOSING ================= */
-      autoTable(doc, {
-        startY: currentY,
-        head: [
-          [
-            "Closing Date",
-            "Description",
-            "Cash In",
-            "Cash Out",
-            "Closing Balance",
-          ],
-        ],
-        body: filteredRecords.map(() => [
-          formatDateDDMMYYYY(data.closingDate),
-          data.description || "-",
-          safeToLocaleString(data.cashIn),
-          safeToLocaleString(data.cashOut),
-          safeToLocaleString(
-            data.openingBalance + data.cashIn - data.cashOut
-          ),
-        ]),
-        theme: "grid",
-        styles: { fontSize: 11 },
-        columnStyles: {
-          2: { halign: "right" },
-          3: { halign: "right" },
-          4: { halign: "right" },
-        },
-        pageBreak: "auto",
+      const doc = createDayClosingReportPDF({
+        closingDate: date,
+        organizationName: selectedOrganization?.name,
+        organizationAddress: getOrganizationAddressText(selectedOrganization),
+        cashInExpenses,
+        cashOutExpenses,
+        dayClosingData,
+        filteredHandLoans: filteredHandloans,
       });
 
-      currentY = doc.lastAutoTable.finalY + 12;
-
-      /* ================= EXPENSES ================= */
-      doc.setFontSize(14);
-      doc.text("EXPENSES SUMMARY", 105, currentY, { align: "center" });
-      currentY += 10;
-
-      currentY = ensurePageSpace(doc, currentY, 60);
-
-      const pageWidth = doc.internal.pageSize.width;
-      const margin = 10;
-      const colWidth = (pageWidth - 2.2 * margin) / 2;
-
-      /* CASH IN */
-      autoTable(doc, {
-        startY: currentY,
-        head: [["Category", "Amount", "Description"]],
-        body: cashInExpenses.map((e) => [
-          e.expenseSubType || "-",
-          safeToLocaleString(e.amount),
-          e.description || "General",
-        ]),
-        tableWidth: colWidth,
-        margin: { left: margin },
-        styles: { fontSize: 11, overflow: "linebreak" },
-        headStyles: { fillColor: [22, 163, 74], textColor: 255 },
-        columnStyles: { 1: { halign: "right" } },
-      });
-
-      /* capture Y */
-      const cashInEndY = doc.lastAutoTable.finalY;
-
-      /* CASH OUT */
-      autoTable(doc, {
-        startY: currentY,
-        head: [["Category", "Amount", "Description"]],
-        body: cashOutExpenses.map((e) => [
-          e.expenseSubType || "-",
-          safeToLocaleString(e.amount),
-          e.description || "General",
-        ]),
-        tableWidth: colWidth,
-        margin: { left: margin + colWidth + margin },
-        styles: { fontSize: 11, overflow: "linebreak" },
-        headStyles: { fillColor: [185, 28, 28], textColor: 255 },
-        columnStyles: { 1: { halign: "right" } },
-      });
-
-      currentY = doc.lastAutoTable.finalY + 20;
-      const cashOutEndY = doc.lastAutoTable.finalY;
-
-      currentY = Math.max(cashInEndY, cashOutEndY) + 25;
-      if (filteredHandloans.length > 0) {
-        doc.setFontSize(14);
-        doc.text("HANDLOANS DETAILS", 105, currentY, { align: "center" });
-        currentY += 8;
-        let totalLoanAmount = 0;
-        let totalRecoveredAmount = 0;
-        let totalBalanceAmount = 0;
-
-        filteredHandloans.forEach((h) => {
-          totalLoanAmount += Number(h.loanAmount || 0);
-          totalRecoveredAmount += Number(h.recoveredAmount || 0);
-          totalBalanceAmount += Number(h.balanceAmount || 0);
-        });
-
-        autoTable(doc, {
-          startY: currentY,
-          head: [
-            [
-              "Loan ID",
-              "Party Name",
-              "Total Amount",
-              "Recovered Amount",
-              "Balance Amount",
-            ],
-          ],
-          body: [
-            ...filteredHandloans.map((h) => [
-              h.handLoanNumber,
-              h.partyName,
-              safeToLocaleString(h.loanAmount),
-              safeToLocaleString(h.recoveredAmount),
-              safeToLocaleString(h.balanceAmount),
-            ]),
-
-            // ✅ TOTAL ROW
-            [
-              "TOTAL",
-              "",
-              safeToLocaleString(totalLoanAmount),
-              safeToLocaleString(totalRecoveredAmount),
-              safeToLocaleString(totalBalanceAmount),
-            ],
-          ],
-          theme: "grid",
-          styles: { fontSize: 11 },
-          headStyles: {
-            fillColor: [30, 58, 138],
-            textColor: 255,
-            fontStyle: "bold",
-          },
-          didParseCell: function (data) {
-            // Style TOTAL row
-            if (
-              data.row.index === filteredHandloans.length &&
-              data.section === "body"
-            ) {
-              data.cell.styles.fontStyle = "bold";
-              data.cell.styles.fillColor = [243, 244, 246]; // light gray
-            }
-          },
-           columnStyles: {
-             2: { halign: "right" },
-             3: { halign: "right" },
-             4: { halign: "right" },
-           }
-        });
-
-        currentY = doc.lastAutoTable.finalY + 14;
-      }
-
-      /* ================= DENOMINATION ================= */
-      const denominations = [
-        {
-          label: "500",
-          value: 500,
-          good: data._500NoteCount,
-          soiled: data._500SoiledNoteCount,
-        },
-        {
-          label: "200",
-          value: 200,
-          good: data._200NoteCount,
-          soiled: data._200SoiledNoteCount,
-        },
-        {
-          label: "100",
-          value: 100,
-          good: data._100NoteCount,
-          soiled: data._100SoiledNoteCount,
-        },
-        {
-          label: "50",
-          value: 50,
-          good: data._50NoteCount,
-          soiled: data._50SoiledNoteCount,
-        },
-        {
-          label: "20",
-          value: 20,
-          good: data._20NoteCount,
-          soiled: data._20SoiledNoteCount,
-        },
-        {
-          label: "10",
-          value: 10,
-          good: data._10NoteCount,
-          soiled: data._10SoiledNoteCount,
-        },
-      ];
-
-      let denominationTotal = 0;
-
-      const denominationRows = denominations
-        .filter((d) => Number(d.good) > 0 || Number(d.soiled) > 0)
-        .map((d) => {
-          const amount = (Number(d.good) - Number(d.soiled)) * d.value;
-          denominationTotal += amount;
-          return [
-            d.label,
-            d.good || 0,
-            d.soiled || 0,
-            safeToLocaleString(amount),
-          ];
-        });
-
-      const coinsCount =
-        (data._1CoinCount || 0) +
-        (data._5CoinCount || 0) +
-        (data._10CoinCount || 0) +
-        (data._20CoinCount || 0);
-
-      if (coinsCount > 0) {
-        denominationTotal += coinsCount;
-        denominationRows.push([
-          "COINS",
-          coinsCount,
-          0,
-          safeToLocaleString(coinsCount),
-        ]);
-      }
-
-      const coinsTotal = calculateCoinsTotal(); // Use your helper function
-      if (coinsTotal > 0) {
-        denominationTotal += coinsTotal;
-
-        // Add individual coin rows for clarity
-        if (data._1CoinCount > 0) {
-          denominationRows.push([
-            "₹1 Coin",
-            data._1CoinCount || 0,
-            0,
-            safeToLocaleString((data._1CoinCount || 0) * 1),
-          ]);
-        }
-        if (data._5CoinCount > 0) {
-          denominationRows.push([
-            "₹5 Coin",
-            data._5CoinCount || 0,
-            0,
-            safeToLocaleString((data._5CoinCount || 0) * 5),
-          ]);
-        }
-        if (data._10CoinCount > 0) {
-          denominationRows.push([
-            "₹10 Coin",
-            data._10CoinCount || 0,
-            0,
-            safeToLocaleString((data._10CoinCount || 0) * 10),
-          ]);
-        }
-        if (data._20CoinCount > 0) {
-          denominationRows.push([
-            "₹20 Coin",
-            data._20CoinCount || 0,
-            0,
-            safeToLocaleString((data._20CoinCount || 0) * 20),
-          ]);
-        }
-      }
-
-      if (denominationRows.length > 0) {
-        denominationRows.push([
-          "TOTAL",
-          "",
-          "",
-          safeToLocaleString(denominationTotal),
-        ]);
-      }
-      autoTable(doc, {
-        startY: currentY,
-        head: [["Note", "Good", "Soiled", "Amount"]],
-        body: denominationRows,
-        theme: "grid",
-        styles: { fontSize: 11 },
-        columnStyles: { 3: { halign: "right" } },
-        pageBreak: "auto",
-      });
-
-      setPdfUrl(doc.output("bloburl"));
       var base64String = doc.output("datauristring").split(",")[1];
       return base64String;
     } catch (e) {
       console.error("PDF generation error:", e);
-      setReportMsg("Failed to generate PDF");
     }
   };
 
@@ -1402,5 +1011,3 @@ function CreateDayClosing() {
       </DefaultAppSidebarLayout>
   );
 }
-
-export default CreateDayClosing;

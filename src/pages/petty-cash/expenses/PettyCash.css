@@ -1,16 +1,5 @@
 /* PettyCash.css - Consolidated and Organized */
 
-/* ===== BASE STYLES ===== */
-.page-container {
-  min-height: 100vh;
-  background: #f8fafc;
-}
-
-.dashboard-container {
-  min-height: 100vh;
-  background-color: #f8fafc;
-}
-
 /* ===== DASHBOARD STYLES ===== */
 
 .stat-card {
@@ -63,16 +52,7 @@
   opacity: 0.8;
 }
 
-.card-title {
-  font-size: 14px;
-  font-weight: 400;
-  margin-bottom: 12px;
-  opacity: 0.9;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin: 0;
-  padding: 0 5px;
-}
+
 
 .card-value {
   font-size: 22px;
@@ -81,35 +61,6 @@
   text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
-.welcome-text {
-  text-align: center;
-  color: #64748b;
-  font-size: 16px;
-  margin-top: 8px;
-  font-style: italic;
-}
-
-.insights-section {
-  margin-top: 40px;
-  padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 12px;
-  text-align: center;
-}
-
-.insights-title {
-  color: #374151;
-  margin-bottom: 10px;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.insights-text {
-  color: #6b7280;
-  font-size: 14px;
-  margin: 0;
-  line-height: 1.5;
-}
 
 /* ===== HEADER STYLES ===== */
 .dashboard-header1 {
@@ -121,9 +72,6 @@
   /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
 }
 
-.outward-header {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-}
 
 .create-expense-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -135,13 +83,7 @@
   overflow: hidden;
 }
 
-.create-expense-header.inward-header {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
 
-.create-expense-header.outward-header {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-}
 
 .header-content {
   display: flex;
@@ -1381,11 +1323,7 @@
     font-size: 24px;
     margin-bottom: 10px;
   }
-  
-  .card-title {
-    font-size: 13px;
-  }
-  
+
   .header-content {
     flex-direction: column;
     gap: 16px;
@@ -1475,15 +1413,7 @@
     font-size: 32px;
   }
   
-  .card-title {
-    font-size: 14px;
-  }
-  
-  .insights-section {
-    margin-top: 30px;
-    padding: 15px;
-  }
-  
+
   .modal-actions {
     flex-direction: column;
   }
@@ -1527,85 +1457,3 @@ input:disabled, select:disabled {
   margin-top:12px; 
 }
 
-div.mycontainer {
-  width: 100%;
-  overflow: auto;
-  border: 5px;  
-}
-
-div.mycontainer div {
-  width: 33%;  
-  float: left;
-  border: 1px;
-  border-color: black;
-  border-style: solid;
-  margin: 1%;
-}
-
-div.mycontainer p {
-  font-size: 200%;
-  font-weight: 300;  
-}
-
-.modern-table1 {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-family: Inter, system-ui, sans-serif;
-  font-size: 14px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-/* Header */
-.modern-table1 thead {
-  background-color: #e2e8f0; /* light slate */
-}
-
-.modern-table1 th {
-  padding: 12px 16px;
-  text-align: left;
-  font-weight: 600;
-  color: #0f172a;
-  border-bottom: 1px solid #cbd5e1;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-}
-
-/* Body */
-.modern-table1 td {
-  padding: 12px 16px;
-  color: #334155;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-/* Row hover */
-.modern-table1 tbody tr:hover {
-  background-color: #f8fafc;
-}
-
-/* Zebra stripes */
-.modern-table1 tbody tr:nth-child(even) {
-  background-color: #f9fafb;
-}
-
-/* Rounded corners */
-.modern-table1 thead tr th:first-child {
-  border-top-left-radius: 10px;
-}
-
-.modern-table1 thead tr th:last-child {
-  border-top-right-radius: 10px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .modern-table1 th,
-  .modern-table1 td {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-}
