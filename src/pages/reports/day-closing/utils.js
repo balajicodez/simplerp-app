@@ -18,86 +18,107 @@ export function calculateDenominationAmount(
     return netNotes * denominationValue;
 }
 
-export function convertDenominationsToRecords(reportData) {
+export function getOrganizationAddressText(organization){
+    if (!organization?.address) return "";
+
+    const { address, city, pincode } = organization.address;
+
+    return [address, city, pincode].filter(Boolean).join(", ");
+};
+
+export function convertDenominationsToRecords(dayClosingData) {
     const cashDenominationRecords = [];
-    if (reportData._500NoteCount > 0 || reportData._500SoiledNoteCount > 0) {
+
+    if (!dayClosingData) return cashDenominationRecords;
+
+    if (dayClosingData._500NoteCount > 0 || dayClosingData._500SoiledNoteCount > 0) {
         cashDenominationRecords.push({
-            denomination: '₹500',
-            goodNotes: reportData._500NoteCount,
-            soiledNotes: reportData._500SoiledNoteCount,
-            amount: calculateDenominationAmount(500, reportData._500NoteCount, reportData._500SoiledNoteCount),
+            denomination: '500',
+            goodNotes: dayClosingData._500NoteCount || 0,
+            soiledNotes: dayClosingData._500SoiledNoteCount || 0,
+            type: 'note',
+            amount: calculateDenominationAmount(500, dayClosingData._500NoteCount, dayClosingData._500SoiledNoteCount),
         });
     }
-    if (reportData._200NoteCount > 0 || reportData._200SoiledNoteCount > 0) {
+    if (dayClosingData._200NoteCount > 0 || dayClosingData._200SoiledNoteCount > 0) {
         cashDenominationRecords.push({
-            denomination: '₹200',
-            goodNotes: reportData._200NoteCount,
-            soiledNotes: reportData._200SoiledNoteCount,
-            amount: calculateDenominationAmount(200, reportData._200NoteCount, reportData._200SoiledNoteCount),
+            denomination: '200',
+            goodNotes: dayClosingData._200NoteCount || 0,
+            soiledNotes: dayClosingData._200SoiledNoteCount || 0,
+            type: 'note',
+            amount: calculateDenominationAmount(200, dayClosingData._200NoteCount, dayClosingData._200SoiledNoteCount),
         });
     }
-    if (reportData._100NoteCount > 0 || reportData._100SoiledNoteCount > 0) {
+    if (dayClosingData._100NoteCount > 0 || dayClosingData._100SoiledNoteCount > 0) {
         cashDenominationRecords.push({
-            denomination: '₹100',
-            goodNotes: reportData._100NoteCount,
-            soiledNotes: reportData._100SoiledNoteCount,
-            amount: calculateDenominationAmount(100, reportData._100NoteCount, reportData._100SoiledNoteCount),
+            denomination: '100',
+            goodNotes: dayClosingData._100NoteCount || 0,
+            soiledNotes: dayClosingData._100SoiledNoteCount || 0,
+            type: 'note',
+            amount: calculateDenominationAmount(100, dayClosingData._100NoteCount, dayClosingData._100SoiledNoteCount),
         });
     }
-    if (reportData._50NoteCount > 0 || reportData._50SoiledNoteCount > 0) {
+    if (dayClosingData._50NoteCount > 0 || dayClosingData._50SoiledNoteCount > 0) {
         cashDenominationRecords.push({
-            denomination: '₹50',
-            goodNotes: reportData._50NoteCount,
-            soiledNotes: reportData._50SoiledNoteCount,
-            amount: calculateDenominationAmount(50, reportData._50NoteCount, reportData._50SoiledNoteCount),
+            denomination: '50',
+            goodNotes: dayClosingData._50NoteCount || 0,
+            soiledNotes: dayClosingData._50SoiledNoteCount || 0,
+            type: 'note',
+            amount: calculateDenominationAmount(50, dayClosingData._50NoteCount, dayClosingData._50SoiledNoteCount),
         });
     }
-    if (reportData._20NoteCount > 0 || reportData._20SoiledNoteCount > 0) {
+    if (dayClosingData._20NoteCount > 0 || dayClosingData._20SoiledNoteCount > 0) {
         cashDenominationRecords.push({
-            denomination: '₹20',
-            goodNotes: reportData._20NoteCount,
-            soiledNotes: reportData._20SoiledNoteCount,
-            amount: calculateDenominationAmount(20, reportData._20NoteCount, reportData._20SoiledNoteCount),
+            denomination: '20',
+            goodNotes: dayClosingData._20NoteCount || 0,
+            soiledNotes: dayClosingData._20SoiledNoteCount || 0,
+            type: 'note',
+            amount: calculateDenominationAmount(20, dayClosingData._20NoteCount, dayClosingData._20SoiledNoteCount),
         });
     }
-    if (reportData._10NoteCount > 0 || reportData._10SoiledNoteCount > 0) {
+    if (dayClosingData._10NoteCount > 0 || dayClosingData._10SoiledNoteCount > 0) {
         cashDenominationRecords.push({
-            denomination: '₹10',
-            goodNotes: reportData._10NoteCount,
-            soiledNotes: reportData._10SoiledNoteCount,
-            amount: calculateDenominationAmount(10, reportData._10NoteCount, reportData._10SoiledNoteCount),
+            denomination: '10',
+            goodNotes: dayClosingData._10NoteCount || 0,
+            soiledNotes: dayClosingData._10SoiledNoteCount || 0,
+            type: 'note',
+            amount: calculateDenominationAmount(10, dayClosingData._10NoteCount, dayClosingData._10SoiledNoteCount),
         });
     }
-    if (reportData._1CoinCount > 0) {
+    if (dayClosingData._1CoinCount > 0) {
         cashDenominationRecords.push({
-            denomination: '₹1 (Coin)',
-            goodNotes: reportData._1CoinCount,
+            denomination: '1',
+            goodNotes: dayClosingData._1CoinCount || 0,
             soiledNotes: 0,
-            amount: calculateDenominationAmount(1, reportData._1CoinCount, 0),
+            type: 'coin',
+            amount: calculateDenominationAmount(1, dayClosingData._1CoinCount, 0),
         });
     }
-    if (reportData._5CoinCount > 0) {
+    if (dayClosingData._5CoinCount > 0) {
         cashDenominationRecords.push({
-            denomination: '₹5 (Coin)',
-            goodNotes: reportData._5CoinCount,
+            denomination: '5',
+            goodNotes: dayClosingData._5CoinCount || 0,
             soiledNotes: 0,
-            amount: calculateDenominationAmount(5, reportData._5CoinCount, 0),
+            type: 'coin',
+            amount: calculateDenominationAmount(5, dayClosingData._5CoinCount, 0),
         });
     }
-    if (reportData._10CoinCount > 0) {
+    if (dayClosingData._10CoinCount > 0) {
         cashDenominationRecords.push({
-            denomination: '₹10 (Coin)',
-            goodNotes: reportData._10CoinCount,
+            denomination: '10',
+            goodNotes: dayClosingData._10CoinCount || 0,
             soiledNotes: 0,
-            amount: calculateDenominationAmount(10, reportData._10CoinCount, 0),
+            type: 'coin',
+            amount: calculateDenominationAmount(10, dayClosingData._10CoinCount, 0),
         });
     }
-    if (reportData._20CoinCount > 0) {
+    if (dayClosingData._20CoinCount > 0) {
         cashDenominationRecords.push({
-            denomination: '₹20 (Coin)',
-            goodNotes: reportData._20CoinCount,
+            denomination: '20',
+            goodNotes: dayClosingData._20CoinCount || 0,
             soiledNotes: 0,
-            amount: calculateDenominationAmount(20, reportData._20CoinCount, 0),
+            type: 'coin',
+            amount: calculateDenominationAmount(20, dayClosingData._20CoinCount, 0),
         });
     }
     return cashDenominationRecords;

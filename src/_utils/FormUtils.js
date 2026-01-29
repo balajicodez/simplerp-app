@@ -12,6 +12,10 @@ export default class FormUtils {
         this._modal = modal;
     }
 
+    clearNotifications() {
+        this._notification.destroy();
+    }
+
     showSuccessNotification(message) {
         this._notification.success({
             message: message,
