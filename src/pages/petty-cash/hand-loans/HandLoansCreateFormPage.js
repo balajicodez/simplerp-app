@@ -99,7 +99,7 @@ export default function HandLoansCreateFormPage() {
     }, []);
 
 
-    const handleAntSubmit = async (values) => {
+    const handleSubmit = async (values) => {
         setLoading(true);
 
         const formValues = form.getFieldsValue();
@@ -191,7 +191,7 @@ export default function HandLoansCreateFormPage() {
                         form={form}
                         noValidate={true}
                         onValuesChange={handleValueChange}
-                        onFinish={handleAntSubmit}
+                        onFinish={handleSubmit}
                         onFinishFailed={onFinishFailed}
                         className="form-page"
                         encType="multipart/form-data"

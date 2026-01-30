@@ -52,9 +52,6 @@ export default function RolesFormPage() {
     }, []);
 
     const validateRoleName = (roleName) => {
-        if (!roleName.startsWith("ROLE_")) {
-            return "Role must start with ROLE_";
-        }
         if (roleName.length < 6) {
             return "Role name must be at least 6 characters";
         }

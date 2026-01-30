@@ -130,9 +130,7 @@ export default function HandLoansListPage() {
 
             let data;
             if (viewMode === 'ALL') {
-                data = await fetchHandLoans(currentPage - 1, pageSize, null, organizationId);
-            } else if (viewMode === 'RECOVERED') {
-                data = await fetchHandLoans(currentPage - 1, pageSize, ['CLOSED'], organizationId);
+                data = await fetchHandLoans(currentPage - 1, pageSize, ['ISSUED,PARTIALLY_RECOVERED,Closed'], organizationId);
             } else {
                 data = await fetchHandLoans(currentPage - 1, pageSize, ['ISSUED,PARTIALLY_RECOVERED'], organizationId);
             }
@@ -332,12 +330,12 @@ export default function HandLoansListPage() {
             title: 'Actions',
             key: 'operation',
             width: 200,
-            hidden: filterForm.getFieldValue('viewMode') === 'ALL',
             render: (item) => {
-                return <div className={'action-buttons'}><Button aria-label='Recover'
+                return <div className={'action-buttons'}>
+                    {filterForm.getFieldValue('viewMode') === 'ISSUED' && <Button aria-label='Recover'
                                                                  variant={'solid'}
                                                                  onClick={() => handleRecoverLoan(item)}
-                                                                 color={'primary'}>Recover</Button>
+                                                                 color={'primary'}>Recover</Button>}
                     <Button aria-label='Recover'
                             icon={<EyeOutlined/>}
                             onClick={() => handleViewLoadDetails(item)}
@@ -366,7 +364,7 @@ export default function HandLoansListPage() {
                     </div>
                 </div>
 
-                <div className={'list-dashboard'}>
+                {filterForm.getFieldValue('viewMode') == 'ISSUED' && <div className={'list-dashboard'}>
                     <Card>
                         <Statistic
                             size={'small'}
@@ -401,7 +399,7 @@ export default function HandLoansListPage() {
                             precision={1}
                         />
                     </Card>
-                </div>
+                </div>}
 
                 <Form className="filter-form"
                       form={filterForm}
@@ -430,24 +428,24 @@ export default function HandLoansListPage() {
                         />
                     </Form.Item>
 
+
+                    <Form.Item label={" "} style={{marginLeft: 'auto'}}>
+                        <Segmented
+                            block
+                            options={[
+                                {label: 'Issued Loans', value: 'ISSUED', icon: <BarsOutlined/>},
+                                {label: 'All Loans', value: 'ALL', icon: <AppstoreOutlined/>},
+                            ]}
+                            value={filterForm.getFieldValue('viewMode')}
+                            onChange={(value) => {
+                                handleViewModeChange(value)
+                            }}
+                        />
+                    </Form.Item>
+
                 </Form>
 
-                <Segmented
-                    block
-                    options={[
-                        {label: 'Issued Loans', value: 'ISSUED', icon: <BarsOutlined/>},
-                        {label: 'All Loans', value: 'ALL', icon: <AppstoreOutlined/>},
-                    ]}
-                    value={filterForm.getFieldValue('viewMode')}
-                    onChange={(value) => {
-                        handleViewModeChange(value)
-                    }}
-                    styles={{
-                        root: {
-                            marginBottom: '1rem'
-                        }
-                    }}
-                />
+
 
                 <Table
                     className={'list-page-table'}

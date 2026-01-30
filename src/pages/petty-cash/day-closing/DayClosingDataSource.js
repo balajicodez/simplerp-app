@@ -20,5 +20,5 @@ export async function postDayClosingFormData(formData) {
 }
 
 export async function postWhatsappReport(data) {
-    return postWithAuthAndBody(`/wapp/api/v2/send/template/json`, data)
+    return postWithAuthAndBody(`/wapp/api/v2/send/bytemplate/json`, data)
 }

@@ -1,5 +1,5 @@
 // Loan Details Modal Component
-import {Card, Descriptions, Empty, Tag, Typography} from "antd";
+import {Card, Descriptions, Empty, Table, Tag, Typography} from "antd";
 import {DATE_DISPLAY_FORMAT} from "../../../constants";
 import {formatCurrency} from "../../../_utils/CommonUtils";
 import React from "react";
@@ -49,22 +49,22 @@ export default function HandLoanDetailsView({loan, recoveredLoans}) {
                 Recovered: <strong>{formatCurrency(totalRecovered)}</strong> across {recoveredLoans.length} transactions</Typography.Paragraph>
 
             {(() => {
-                if (recoveredLoans.length > 0) return <div>
-                    {
-                        recoveredLoans.map((recovery, index) => (
-                            <Card type="inner" title={`Recovery for ${recovery.handLoanNumber}`}>
-
-
-                                <Descriptions>
-                                    <Descriptions.Item
-                                        label="Recovery Date">{recovery.createdDate?.format(DATE_DISPLAY_FORMAT)}</Descriptions.Item>
-                                    <Descriptions.Item label="Recovery Amount" styles={{
-                                        content: {color: 'green'}
-                                    }}>{formatCurrency(recovery.loanAmount)}</Descriptions.Item>
-                                </Descriptions>
-                            </Card>))
-                    }
-                </div>;
+                if (recoveredLoans.length > 0) return <Table
+                    pagination={false}
+                    dataSource={recoveredLoans}
+                    size={'small'}
+                    bordered={true}
+                    columns={[{
+                        title: 'Recovery ID', dataIndex: 'handLoanNumber', key: 'handLoanNumber'
+                    },{
+                        title: 'Recovery Date', dataIndex: 'createdDate', key: 'createdDate', render: (date) => date?.format(DATE_DISPLAY_FORMAT)
+                    }, {
+                        title: 'Amount', dataIndex: 'loanAmount', key: 'loanAmount', render: (amount) => formatCurrency(amount)
+                    }, {
+                        title: 'Notes', dataIndex: 'narration', key: 'narration'
+                    }]}
+                >
+                </Table>;
                 return <Empty description={<span>No recovery transactions found</span>}></Empty>;
             })()}
         </>

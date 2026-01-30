@@ -80,7 +80,7 @@ export default function UsersFormPage() {
     };
 
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async () => {
         setLoading(true);
 
         const formValues = form.getFieldsValue();

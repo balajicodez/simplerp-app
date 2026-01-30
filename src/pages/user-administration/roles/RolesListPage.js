@@ -87,13 +87,13 @@ export default function RolesListPage() {
                     </div>
 
                     <div className={'page-actions'}>
-                        <Button type={'default'}
+                        {/*<Button type={'default'}
                                 size={'large'}
                                 disabled={loading}
                                 onClick={() => navigate("/user-administration/permissions")}
                                 icon={<LockOutlined/>}>
                             Manage Permissions
-                        </Button>
+                        </Button>*/}
 
                         <Button type={'primary'}
                                 size={'large'}
@@ -130,13 +130,13 @@ export default function RolesListPage() {
                             dataIndex: 'name',
                             key: 'name',
                         },
-                        {
+                        /*{
                             title: 'Permissions',
                             key: 'permissions',
                             render: (role) => {
                                 return <RolePermissionsTags roleId={role.id} />
                             }
-                        },
+                        },*/
                         {
                             title: 'Actions',
                             key: 'operation',

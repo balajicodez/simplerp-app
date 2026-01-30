@@ -879,150 +879,12 @@
   }
 }
 
-/* Denomination Table Styles - Bank Slip Style */
-.denomination-table-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-top: 16px;
-  border: 2px solid #1e40af;
-  position: relative;
-  overflow: hidden;
-}
-
-.denomination-table-container::before {
-  content: "CASH DENOMINATION SLIP";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-  color: white;
-  padding: 12px 20px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  text-align: center;
-  letter-spacing: 1px;
-}
-
-.denomination-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-  min-width: 600px;
-  margin-top: 50px;
-}
-
-.denomination-table th {
-  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-  color: white;
-  padding: 14px 10px;
-  text-align: center;
-  font-weight: 600;
-  border: none;
-  position: sticky;
-  top: 50px;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.denomination-table td {
-  padding: 12px 10px;
-  text-align: center;
-  border-bottom: 1px solid #e5e7eb;
-  font-weight: 500;
-}
-
-.denomination-table tr:nth-child(even) {
-  background-color: #f8fafc;
-}
-
-.denomination-table tr:hover {
-  background-color: #f1f5f9;
-}
-
-.denom-value {
-  font-weight: 700;
-  color: #1e40af;
-  background: #f0f4ff !important;
-  font-size: 1rem;
-  border-right: 2px solid #e5e7eb;
-}
-
-.denom-type {
-  color: #64748b;
-  font-weight: 600;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-right: 2px solid #e5e7eb;
-}
-
-.denom-input {
-  width: 80px;
-  padding: 8px;
-  border: 2px solid #d1d5db;
-  border-radius: 6px;
-  text-align: center;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  background: white;
-}
-
-.denom-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  background: #f0f9ff;
-}
-
-.denom-input.good {
-  border-color: #10b981;
-  background: #f0fdf4;
-}
-
-.denom-input.good:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.denom-input.bad {
-  border-color: #ef4444;
-  background: #fef2f2;
-}
-
-.denom-input.bad:focus {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-}
-
 .total-amount {
   font-weight: 700;
   color: #059669;
   background: #f0fff4 !important;
   font-size: 1rem;
   border-left: 2px solid #e5e7eb;
-}
-
-.denomination-total {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%) !important;
-  font-weight: 700;
-  border-top: 3px solid #1e40af;
-}
-
-.denomination-total td {
-  padding: 6px 10px;
-  border-bottom: none;
-  color: white;
-  font-size: 1rem;
-  text-align: center;
-}
-
-.denomination-total strong {
-  color: white;
-  font-size: 1rem;
 }
 
 /* Bank Slip Header Info */
@@ -1189,4 +1051,13 @@
   .entry-label {
     min-width: auto;
   }
+}
+
+
+.day-closing-form-page .ant-table-summary {
+  background: var(--ant-table-header-bg);
+}
+
+.day-closing-form-page .denomination-alert {
+  margin-bottom: 1rem;
 }
