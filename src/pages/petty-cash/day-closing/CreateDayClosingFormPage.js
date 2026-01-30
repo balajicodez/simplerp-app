@@ -1,15 +1,23 @@
 import React, { useState } from "react";
 import "./CreateDayClosing.css";
-import { APP_SERVER_URL_PREFIX } from "../../../constants.js";
+import {APP_SERVER_URL_PREFIX, DATE_DISPLAY_FORMAT} from "../../../constants.js";
 import { DAY_CLOSING_WHATSAPP_NUMBERS_CSV } from "../../../constants.js";
 import { useNavigate } from "react-router-dom";
 import Utils from "../../../Utils";
 import {PRETTY_CASE_PAGE_TITLE} from "../PrettyCaseConstants";
 import DefaultAppSidebarLayout from "../../../_layout/default-app-sidebar-layout/DefaultAppSidebarLayout";
-import {Button, Spin, Typography} from "antd";
+import {App as AntApp, Button, Spin, Typography} from "antd";
 import {LeftOutlined} from "@ant-design/icons";
 import createDayClosingReportPDF from "../../reports/day-closing/createDayClosingReportPDF";
 import {getOrganizationAddressText} from "../../reports/day-closing/utils";
+import {
+  fetchDayClosingData,
+  fetchExpenseReportData,
+  fetchHandLoans
+} from "../../reports/day-closing/dayClosingReportApiService";
+import dayjs from "dayjs";
+import {fetchInitBalanceDate, postDayClosingFormData, postWhatsappReport} from "./DayClosingDataSource";
+import FormUtils from "../../../_utils/FormUtils";
 
 export default function CreateDayClosingFormPage() {
   const [description, setDescription] = useState("Day Closing");
@@ -18,10 +26,7 @@ export default function CreateDayClosingFormPage() {
   const [organizationId, setOrganizationId] = useState("");
   const [selectedOrganization, setSelectedOrganization] = useState(null);
   const [organizationName, setOrganizationName] = useState("");
-  const [inward, setInward] = useState("");
-  const [outward, setOutward] = useState("");
-  const [closingBalance, setClosingBalance] = useState("");
-  const [openingBalance, setOpeningBalance] = useState("");
+  const [balanceData, setBalanceData] = useState(null);
 
   // Simplified denomination state
   const [selectedDenomination, setSelectedDenomination] = useState("");
@@ -40,7 +45,9 @@ export default function CreateDayClosingFormPage() {
   const createdTime = new Date().toISOString();
   const [fileUploads, setFileUploads] = useState([]); // State for dynamic file uploads
   const [fileDescription, setFileDescription] = useState([]);
-  const isAdminRole = Utils.isRoleApplicable("ADMIN");
+  const isAdmin = Utils.isRoleApplicable("ADMIN");
+
+  const formUtils = new FormUtils(AntApp.useApp());
 
   // Handle file input change
   const handleFileChange = (index, event) => {
@@ -69,147 +76,46 @@ export default function CreateDayClosingFormPage() {
     setFileUploads(updatedFiles);
   };
 
-  const currentPage = 0;
-  const pageSize = 1000;
 
 
-  const getExpensesForDate = (expensesList, date) => {
-    return expensesList.filter((expense) => {
-      if (!expense.createdDate && !expense.transactionDate) return false;
-
-      const expenseDateStr = expense.createdDate || expense.transactionDate;
-      if (!expenseDateStr) return false;
-
-      try {
-        const expenseDate = new Date(expenseDateStr)
-          .toISOString()
-          .split("T")[0];
-        return expenseDate === date;
-      } catch (error) {
-        console.warn("Invalid date format for expense:", expenseDateStr);
-        return false;
-      }
-    });
-  };
-
-  const getIssuedAndPartialLoansByOrg = (handloansData) => {
-    if (!organizationId) return [];
-
-    const loanMap = new Map();
-
-    handloansData.forEach((h) => {
-      // 🔥 FILTER BY ORGANIZATION
-      const loanOrgId =
-        h.organizationId ||
-        h.organization?.id ||
-        h.organization?._links?.self?.href?.split("/").pop();
-
-      if (String(loanOrgId) !== String(organizationId)) return;
-
-      if (!h.handLoanNumber) return;
-
-      const loanAmount = Number(h.loanAmount) || 0;
-      const balanceAmount = Number(h.balanceAmount) || 0;
-      const recoveredAmount = loanAmount - balanceAmount;
-
-      // ❌ Remove fully recovered loans
-      if (balanceAmount === 0) return;
-
-      if (!loanMap.has(h.handLoanNumber)) {
-        loanMap.set(h.handLoanNumber, {
-          handLoanNumber: h.handLoanNumber,
-          partyName: h.partyName || "N/A",
-          loanAmount,
-          recoveredAmount,
-          balanceAmount,
-        });
-      } else {
-        const existing = loanMap.get(h.handLoanNumber);
-        existing.balanceAmount = balanceAmount;
-        existing.recoveredAmount = loanAmount - balanceAmount;
-      }
-    });
-
-    return Array.from(loanMap.values()).map((l) => ({
-      ...l,
-      status: l.recoveredAmount > 0 ? "PARTIALLY RECOVERED" : "ISSUED",
-    }));
-  };
-
-  const categorizeExpenses = (expensesList) => {
-    const cashInExpenses = expensesList.filter(
-      (expense) => expense.expenseType === "CASH-IN"
-    );
-    const cashOutExpenses = expensesList.filter(
-      (expense) => expense.expenseType === "CASH-OUT"
-    );
-
-    return { cashInExpenses, cashOutExpenses };
-  };
   const handleGenerateReport = async () => {
     try {
-      debugger;
-      const bearerToken = localStorage.getItem("token");
-      const response = await fetch(
-        `${APP_SERVER_URL_PREFIX}/pettyCashDayClosings/search/findByClosingDateAndOrganizationId?closingDate=${date}&organizationId=${organizationId}`,
-        {
-          headers: { Authorization: `Bearer ${bearerToken}` },
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch data");
-      }
-      const dayClosingData = await response.json();
 
-      const expensesResponse = await fetch(
-        `${APP_SERVER_URL_PREFIX}/expenses/report?organizationId=${organizationId}&createdDate=${date}`,
-        { headers: { Authorization: `Bearer ${bearerToken}` } }
-      );
-      var expensesData = {};
-      if (expensesResponse.ok) {
-        expensesData = await expensesResponse.json() || [];
-      }
+      const dayClosingData = await fetchDayClosingData(organizationId, date);
 
-      // Handloans
-      const handloansResponse = await fetch(
-        `${APP_SERVER_URL_PREFIX}/handloans/all?page=${currentPage}&size=${pageSize}`,
-        { headers: { Authorization: `Bearer ${bearerToken}` } }
-      );
+      // Expenses
+      const expensesData = await fetchExpenseReportData(organizationId, date) || [];
 
-      var handloansData = [];
-      if (handloansResponse.ok) {
-        handloansData = await handloansResponse.json() || [];
-      }
-
-      const filteredExpenses = getExpensesForDate(expensesData, date);
-
-      // ✅ ALL HANDLOANS (NO DATE FILTER)
-      //const filteredHandloans = getAllHandloansWithBalances();
-      //const filteredHandloans = getIssuedAndPartialLoans();
-      const filteredHandloans = getIssuedAndPartialLoansByOrg(handloansData.content);
-
-      const { cashInExpenses, cashOutExpenses } =
-        categorizeExpenses(filteredExpenses);
+      // Hand loans
+      const handLoansData = await fetchHandLoans(0, 1000, ['ISSUED,PARTIALLY_RECOVERED'], organizationId);
+      const handLoans = handLoansData.content || handLoansData || [];
+      handLoans?.forEach(loan => loan.recoveredAmount = (loan.loanAmount || 0) - (loan.balanceAmount || 0));
 
       if (!dayClosingData &&
-        filteredExpenses.length === 0 &&
-        filteredHandloans.length === 0
+          expensesData.length === 0 &&
+          handLoans.length === 0
       ) {
         return;
       }
 
+      const cashInExpenses = expensesData.filter(
+          (expense) => expense.expenseType === "CASH-IN"
+      );
+      const cashOutExpenses = expensesData.filter(
+          (expense) => expense.expenseType === "CASH-OUT"
+      );
+
       const doc = createDayClosingReportPDF({
-        closingDate: date,
+        closingDate: dayjs(date).format(DATE_DISPLAY_FORMAT),
         organizationName: selectedOrganization?.name,
         organizationAddress: getOrganizationAddressText(selectedOrganization),
         cashInExpenses,
         cashOutExpenses,
         dayClosingData,
-        filteredHandLoans: filteredHandloans,
+        handLoans,
       });
 
-      var base64String = doc.output("datauristring").split(",")[1];
-      return base64String;
+      return doc.output("datauristring").split(",")[1];
     } catch (e) {
       console.error("PDF generation error:", e);
     }
@@ -250,7 +156,7 @@ export default function CreateDayClosingFormPage() {
         setOrganizations(orgs);
       })
       .catch(() => {});
-    if (!isAdminRole) {
+    if (!isAdmin) {
       const orgId = localStorage.getItem("organizationId");
       setOrganizationId(orgId);
       setOrganizationName(localStorage.getItem("organizationName") || "");
@@ -303,36 +209,11 @@ export default function CreateDayClosingFormPage() {
 
   const fetchBalanceData = async (closingDate, orgId) => {
     try {
-      const bearerToken = localStorage.getItem("token");
-      const res = await fetch(
-        `${APP_SERVER_URL_PREFIX}/petty-cash/day-closing/init?closingDate=${closingDate}&organizationId=${orgId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${bearerToken}`,
-          },
-        }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        setInward(data.cashIn || "0");
-        setOutward(data.cashOut || "0");
-        setClosingBalance(data.closingBalance || "0");
-        setOpeningBalance(data.openingBalance || "0");
-      } else {
-        setInward("");
-        setOutward("");
-        setClosingBalance("");
-        setOpeningBalance("");
-      }
+        const balanceData = await fetchInitBalanceDate(closingDate, orgId);
+      setBalanceData(balanceData);
     } catch (error) {
       console.error("Error fetching balance data:", error);
-      setInward("");
-      setOutward("");
-      setClosingBalance("");
-      setOpeningBalance("");
+      setBalanceData(null);
     }
   };
 
@@ -408,7 +289,7 @@ export default function CreateDayClosingFormPage() {
 
   const validateClosingBalance = () => {
     const { totalAmount } = getTotalSummary();
-    const apiClosingBalance = parseFloat(closingBalance) || 0;
+    const apiClosingBalance = balanceData.closingBalance;
 
     if (Math.abs(totalAmount - apiClosingBalance) > 0.01) {
       setBalanceError(
@@ -506,13 +387,13 @@ export default function CreateDayClosingFormPage() {
         comment: comment,
         createdTime,
         organizationId: organizationId || undefined,
-        inward: inward ? Number(inward) : 0,
-        outward: outward ? Number(outward) : 0,
+        inward: balanceData.inward,
+        outward: balanceData.outward,
         closingBalance:
-          closingBalanceCalc || (closingBalance ? Number(closingBalance) : 0),
-        openingBalance: openingBalance,
-        cashIn: inward ? Number(inward) : 0,
-        cashOut: outward ? Number(outward) : 0,
+          closingBalanceCalc || (balanceData.closingBalance ? Number(balanceData.closingBalance) : 0),
+        openingBalance: balanceData.openingBalance,
+        cashIn: balanceData.cashIn,
+        cashOut: balanceData.cashOut,
         tenNoteCount: denominations[10]?.good || 0,
         twentyNoteCount: denominations[20]?.good || 0,
         fiftyNoteCount: denominations[50]?.good || 0,
@@ -546,54 +427,26 @@ export default function CreateDayClosingFormPage() {
         }
       });
 
-      const res = await fetch(
-        `${APP_SERVER_URL_PREFIX}/petty-cash/day-closing`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${bearerToken}` },
-          body: formData,
-        }
-      );
+      await postDayClosingFormData(formData);
 
-      if (!res.ok) {
-        const data = await res.text();
-        setError(data);
-      } else {
-        const messagePayload = [
-          {
-            
-          },
-        ];
-        const data = await handleGenerateReport();
-        //console.log("Generated PDF Base64:", data);
-        messagePayload[0].media = data;
-        messagePayload[0].medianame = `Day_Closing_Report_${date}.pdf`;
-        messagePayload[0].mobile = DAY_CLOSING_WHATSAPP_NUMBERS_CSV;
-        messagePayload[0].templatename = "day_closing_report";
-        messagePayload[0].dvariables = [ organizationName , date, inward, outward, closingBalance];
-        //const res = await fetch(`https://wa.iconicsolution.co.in/wapp/api/v2/send/bytemplate?apikey=8b275f43ccf74564ba0715316533af8a&templatename=day_closing_report&mobile=9740665561,9866472624,9948011234,8985221844&dvariables=RSH,${date},${cashIn},${cashOut},${closingBalance}`, {
-        try {
-          const response = await fetch(url, {
-            method: "POST",
-            headers: {           
-              "Content-Type": "application/json",
-               Authorization: `Bearer ${bearerToken}` 
-            },
-            body: JSON.stringify(messagePayload),
-          });
-
-          const result = await response.json();
-
-          console.log("Success:", result);
-        } catch (error) {
-          console.error("Error:", error);
-        }
-
-        setSuccess("Day closing created successfully!");
-        setTimeout(() => navigate("/pettycash/day-closing"), 1200);
+      // Send PDF report to WhatsApp
+      try {
+        const pdfReportBase64 = await handleGenerateReport();
+        const messagePayload = {};
+        messagePayload.media = pdfReportBase64;
+        messagePayload.medianame = `Day_Closing_Report_${date}.pdf`;
+        messagePayload.mobile = DAY_CLOSING_WHATSAPP_NUMBERS_CSV;
+        messagePayload.templatename = "day_closing_report";
+        messagePayload.dvariables = [organizationName , date, balanceData.cashIn, balanceData.cashOut, balanceData.closingBalance];
+        await postWhatsappReport([messagePayload]);
+      } catch (error) {
+        console.error("Error:", error);
       }
+
+      formUtils.showSuccessNotification("Day closing created successfully!");
+      navigate(-1); // Previous page
     } catch (e) {
-      setError("Failed to create day closing");
+      formUtils.showErrorNotification("Failed to create day closing");
     } finally {
       setLoading(false);
     }
@@ -604,10 +457,10 @@ export default function CreateDayClosingFormPage() {
   const { totalGood, totalBad, totalAmount } = getTotalSummary();
 
   React.useEffect(() => {
-    if (closingBalance && denominationEntries.length > 0) {
+    if (balanceData && balanceData.closingBalance && denominationEntries.length > 0) {
       validateClosingBalance();
     }
-  }, [denominationEntries, closingBalance]);
+  }, [denominationEntries, balanceData]);
 
   // Get available denominations (not already added)
   const availableDenominations = denominationOptions.filter(
@@ -669,14 +522,14 @@ export default function CreateDayClosingFormPage() {
                 <label className="form-label">Organization</label>
                 <select
                   value={
-                    isAdminRole
+                    isAdmin
                       ? organizationId
                       : localStorage.getItem("organizationId")
                   }
                   onChange={handleChange}
                   className="form-select"
                   required
-                  disabled={!isAdminRole}
+                  disabled={!isAdmin}
                 >
                   <option value="">Select organization</option>
                   {organizations.map((org) => (
@@ -738,9 +591,8 @@ export default function CreateDayClosingFormPage() {
                 <label className="balance-label">Opening Balance</label>
                 <input
                   type="number"
-                  value={openingBalance}
+                  value={balanceData?.openingBalance}
                   className="balance-input"
-                  min="0"
                   readOnly
                 />
               </div>
@@ -748,10 +600,8 @@ export default function CreateDayClosingFormPage() {
                 <label className="balance-label">Inward</label>
                 <input
                   type="number"
-                  value={inward}
-                  onChange={(e) => setInward(e.target.value)}
+                  value={balanceData?.cashIn}
                   className="balance-input"
-                  min="0"
                   readOnly
                 />
               </div>
@@ -760,10 +610,8 @@ export default function CreateDayClosingFormPage() {
                 <label className="balance-label">Outward</label>
                 <input
                   type="number"
-                  value={outward}
-                  onChange={(e) => setOutward(e.target.value)}
+                  value={balanceData?.cashOut}
                   className="balance-input"
-                  min="0"
                   readOnly
                 />
               </div>
@@ -772,10 +620,8 @@ export default function CreateDayClosingFormPage() {
                 <label className="balance-label">Closing Balance</label>
                 <input
                   type="number"
-                  value={closingBalance}
-                  onChange={(e) => setClosingBalance(e.target.value)}
+                  value={balanceData?.closingBalance}
                   className="balance-input"
-                  min="0"
                   readOnly
                 />
               </div>

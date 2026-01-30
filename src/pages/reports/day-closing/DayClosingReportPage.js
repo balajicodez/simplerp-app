@@ -8,7 +8,11 @@ import {Alert, App as AntApp, Button, DatePicker, Form, Modal, Select, Spin, Tab
 import {fetchOrganizations} from "../../user-administration/organizations/OrganizationDataSource";
 import FormUtils from "../../../_utils/FormUtils";
 import {convertDenominationsToRecords, getOrganizationAddressText} from './utils';
-import {fetchAllHandLoans, fetchDayClosingData, fetchExpenseReportData} from "./dayClosingReportApiService";
+import {
+    fetchDayClosingData,
+    fetchExpenseReportData,
+    fetchHandLoans
+} from "./dayClosingReportApiService";
 import dayjs from "dayjs";
 import {EyeOutlined, FilePdfOutlined} from "@ant-design/icons";
 import DayClosingSummaryCardsSection from "./sections/DayClosingSummaryCardsSection";
@@ -34,18 +38,28 @@ const tableCustomStyles = {
 export default function DayClosingReportPage() {
     const [dayClosingData, setDayClosingData] = useState(null);
     const [expenses, setExpenses] = useState([]);
-    const [handloans, setHandloans] = useState([]);
+    const [handLoans, setHandLoans] = useState([]);
     const [loading, setLoading] = useState(false);
     const [modalFile, setModalFile] = useState(null);
     const [error, setError] = useState("");
 
     const [filterForm] = Form.useForm();
-
     const [pdfUrl, setPdfUrl] = useState("");
     const [organizations, setOrganizations] = useState([]);
     const [attachments, setAttachments] = useState([]);
+
+
     const isAdmin = Utils.isRoleApplicable('ADMIN');
     const formUtils = new FormUtils(AntApp.useApp());
+
+
+    const cashDenominationRecords = convertDenominationsToRecords(dayClosingData);
+    const cashInExpenses = expenses.filter(
+        (expense) => expense.expenseType === "CASH-IN"
+    );
+    const cashOutExpenses = expenses.filter(
+        (expense) => expense.expenseType === "CASH-OUT"
+    );
 
 
     const fetchOrganizationsData = async () => {
@@ -58,27 +72,30 @@ export default function DayClosingReportPage() {
         }
     };
 
+    function resetReport() {
+        setDayClosingData(null);
+        setExpenses([]);
+        setHandLoans([]);
+        setAttachments([]);
+    }
+
     async function fetchReportData(closingDate, organizationId) {
         setLoading(true);
         setError("");
 
+        let dayClosingData;
         try {
+            dayClosingData = await fetchDayClosingData(organizationId, closingDate);
+            setDayClosingData(dayClosingData);
+        } catch (err) {
+            console.log(err);
+            setError("Day Closing not found for the selected date");
+            resetReport();
+            setLoading(false);
+            return;
+        }
 
-            let dayClosingData;
-            try {
-                dayClosingData = await fetchDayClosingData(organizationId, closingDate);
-                setDayClosingData(dayClosingData);
-            } catch (err) {
-                console.log(err);
-                setError("Day Closing not found for the selected date");
-                setDayClosingData(null);
-                setAttachments([]);
-                setExpenses([]);
-                setHandloans([]);
-                setLoading(false);
-                return;
-            }
-
+        try {
             const attachmentData = await fetchWithAuth(dayClosingData._links.pettyCashDayClosingAttachment.href);
             setAttachments(attachmentData._embedded ? attachmentData._embedded.pettyCashDayClosingAttachments || [] : attachmentData);
 
@@ -87,13 +104,14 @@ export default function DayClosingReportPage() {
             setExpenses(expensesData.content || expensesData || []);
 
             // Handloans
-            const handLoansData = await fetchAllHandLoans(0, 1000);
-            setHandloans(handLoansData.content || handLoansData || []);
+            const handLoansData = await fetchHandLoans(0, 1000, ['ISSUED,PARTIALLY_RECOVERED'], organizationId);
+            const handLoans = handLoansData.content || handLoansData || [];
+            handLoans?.forEach(loan => loan.recoveredAmount = (loan.loanAmount || 0) - (loan.balanceAmount || 0));
 
+            setHandLoans(handLoans);
         } catch (err) {
             console.error(err);
-            setExpenses([]);
-            setHandloans([]);
+            resetReport();
             formUtils.showErrorNotification("Failed to fetch report data");
         }
         setLoading(false);
@@ -106,82 +124,6 @@ export default function DayClosingReportPage() {
         fetchOrganizationsData();
     }, []);
 
-    // Date filtering for expenses
-    const getExpensesForDate = (date) => {
-        return expenses.filter((expense) => {
-            if (!expense.createdDate && !expense.transactionDate) return false;
-
-            const expenseDateStr = expense.createdDate || expense.transactionDate;
-            if (!expenseDateStr) return false;
-
-            try {
-                const expenseDate = new Date(expenseDateStr)
-                    .toISOString()
-                    .split("T")[0];
-                return expenseDate === date;
-            } catch (error) {
-                console.warn("Invalid date format for expense:", expenseDateStr);
-                return false;
-            }
-        });
-    };
-
-
-    const categorizeExpenses = (expensesList) => {
-        const cashInExpenses = expensesList.filter(
-            (expense) => expense.expenseType === "CASH-IN"
-        );
-        const cashOutExpenses = expensesList.filter(
-            (expense) => expense.expenseType === "CASH-OUT"
-        );
-
-        return {cashInExpenses, cashOutExpenses};
-    };
-
-    const getIssuedAndPartialLoansByOrg = () => {
-        const organizationId = filterForm.getFieldValue('organizationId');
-        if (!organizationId) return [];
-
-        const loanMap = new Map();
-
-        handloans.forEach((h) => {
-            // 🔥 FILTER BY ORGANIZATION
-            const loanOrgId =
-                h.organizationId ||
-                h.organization?.id ||
-                h.organization?._links?.self?.href?.split("/").pop();
-
-            if (String(loanOrgId) !== String(organizationId)) return;
-
-            if (!h.handLoanNumber) return;
-
-            const loanAmount = Number(h.loanAmount) || 0;
-            const balanceAmount = Number(h.balanceAmount) || 0;
-            const recoveredAmount = loanAmount - balanceAmount;
-
-            // ❌ Remove fully recovered loans
-            if (balanceAmount === 0) return;
-
-            if (!loanMap.has(h.handLoanNumber)) {
-                loanMap.set(h.handLoanNumber, {
-                    handLoanNumber: h.handLoanNumber,
-                    partyName: h.partyName || "N/A",
-                    loanAmount,
-                    recoveredAmount,
-                    balanceAmount,
-                });
-            } else {
-                const existing = loanMap.get(h.handLoanNumber);
-                existing.balanceAmount = balanceAmount;
-                existing.recoveredAmount = loanAmount - balanceAmount;
-            }
-        });
-
-        return Array.from(loanMap.values()).map((l) => ({
-            ...l,
-            status: l.recoveredAmount > 0 ? "PARTIALLY_RECOVERED" : "ISSUED",
-        }));
-    };
 
 
     const handleGenerateReport = () => {
@@ -202,24 +144,14 @@ export default function DayClosingReportPage() {
 
 
         const selectedOrganization = organizations.find(o => String(o.id) == String(organizationId));
-        const selectedDate = closingDateDayJS.format(DATE_SYSTEM_FORMAT);
 
 
         try {
-            const filteredExpenses = getExpensesForDate(selectedDate);
-
-            // ✅ ALL HANDLOANS (NO DATE FILTER)
-            const filteredHandloans = getIssuedAndPartialLoansByOrg();
 
             if (!dayClosingData) {
                 formUtils.showErrorNotification("No day closing data found");
                 return;
             }
-
-
-            const {cashInExpenses, cashOutExpenses} =
-                categorizeExpenses(filteredExpenses);
-
 
             const doc = createDayClosingReportPDF({
                 closingDate: closingDateDayJS.format(DATE_DISPLAY_FORMAT),
@@ -228,7 +160,7 @@ export default function DayClosingReportPage() {
                 cashInExpenses,
                 cashOutExpenses,
                 dayClosingData,
-                filteredHandLoans: filteredHandloans,
+                handLoans,
             });
 
             setPdfUrl(doc.output("bloburl"));
@@ -238,15 +170,8 @@ export default function DayClosingReportPage() {
         }
     };
 
-    const expensesForSelectedDate = getExpensesForDate(filterForm.getFieldValue('closingDate')?.format("YYYY-MM-DD"));
-    const {cashInExpenses, cashOutExpenses} = categorizeExpenses(
-        expensesForSelectedDate
-    );
 
-    // Get all handloans with balances for display
-    // const allHandloansWithBalances = getAllHandloansWithBalances();
-    // const allHandloansWithBalances = getIssuedAndPartialLoans();
-    const allHandloansWithBalances = getIssuedAndPartialLoansByOrg();
+    const allHandloansWithBalances = handLoans;
 
 
     function onValuesChange() {
@@ -257,7 +182,7 @@ export default function DayClosingReportPage() {
         fetchReportData(closingDate, organizationId);
     }
 
-    const cashDenominationRecords = convertDenominationsToRecords(dayClosingData);
+
 
 
     return (

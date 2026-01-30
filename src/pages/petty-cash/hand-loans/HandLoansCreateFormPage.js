@@ -35,7 +35,7 @@ export default function HandLoansCreateFormPage() {
     const [modalFile, setModalFile] = useState(null);
     const [organizations, setOrganizations] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [fetchedBalance, setFetchedBalance] = useState(0);
+    const [currentBalance, setCurrentBalance] = useState(0);
     const [balanceLoading, setBalanceLoading] = useState(false);
     const navigate = useNavigate();
     const isAdmin = Utils.isRoleApplicable("ADMIN");
@@ -47,7 +47,7 @@ export default function HandLoansCreateFormPage() {
     const fetchCurrentBalanceData = async (organizationId, createdDate) => {
 
         if (!organizationId || !createdDate) {
-            setFetchedBalance(0);
+            setCurrentBalance(0);
             return;
         }
 
@@ -68,9 +68,9 @@ export default function HandLoansCreateFormPage() {
             }
 
             balance = Number(balance) || 0;
-            setFetchedBalance(balance);
+            setCurrentBalance(balance);
         } catch (err) {
-            setFetchedBalance(0);
+            setCurrentBalance(0);
             formUtils.showErrorNotification("Failed to fetch current balance");
         } finally {
             setBalanceLoading(false);
@@ -275,7 +275,7 @@ export default function HandLoansCreateFormPage() {
 
 
                                     <Spin spinning={balanceLoading} tip="Loading..." size={'small'}>
-                                        <Alert title={`Available Balance (Selected branch & date): ${fetchedBalance}`}
+                                        <Alert title={`Available Balance (Selected branch & date): ${currentBalance}`}
                                                className={'balance-alert'} type="info" showIcon/>
                                     </Spin>
                                 </Col>
@@ -288,7 +288,7 @@ export default function HandLoansCreateFormPage() {
                                         rules={[{required: true, message: 'Please enter amount.'},
                                             {
                                                 validator: (_, value) => {
-                                                    if (value && fetchedBalance < value) return Promise.reject(new Error("Amount cannot exceed current balance"))
+                                                    if (value && currentBalance < value) return Promise.reject(new Error("Amount cannot exceed current balance"))
                                                     if (value <= 0) return Promise.reject(new Error("Amount cannot be zero or negative"));
                                                     return Promise.resolve();
                                                 }

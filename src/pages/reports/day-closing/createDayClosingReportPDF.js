@@ -3,13 +3,13 @@ import autoTable from "jspdf-autotable";
 import {convertDenominationsToRecords, safeToLocaleString} from "./utils";
 
 export default function createDayClosingReportPDF({
-    closingDate,
-    organizationName,
-    organizationAddress,
-    cashInExpenses,
-    cashOutExpenses,
-    dayClosingData,
-    filteredHandLoans
+                                                      closingDate,
+                                                      organizationName,
+                                                      organizationAddress,
+                                                      cashInExpenses,
+                                                      cashOutExpenses,
+                                                      dayClosingData,
+                                                      handLoans
                                                   }) {
     const doc = new jsPDF();
 
@@ -52,7 +52,6 @@ export default function createDayClosingReportPDF({
     );
 
 
-
     /* ================= DAY CLOSING ================= */
     currentY += spacingBase * 4;
     autoTable(doc, {
@@ -74,7 +73,6 @@ export default function createDayClosingReportPDF({
         },
         pageBreak: "auto",
     });
-
 
 
     /* ================= EXPENSES ================= */
@@ -116,7 +114,7 @@ export default function createDayClosingReportPDF({
             e.description || "General",
         ]),
         tableWidth: colWidth,
-        margin: {left: pagePadding + colWidth + (2*spacingBase)},
+        margin: {left: pagePadding + colWidth + (2 * spacingBase)},
         styles: {fontSize: 11, overflow: "linebreak"},
         headStyles: {fillColor: [185, 28, 28], textColor: 255},
         columnStyles: {1: {halign: "right"}},
@@ -127,7 +125,7 @@ export default function createDayClosingReportPDF({
     currentY = Math.max(cashInEndY, cashOutEndY);
 
     /* Hand Loans */
-    if (filteredHandLoans.length > 0) {
+    if (handLoans.length > 0) {
         doc.setFontSize(14);
         currentY += (doc.getLineHeight() / doc.internal.scaleFactor) + (spacingBase * 4);
         doc.text("HANDLOANS DETAILS", centerX, currentY, {align: "center"});
@@ -137,7 +135,7 @@ export default function createDayClosingReportPDF({
         let totalRecoveredAmount = 0;
         let totalBalanceAmount = 0;
 
-        filteredHandLoans.forEach((h) => {
+        handLoans.forEach((h) => {
             totalLoanAmount += Number(h.loanAmount || 0);
             totalRecoveredAmount += Number(h.recoveredAmount || 0);
             totalBalanceAmount += Number(h.balanceAmount || 0);
@@ -157,7 +155,7 @@ export default function createDayClosingReportPDF({
                 ],
             ],
             body: [
-                ...filteredHandLoans.map((h) => [
+                ...handLoans.map((h) => [
                     h.handLoanNumber,
                     h.partyName,
                     safeToLocaleString(h.loanAmount),
@@ -188,7 +186,7 @@ export default function createDayClosingReportPDF({
             didParseCell: function (data) {
                 // Style TOTAL row
                 if (
-                    data.row.index === filteredHandLoans.length &&
+                    data.row.index === handLoans.length &&
                     data.section === "body"
                 ) {
                     data.cell.styles.fontStyle = "bold";
